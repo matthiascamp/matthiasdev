@@ -98,33 +98,13 @@ ul { list-style: none; }
   transform: translate(-50%, -50%);
   transition: width 0.3s, height 0.3s;
 }
-.cursor-follower::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    var(--accent),
-    var(--accent-2),
-    var(--accent-3),
-    var(--accent-2),
-    var(--accent)
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), white calc(100% - 1.5px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), white calc(100% - 1.5px));
-  animation: cursorRingSpin 2.5s linear infinite;
-}
-@keyframes cursorRingSpin {
-  to { transform: rotate(360deg); }
-}
+.cursor-follower::before { display: none; }
 .cursor.hovered {
   transform: translate(-50%, -50%) scale(2.5);
   background: var(--accent);
   box-shadow: 0 0 14px rgba(124,92,252,0.9), 0 0 32px rgba(124,92,252,0.5);
 }
 .cursor-follower.hovered { width: 56px; height: 56px; }
-.cursor-follower.hovered::before { animation-duration: 1s; }
 
 /* ── Container ── */
 .container {
@@ -526,7 +506,7 @@ canvas#particles {
 /* ─────────────────────────
    ABOUT
 ───────────────────────── */
-#about { background: var(--bg-2); }
+#about { background: var(--bg-2); } /* moved to bottom of page */
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
@@ -905,7 +885,7 @@ canvas#particles {
 /* ─────────────────────────
    PROJECTS
 ───────────────────────── */
-#projects { background: var(--bg-2); }
+#projects { background: var(--bg); }
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1271,6 +1251,12 @@ footer {
   .project-featured .project-iframe-wrap { min-height: 228px; }
   .projects-grid { grid-template-columns: 1fr; }
 
+  .work-reviews-grid {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
   .services-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 }
 
@@ -1329,6 +1315,9 @@ footer {
   .project-iframe-wrap { min-height: 200px; }
 
   .testimonial-card { padding: 24px 20px; }
+
+  .work-review-body { padding: 20px; }
+  .work-reviews-grid { max-width: 100%; }
 
   .contact-form { padding: 20px; }
   .contact-grid { gap: 32px; }
@@ -1453,6 +1442,121 @@ footer {
   pointer-events: none;
 }
 .iframe-overlay:hover::after { opacity: 1; }
+
+/* ─────────────────────────
+   WORK + REVIEWS (combined)
+───────────────────────── */
+.work-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.work-review-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+}
+
+.work-review-card:hover {
+  border-color: var(--border-h);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+}
+
+.work-review-card .project-visual {
+  min-height: 200px;
+}
+
+.work-review-card .project-embed-visual {
+  height: 220px;
+  min-height: 220px;
+  max-height: 220px;
+  padding: 0;
+  background: transparent;
+}
+
+.work-review-card .project-browser {
+  height: 220px;
+  min-height: 220px;
+}
+
+.work-review-card .project-iframe-wrap {
+  min-height: 0;
+}
+
+.work-review-card .project-mock {
+  width: 100%;
+  height: 100%;
+  background: #0d0d1a;
+  border-radius: 0;
+  border: none;
+  overflow: hidden;
+}
+
+.work-review-card .mock-content {
+  height: calc(100% - 32px);
+}
+
+.work-review-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.work-project-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.work-project-info h3 {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.work-project-info p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.work-review {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.work-review p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+/* ─────────────────────────
+   PRICING — SINGLE CARD
+───────────────────────── */
+.pricing-panel--single.active {
+  display: flex;
+  justify-content: center;
+}
+
+.pricing-panel--single .pricing-card {
+  max-width: 520px;
+  width: 100%;
+}
 
 /* ─────────────────────────
    SELECTION
