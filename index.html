@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matthias Campbell — Web Developer & AI Student</title>
+  <meta name="description" content="Matthias Campbell — Web Developer based in Brisbane. I build fast, beautiful, modern websites and web apps." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Custom cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <!-- Noise overlay -->
+  <div class="noise"></div>
+
+  <!-- ─── NAV ─── -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="#hero" class="logo">MC<span class="dot">.</span></a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#projects">Work</a></li>
+        <li><a href="#contact" class="nav-cta">Let's talk</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="#about" class="mobile-link">About</a></li>
+      <li><a href="#services" class="mobile-link">Services</a></li>
+      <li><a href="#projects" class="mobile-link">Work</a></li>
+      <li><a href="#contact" class="mobile-link">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- ─── HERO ─── -->
+  <section id="hero">
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <canvas id="particles"></canvas>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge reveal-up">
+        <span class="badge-dot"></span>
+        Available for new projects
+      </div>
+      <h1 class="hero-title reveal-up">
+        <span class="line">Hi, I'm</span>
+        <span class="line gradient-text">Matthias</span>
+        <span class="line gradient-text">Campbell.</span>
+      </h1>
+      <p class="hero-sub reveal-up">
+        I build <span class="typewriter" id="typewriter"></span><span class="type-cursor">|</span>
+        <br />that look stunning and perform even better.
+      </p>
+      <div class="hero-actions reveal-up">
+        <a href="#projects" class="btn btn-primary">View my work</a>
+        <a href="#contact" class="btn btn-ghost">Get in touch</a>
+      </div>
+      <div class="hero-stats reveal-up">
+        <div class="stat">
+          <span class="stat-num" data-target="20">0</span><span class="stat-suffix">+</span>
+          <span class="stat-label">Projects delivered</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-target="100">0</span><span class="stat-suffix">%</span>
+          <span class="stat-label">Client satisfaction</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-target="2">0</span><span class="stat-suffix">yrs</span>
+          <span class="stat-label">Experience</span>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ─── ABOUT ─── -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-visual">
+          <div class="about-img-wrap reveal-left">
+            <div class="about-img-bg"></div>
+            <div class="about-img-card">
+              <div class="about-avatar">MC</div>
+              <div class="about-card-info">
+                <strong>Matthias Campbell</strong>
+                <span>Brisbane, Australia</span>
+              </div>
+            </div>
+            <div class="about-tag tag-1">UQ Computer Science</div>
+            <div class="about-tag tag-2">AI Specialisation</div>
+          </div>
+        </div>
+        <div class="about-text reveal-right">
+          <p class="section-eyebrow">About me</p>
+          <h2 class="section-title">
+            Crafting digital<br /><em>experiences</em> that matter
+          </h2>
+          <p class="about-body">
+            I'm a Computer Science student at the University of Queensland,
+            specialising in Artificial Intelligence. I've been building websites
+            and web applications since high school — and I genuinely love every
+            part of the process, from pixel-perfect UI to back-end architecture.
+          </p>
+          <p class="about-body">
+            Whether you need a sleek marketing site, a full-stack web app, or
+            something AI-powered, I bring a student's curiosity and a
+            professional's precision to every project.
+          </p>
+          <div class="about-chips">
+            <span class="chip">Problem solver</span>
+            <span class="chip">Detail obsessed</span>
+            <span class="chip">Fast learner</span>
+            <span class="chip">Clean code advocate</span>
+          </div>
+          <a href="#contact" class="btn btn-primary">Work with me</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SERVICES ─── -->
+  <section id="services">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <p class="section-eyebrow">What I do</p>
+        <h2 class="section-title">Services built for<br /><em>real results</em></h2>
+      </div>
+      <div class="services-grid">
+
+        <div class="service-card reveal-up" data-delay="0">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <h3>Web Design & Development</h3>
+          <p>Pixel-perfect, responsive websites built with modern frameworks. Fast, accessible, and built to convert visitors into clients.</p>
+          <ul class="service-list">
+            <li>Landing pages &amp; marketing sites</li>
+            <li>E-commerce stores</li>
+            <li>Portfolio &amp; personal brands</li>
+          </ul>
+          <div class="service-arrow">→</div>
+        </div>
+
+        <div class="service-card reveal-up" data-delay="100">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          </div>
+          <h3>AI Integration</h3>
+          <p>Supercharge your product with AI — from chatbots and recommendation engines to intelligent automation and data insights.</p>
+          <ul class="service-list">
+            <li>LLM-powered features</li>
+            <li>Intelligent automation</li>
+            <li>Data pipelines &amp; dashboards</li>
+          </ul>
+          <div class="service-arrow">→</div>
+        </div>
+
+        <div class="service-card reveal-up" data-delay="300">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          </div>
+          <h3>Performance & SEO</h3>
+          <p>Speed matters. I audit and optimise existing sites for Core Web Vitals, SEO, and accessibility — helping you rank and retain visitors.</p>
+          <ul class="service-list">
+            <li>Site audits</li>
+            <li>Core Web Vitals optimisation</li>
+            <li>Technical SEO</li>
+          </ul>
+          <div class="service-arrow">→</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRICING ─── -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <p class="section-eyebrow">Services</p>
+        <h2 class="section-title">Plans built for every<br /><em>stage of growth</em></h2>
+      </div>
+
+      <!-- Tab nav -->
+      <div class="pricing-tabs reveal-up" role="tablist">
+        <button class="pricing-tab active" data-tab="seo" role="tab" aria-selected="true" aria-controls="panel-seo">SEO Optimisation</button>
+        <button class="pricing-tab" data-tab="web" role="tab" aria-selected="false" aria-controls="panel-web">Web Development</button>
+        <button class="pricing-tab" data-tab="ai" role="tab" aria-selected="false" aria-controls="panel-ai">AI Integration</button>
+      </div>
+
+      <!-- Panels -->
+      <div class="pricing-panels">
+
+        <!-- SEO Optimisation -->
+        <div class="pricing-panel active" id="panel-seo" role="tabpanel">
+          <div class="pricing-card">
+            <div class="pricing-tier">Basic</div>
+            <div class="pricing-price">
+              <span class="price-currency">$</span>
+              <span class="price-amount">149</span>
+            </div>
+            <p class="pricing-desc">Everything you need to start ranking on Google.</p>
+            <ul class="pricing-features">
+              <li>Keyword research</li>
+              <li>Meta tags optimisation</li>
+              <li>On-page audit</li>
+              <li>Monthly report</li>
+            </ul>
+            <a href="#contact" class="btn btn-ghost pricing-btn">Get Started</a>
+          </div>
+
+          <div class="pricing-card pricing-card--popular">
+            <div class="pricing-badge">Most Popular</div>
+            <div class="pricing-tier">Pro</div>
+            <div class="pricing-price">
+              <span class="price-currency">$</span>
+              <span class="price-amount">299</span>
+            </div>
+            <p class="pricing-desc">Grow your authority with off-page and technical SEO.</p>
+            <ul class="pricing-features">
+              <li>Everything in Basic</li>
+              <li>Backlink building</li>
+              <li>Competitor analysis</li>
+              <li>Google Search Console setup</li>
+            </ul>
+            <a href="#contact" class="btn btn-primary pricing-btn">Get Started</a>
+          </div>
+
+          <div class="pricing-card">
+            <div class="pricing-tier">Premium</div>
+            <div class="pricing-price">
+              <span class="price-currency">$</span>
+              <span class="price-amount">599</span>
+            </div>
+            <p class="pricing-desc">Full-service SEO with content strategy and priority support.</p>
+            <ul class="pricing-features">
+              <li>Everything in Pro</li>
+              <li>Weekly reports</li>
+              <li>Content strategy</li>
+              <li>Schema markup</li>
+              <li>Priority support</li>
+            </ul>
+            <a href="#contact" class="btn btn-ghost pricing-btn">Get Started</a>
+          </div>
+        </div>
+
+        <!-- Web Development -->
+        <div class="pricing-panel" id="panel-web" role="tabpanel">
+          <div class="pricing-card">
+            <div class="pricing-tier">Landing Page</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">A high-converting single page that turns visitors into clients.</p>
+            <ul class="pricing-features">
+              <li>Custom design</li>
+              <li>Mobile responsive</li>
+              <li>Contact form</li>
+              <li>SEO ready</li>
+            </ul>
+            <a href="#contact" class="btn btn-ghost pricing-btn">Get a Quote</a>
+          </div>
+
+          <div class="pricing-card pricing-card--popular">
+            <div class="pricing-badge">Most Popular</div>
+            <div class="pricing-tier">Business Website</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">A polished multi-page site that establishes your brand online.</p>
+            <ul class="pricing-features">
+              <li>Multi-page structure</li>
+              <li>Custom animations</li>
+              <li>CMS integration</li>
+              <li>SEO ready</li>
+              <li>Unlimited revisions</li>
+            </ul>
+            <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
+          </div>
+
+          <div class="pricing-card">
+            <div class="pricing-tier">Custom Build</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">A fully custom web solution built around your unique requirements.</p>
+            <ul class="pricing-features">
+              <li>Everything in Business</li>
+              <li>Custom functionality</li>
+              <li>E-commerce ready</li>
+              <li>Ongoing support</li>
+              <li>Performance optimised</li>
+            </ul>
+            <a href="#contact" class="btn btn-ghost pricing-btn">Get a Quote</a>
+          </div>
+        </div>
+
+        <!-- AI Integration -->
+        <div class="pricing-panel" id="panel-ai" role="tabpanel">
+          <div class="pricing-card">
+            <div class="pricing-tier">AI Chatbot</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">A smart AI assistant trained on your business content.</p>
+            <ul class="pricing-features">
+              <li>Website AI chatbot</li>
+              <li>Trained on your data</li>
+              <li>Basic customisation</li>
+              <li>Lead capture</li>
+            </ul>
+            <a href="#contact" class="btn btn-ghost pricing-btn">Get a Quote</a>
+          </div>
+
+          <div class="pricing-card pricing-card--popular">
+            <div class="pricing-badge">Most Popular</div>
+            <div class="pricing-tier">Smart Automation</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">AI-powered workflows that automate your business processes.</p>
+            <ul class="pricing-features">
+              <li>Everything in AI Chatbot</li>
+              <li>Custom AI workflows</li>
+              <li>CRM integration</li>
+              <li>Analytics dashboard</li>
+            </ul>
+            <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
+          </div>
+
+          <div class="pricing-card">
+            <div class="pricing-tier">Full AI Platform</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">End-to-end AI automation built around your entire business.</p>
+            <ul class="pricing-features">
+              <li>Everything in Smart Automation</li>
+              <li>Full automation pipeline</li>
+              <li>Custom model tuning</li>
+              <li>Ongoing optimisation</li>
+              <li>Priority support</li>
+            </ul>
+            <a href="#contact" class="btn btn-ghost pricing-btn">Get a Quote</a>
+          </div>
+        </div>
+
+      </div><!-- /pricing-panels -->
+    </div>
+  </section>
+
+  <!-- ─── PROJECTS ─── -->
+  <section id="projects">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <p class="section-eyebrow">Selected work</p>
+        <h2 class="section-title">Projects I'm proud of</h2>
+      </div>
+      <div class="projects-grid">
+
+        <!-- Featured: Live site embed -->
+        <article class="project-card project-featured reveal-up" data-delay="0">
+          <div class="project-visual project-embed-visual">
+            <div class="project-browser">
+              <div class="mock-bar">
+                <span></span><span></span><span></span>
+                <div class="mock-url">jesusisthehighwaytoheaven.com</div>
+                <a href="https://jesusisthehighwaytoheaven.com" target="_blank" rel="noopener" class="mock-visit" aria-label="Open site">↗</a>
+              </div>
+              <div class="project-iframe-wrap">
+                <iframe src="https://jesusisthehighwaytoheaven.com"
+                        title="Jesus is the Highway to Heaven"
+                        loading="lazy"
+                        frameborder="0"></iframe>
+                <a href="https://jesusisthehighwaytoheaven.com" target="_blank" rel="noopener" class="iframe-overlay" aria-label="Visit jesusisthehighwaytoheaven.com"></a>
+              </div>
+            </div>
+          </div>
+          <div class="project-info">
+            <span class="project-tag">Web Design</span>
+            <h3>Jesus is the Highway to Heaven</h3>
+            <p>A faith-inspired website built to share a meaningful message with clarity and purpose. Clean layout, strong visual identity, and fully responsive across all devices.</p>
+            <div class="project-stack">
+              <span>HTML</span><span>CSS</span><span>JavaScript</span><span>Responsive</span>
+            </div>
+            <a href="https://jesusisthehighwaytoheaven.com" target="_blank" rel="noopener" class="project-link">Visit site →</a>
+          </div>
+        </article>
+
+        <article class="project-card reveal-up" data-delay="100">
+          <div class="project-visual">
+            <div class="project-mock">
+              <div class="mock-bar"><span></span><span></span><span></span></div>
+              <div class="mock-content mock-2"></div>
+            </div>
+          </div>
+          <div class="project-info">
+            <span class="project-tag">E-commerce</span>
+            <h3>Boutique Store</h3>
+            <p>Custom Shopify-powered storefront with slick animations and a conversion-optimised checkout flow.</p>
+            <div class="project-stack">
+              <span>React</span><span>Shopify</span><span>Tailwind</span>
+            </div>
+            <a href="#contact" class="project-link">Get in touch →</a>
+          </div>
+        </article>
+
+        <article class="project-card reveal-up" data-delay="200">
+          <div class="project-visual">
+            <div class="project-mock">
+              <div class="mock-bar"><span></span><span></span><span></span></div>
+              <div class="mock-content mock-3"></div>
+            </div>
+          </div>
+          <div class="project-info">
+            <span class="project-tag">AI Integration</span>
+            <h3>AI Study Companion</h3>
+            <p>A personalised learning app using LLMs to generate adaptive quizzes and summarise lecture notes for students.</p>
+            <div class="project-stack">
+              <span>Next.js</span><span>OpenAI API</span><span>PostgreSQL</span>
+            </div>
+            <a href="#contact" class="project-link">Get in touch →</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TESTIMONIALS ─── -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <p class="section-eyebrow">Kind words</p>
+        <h2 class="section-title">What clients say</h2>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card reveal-up" data-delay="0">
+          <div class="stars">★★★★★</div>
+          <p>"Matthias delivered our new website ahead of schedule and beyond our expectations. The design is stunning and our enquiries have doubled."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">SJ</div>
+            <div>
+              <strong>Sarah J.</strong>
+              <span>Small business owner, Brisbane</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card reveal-up" data-delay="100">
+          <div class="stars">★★★★★</div>
+          <p>"Incredibly talented for his age. He understood our brief instantly, communicated clearly, and produced clean, maintainable code."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">TK</div>
+            <div>
+              <strong>Tom K.</strong>
+              <span>Startup founder</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card reveal-up" data-delay="200">
+          <div class="stars">★★★★★</div>
+          <p>"The AI integration Matthias built for us saved hours of manual work every week. Highly recommend him for anything web or tech related."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">LM</div>
+            <div>
+              <strong>Lisa M.</strong>
+              <span>Operations manager</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CONTACT ─── -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-left reveal-left">
+          <p class="section-eyebrow">Get in touch</p>
+          <h2 class="section-title">Let's build something<br /><em>great together</em></h2>
+          <p class="contact-body">Have a project in mind? I'd love to hear about it. Send me a message and I'll get back to you within 24 hours.</p>
+          <div class="contact-links">
+            <a href="mailto:matthias@example.com" class="contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              matthias@example.com
+            </a>
+            <a href="https://github.com/" target="_blank" rel="noopener" class="contact-item">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.796 24 17.298 24 12c0-6.63-5.373-12-12-12z"/></svg>
+              github.com/matthiascampbell
+            </a>
+            <a href="https://linkedin.com/" target="_blank" rel="noopener" class="contact-item">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              linkedin.com/in/matthiascampbell
+            </a>
+          </div>
+        </div>
+        <div class="contact-right reveal-right">
+          <form class="contact-form" id="contactForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="name">Your name</label>
+                <input type="text" id="name" name="name" placeholder="Jane Smith" required />
+              </div>
+              <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" placeholder="jane@example.com" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="subject">What do you need?</label>
+              <select id="subject" name="subject">
+                <option value="">Select a service...</option>
+                <option value="website">Website Design &amp; Development</option>
+                <option value="ai">AI Integration</option>
+                <option value="seo">Performance &amp; SEO</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Tell me about your project</label>
+              <textarea id="message" name="message" rows="5" placeholder="Describe your project, budget, timeline..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+              <span>Send message</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+            <p class="form-note" id="formNote"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <a href="#hero" class="logo">MC<span class="dot">.</span></a>
+        <p class="footer-copy">© 2026 Matthias Campbell. Built with care in Brisbane.</p>
+        <div class="footer-links">
+          <a href="#about">About</a>
+          <a href="#services">Services</a>
+          <a href="#projects">Work</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
