@@ -1068,6 +1068,7 @@ canvas#particles {
   gap: 12px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 .author-avatar {
   width: 40px; height: 40px;
@@ -1231,6 +1232,15 @@ footer {
 .footer-links a:hover { color: var(--text); }
 
 /* ─────────────────────────
+   WORK + REVIEWS (base — must appear before responsive overrides)
+───────────────────────── */
+.work-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* ─────────────────────────
    RESPONSIVE
 ───────────────────────── */
 @media (max-width: 1024px) {
@@ -1251,12 +1261,6 @@ footer {
   .project-featured .project-iframe-wrap { min-height: 228px; }
   .projects-grid { grid-template-columns: 1fr; }
 
-  .work-reviews-grid {
-    grid-template-columns: 1fr;
-    max-width: 560px;
-    margin: 0 auto;
-  }
-
   .services-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 }
 
@@ -1265,9 +1269,15 @@ footer {
   .hamburger { display: flex; }
   .mobile-menu { display: flex; }
 
-  .hero-stats { gap: 20px; }
+  .hero-content { text-align: center; }
+  .hero-badge { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-sub { text-align: center; }
+
+  .hero-stats { gap: 20px; justify-content: center; }
   .form-row { grid-template-columns: 1fr; }
-  .footer-inner { flex-direction: column; align-items: flex-start; }
+  .footer-inner { flex-direction: column; align-items: center; text-align: center; }
+  .footer-links { justify-content: center; }
 
   .cursor, .cursor-follower { display: none; }
 
@@ -1277,6 +1287,18 @@ footer {
   .pricing-card:not(.pricing-card--popular) .pricing-quote-block { margin-top: 0; }
 
   .testimonials-grid { grid-template-columns: 1fr; }
+
+  .work-reviews-grid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .section-header { text-align: center; }
+  .about-text { text-align: center; }
+  .about-chips { justify-content: center; }
+  .contact-left { text-align: center; }
+  .contact-links { align-items: center; }
 }
 
 @media (max-width: 540px) {
@@ -1296,9 +1318,11 @@ footer {
 @media (max-width: 480px) {
   :root { --nav-h: 60px; }
 
-  .hero-actions { flex-direction: column; align-items: flex-start; }
-  .hero-stats { flex-direction: column; gap: 16px; }
+  .hero-actions { flex-direction: column; align-items: center; width: 100%; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+  .hero-stats { flex-direction: column; gap: 16px; align-items: center; }
   .stat-divider { display: none; }
+  .stat { align-items: center; text-align: center; }
 
   .hero-badge { font-size: 0.72rem; padding: 6px 12px; }
   .section-title { font-size: clamp(1.75rem, 7vw, 2.2rem); }
@@ -1307,6 +1331,7 @@ footer {
   .service-card { padding: 24px 20px; }
 
   .about-tag { display: none; }
+  .about-text .btn { width: 100%; justify-content: center; }
 
   .pricing-card { padding: 24px 20px 28px; }
   .quote-cta { font-size: 1.8rem; }
@@ -1321,8 +1346,9 @@ footer {
 
   .contact-form { padding: 20px; }
   .contact-grid { gap: 32px; }
+  .contact-left .btn { width: 100%; justify-content: center; }
 
-  .footer-links { flex-wrap: wrap; gap: 12px; }
+  .footer-links { flex-wrap: wrap; gap: 12px; justify-content: center; }
   .mobile-menu a { font-size: 2rem; }
 }
 
@@ -1446,12 +1472,6 @@ footer {
 /* ─────────────────────────
    WORK + REVIEWS (combined)
 ───────────────────────── */
-.work-reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
 .work-review-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1535,7 +1555,7 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: auto;
+  flex: 1;
 }
 
 .work-review p {

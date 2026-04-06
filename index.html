@@ -69,6 +69,7 @@
       </p>
       <div class="hero-actions reveal-up">
         <a href="#projects" class="btn btn-primary">View my work</a>
+        <a href="#services" class="btn btn-ghost">Services</a>
         <a href="#contact" class="btn btn-ghost">Get in touch</a>
       </div>
     </div>
@@ -139,16 +140,39 @@
 
       <!-- Tab nav -->
       <div class="pricing-tabs reveal-up" role="tablist">
-        <button class="pricing-tab active" data-tab="seo" role="tab" aria-selected="true" aria-controls="panel-seo">SEO Optimisation</button>
-        <button class="pricing-tab" data-tab="web" role="tab" aria-selected="false" aria-controls="panel-web">Web Development</button>
+        <button class="pricing-tab active" data-tab="web" role="tab" aria-selected="true" aria-controls="panel-web">Web Development</button>
+        <button class="pricing-tab" data-tab="seo" role="tab" aria-selected="false" aria-controls="panel-seo">SEO Optimisation</button>
         <button class="pricing-tab" data-tab="ai" role="tab" aria-selected="false" aria-controls="panel-ai">AI Integration</button>
+        <button class="pricing-tab" data-tab="other" role="tab" aria-selected="false" aria-controls="panel-other">Something Else?</button>
       </div>
 
       <!-- Panels -->
       <div class="pricing-panels">
 
+        <!-- Web Development -->
+        <div class="pricing-panel pricing-panel--single active" id="panel-web" role="tabpanel">
+          <div class="pricing-card pricing-card--popular">
+            <div class="pricing-badge">Custom Pricing</div>
+            <div class="pricing-tier">Web Development</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Get a Quote</span>
+            </div>
+            <p class="pricing-desc">Every website is unique. Tell me about your project and I'll provide a personalised quote tailored to your needs and budget.</p>
+            <ul class="pricing-features">
+              <li>Landing pages &amp; marketing sites</li>
+              <li>Business &amp; portfolio websites</li>
+              <li>Custom web applications</li>
+              <li>E-commerce stores</li>
+              <li>Mobile responsive</li>
+              <li>SEO ready</li>
+              <li>Unlimited revisions</li>
+            </ul>
+            <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
+          </div>
+        </div>
+
         <!-- SEO Optimisation -->
-        <div class="pricing-panel active" id="panel-seo" role="tabpanel">
+        <div class="pricing-panel" id="panel-seo" role="tabpanel">
           <div class="pricing-card">
             <div class="pricing-tier">Basic</div>
             <div class="pricing-price">
@@ -200,28 +224,6 @@
           </div>
         </div>
 
-        <!-- Web Development -->
-        <div class="pricing-panel pricing-panel--single" id="panel-web" role="tabpanel">
-          <div class="pricing-card pricing-card--popular">
-            <div class="pricing-badge">Custom Pricing</div>
-            <div class="pricing-tier">Web Development</div>
-            <div class="pricing-quote-block">
-              <span class="quote-cta">Get a Quote</span>
-            </div>
-            <p class="pricing-desc">Every website is unique. Tell me about your project and I'll provide a personalised quote tailored to your needs and budget.</p>
-            <ul class="pricing-features">
-              <li>Landing pages &amp; marketing sites</li>
-              <li>Business &amp; portfolio websites</li>
-              <li>Custom web applications</li>
-              <li>E-commerce stores</li>
-              <li>Mobile responsive</li>
-              <li>SEO ready</li>
-              <li>Unlimited revisions</li>
-            </ul>
-            <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
-          </div>
-        </div>
-
         <!-- AI Integration -->
         <div class="pricing-panel pricing-panel--single" id="panel-ai" role="tabpanel">
           <div class="pricing-card pricing-card--popular">
@@ -241,6 +243,25 @@
               <li>Analytics dashboards</li>
             </ul>
             <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
+          </div>
+        </div>
+
+        <!-- Something Else? -->
+        <div class="pricing-panel pricing-panel--single" id="panel-other" role="tabpanel">
+          <div class="pricing-card pricing-card--popular">
+            <div class="pricing-badge">Let's Talk</div>
+            <div class="pricing-tier">Got Something in Mind?</div>
+            <div class="pricing-quote-block">
+              <span class="quote-cta">Reach Out</span>
+            </div>
+            <p class="pricing-desc">Not every project fits a neat category — and that's fine. If you've got an idea, a problem to solve, or just want to explore what's possible, drop me a message and we'll figure it out together.</p>
+            <ul class="pricing-features">
+              <li>Custom project scoping</li>
+              <li>No commitment required</li>
+              <li>Fast, friendly response</li>
+              <li>Transparent pricing</li>
+            </ul>
+            <a href="#contact" class="btn btn-primary pricing-btn">Get in Touch</a>
           </div>
         </div>
 
@@ -276,9 +297,9 @@
           </div>
           <div class="work-review-body">
             <div class="work-project-info">
-              <span class="project-tag">Web Design</span>
+              <span class="project-tag">Online Autobiography</span>
               <h3>Jesus is the Highway to Heaven</h3>
-              <p>A faith-inspired website built to share a meaningful message with clarity and purpose. Clean layout, strong visual identity, fully responsive.</p>
+              <p>A website built for Edwin Lewis — brother of rugby league legend Wally Lewis — to host his self-published book, a life's work rich with personal history, faith, and media. Built to honour the story it tells.</p>
               <div class="project-stack">
                 <span>HTML</span><span>CSS</span><span>JavaScript</span>
               </div>
@@ -286,12 +307,12 @@
             </div>
             <div class="work-review">
               <div class="stars">★★★★★</div>
-              <p>"Matthias delivered our new website ahead of schedule and beyond our expectations. The design is stunning and our enquiries have doubled."</p>
+              <p>"I'm not the most tech-savvy person, but Matthias made the whole process easy. My book is online now and people can actually find it — that means everything to me."</p>
               <div class="testimonial-author">
-                <div class="author-avatar">SJ</div>
+                <div class="author-avatar">EL</div>
                 <div>
-                  <strong>Sarah J.</strong>
-                  <span>Small business owner, Brisbane</span>
+                  <strong>Edwin Lewis</strong>
+                  <span>Writer, Brisbane</span>
                 </div>
               </div>
             </div>
@@ -307,22 +328,22 @@
           </div>
           <div class="work-review-body">
             <div class="work-project-info">
-              <span class="project-tag">E-commerce</span>
-              <h3>Boutique Store</h3>
-              <p>Custom Shopify-powered storefront with slick animations and a conversion-optimised checkout flow.</p>
+              <span class="project-tag">Small Business</span>
+              <h3>CBlends</h3>
+              <p>A clean, modern website for a Brisbane-based barber running his craft out of his garage. Built to establish an online presence, showcase his cuts, and make it easy for clients to get in touch.</p>
               <div class="project-stack">
-                <span>React</span><span>Shopify</span><span>Tailwind</span>
+                <span>HTML</span><span>CSS</span><span>JavaScript</span>
               </div>
               <a href="#contact" class="project-link">Get in touch →</a>
             </div>
             <div class="work-review">
               <div class="stars">★★★★★</div>
-              <p>"Incredibly talented for his age. He understood our brief instantly, communicated clearly, and produced clean, maintainable code."</p>
+              <p>"Bookings just show up in my calendar now, no hassle. Does what it needs to do."</p>
               <div class="testimonial-author">
-                <div class="author-avatar">TK</div>
+                <div class="author-avatar">CL</div>
                 <div>
-                  <strong>Tom K.</strong>
-                  <span>Startup founder</span>
+                  <strong>Caleb L.</strong>
+                  <span>Small Business Owner, Brisbane</span>
                 </div>
               </div>
             </div>
@@ -348,7 +369,7 @@
             </div>
             <div class="work-review">
               <div class="stars">★★★★★</div>
-              <p>"The AI integration Matthias built for us saved hours of manual work every week. Highly recommend him for anything web or tech related."</p>
+              <p>"Didn't realise how much time we were wasting until Matthias showed us what was possible. It just works, and our team actually uses it."</p>
               <div class="testimonial-author">
                 <div class="author-avatar">LM</div>
                 <div>
