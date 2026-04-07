@@ -255,20 +255,14 @@ ACTION REQUIRED TO ACTIVATE STANDARD CONNECT
 
 Two things needed from the Stripe Dashboard before the Connect button works:
 
-STEP A — Get your Client ID
-  Stripe Dashboard → Connect → Settings → OAuth settings → Client ID
-  Looks like: ca_XXXXXXXXXXXXXXXXXXXXXXXXXX
-  This is NOT a secret — safe to put in frontend HTML.
+STEP A — Get your Client ID  ✓ DONE
+  Client ID: ca_UI2x8Fcilibs1dHnpUpM0avgphqLXFHW
+  Set in: mcbook/stripe-onboarding.html → STRIPE_CLIENT_ID
 
-STEP B — Register the redirect URI
-  On the same OAuth settings page, add this to "Redirects":
-    https://matthiasdev.com/mcbook/stripe-oauth-callback.html
-  Stripe will reject the OAuth flow if this URI isn't registered.
+STEP B — Register the redirect URI  ✓ DONE
+  https://matthiasdev.com/mcbook/stripe-oauth-callback.html
 
-STEP C — Paste the Client ID into the code
-  Open: mcbook/stripe-onboarding.html
-  Find line:  const STRIPE_CLIENT_ID = 'YOUR_STRIPE_CLIENT_ID'
-  Replace with your actual ca_... value, then push to GitHub.
+STEP C — Paste the Client ID into the code  ✓ DONE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TEST CONNECTED ACCOUNT (created during Express testing — can ignore)
