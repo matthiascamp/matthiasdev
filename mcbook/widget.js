@@ -94,7 +94,7 @@
 
     // Mount Stripe Elements inside the shadow root
     const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
-    const elements = stripe.elements({ clientSecret });
+    const elements = stripe.elements();
     const cardNumber = elements.create('cardNumber');
     const cardExpiry = elements.create('cardExpiry');
     const cardCvc    = elements.create('cardCvc');
