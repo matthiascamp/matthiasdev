@@ -4,6 +4,13 @@ import { setTopbarDate, loadSidebarUser } from '../ui.js'
 
 const DOTS = ['dot-blue', 'dot-purple', 'dot-amber', 'dot-green']
 
+const PMODE_LABELS = {
+  free:        'Free',
+  noshow_only: 'No-show protection',
+  after:       'Charge after',
+  upfront:     'Charge upfront',
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function durationToMins(s) {
   if (s.includes('1.5')) return 90
@@ -49,6 +56,7 @@ async function loadServices() {
             <span class="service-tag">${minsLabel(svc.duration_mins)}</span>
             <span class="service-tag price">$${Number(svc.price).toFixed(2)}</span>
             <span class="service-tag nosho">No-show: $${Number(svc.noshow_fee).toFixed(2)}</span>
+            <span class="service-tag">${PMODE_LABELS[svc.payment_mode] ?? 'No-show protection'}</span>
           </div>
         </div>
         <div class="service-actions">
@@ -86,15 +94,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const textInputs = panel.querySelectorAll('input[type="text"]')
   const nameInput  = textInputs[0]
   const descInput  = textInputs[1]
-  const durSelect  = panel.querySelector('select')
-  const saveBtn    = panel.querySelector('.btn-primary')
-  const cancelBtn  = panel.querySelector('.btn-cancel')
+  const durSelect   = panel.querySelector('select')
+  const pmodeSelect = panel.querySelector('#svc-pmode')
+  const saveBtn     = panel.querySelector('.btn-primary')
+  const cancelBtn   = panel.querySelector('.btn-cancel')
 
   function getNumInputs() { return panel.querySelectorAll('input[type="number"]') }
   function clearForm() {
     nameInput.value = ''; descInput.value = ''
     const nums = getNumInputs(); nums[0].value = ''; nums[1].value = ''
-    durSelect.value = '30 min'; editId = null
+    durSelect.value = '30 min'; pmodeSelect.value = 'noshow_only'; editId = null
   }
 
   // Delegate: toggle active
@@ -126,7 +135,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!data) return
       nameInput.value = data.name
       descInput.value = data.description ?? ''
-      durSelect.value = durationSelectValue(data.duration_mins)
+      durSelect.value   = durationSelectValue(data.duration_mins)
+      pmodeSelect.value = data.payment_mode ?? 'noshow_only'
       const nums = getNumInputs()
       nums[0].value = data.price
       nums[1].value = data.noshow_fee
@@ -143,7 +153,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       description: descInput.value.trim() || null,
       duration_mins: durationToMins(durSelect.value),
       price: parseFloat(nums[0].value) || 0,
-      noshow_fee: parseFloat(nums[1].value) || 0
+      noshow_fee: parseFloat(nums[1].value) || 0,
+      payment_mode: pmodeSelect.value || 'noshow_only',
     }
     if (!payload.name) return
 

@@ -22,7 +22,7 @@
  *   PLATFORM_FEE_PERCENT   (optional, e.g. "5" for 5%) — overridden by body param
  */
 
-import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
+import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno&no-check'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2?target=deno'
 
 const corsHeaders = {

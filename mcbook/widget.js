@@ -34,9 +34,10 @@
 
   // ─── Stripe constants ─────────────────────────────────────────────────────
   const STRIPE_PUBLISHABLE_KEY  = 'pk_live_51TIM7W3KdzLQ6RvXRpuNTwZtQjLGq9s18uWusHKHo3aaoL2KmYccr2so1Zy0o1IkuzG0pi1WEzh82MiQPtoMrC6W00iOR1stqs';
-  const CREATE_SETUP_INTENT_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/create-setup-intent';
+  const CREATE_SETUP_INTENT_URL   = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/create-setup-intent';
+  const CREATE_PAYMENT_INTENT_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/create-payment-intent';
 
-  // ─── Mount real Stripe Elements into shadow root ──────────────────────────
+  // ─── Mount real Stripe Elements (handles setup and payment intents) ──────────
   async function mountStripeElements(widget) {
     // Inject Stripe.js into the host document once
     if (!window.Stripe) {
@@ -51,7 +52,8 @@
 
     await sbReady;
 
-    const { contact, service } = widget.state;
+    const { contact, service, date } = widget.state;
+    const mode = service.payment_mode || 'noshow_only';
 
     // Upsert customer (look up by email; create if missing)
     let customerId;
@@ -75,22 +77,58 @@
     }
     widget._customerId = customerId;
 
-    // Fetch SetupIntent client secret from Edge Function
-    const res = await fetch(CREATE_SETUP_INTENT_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        bookingData: {
-          customerId,
-          serviceId:     service.id,
+    let clientSecret;
+
+    if (mode === 'upfront') {
+      // Create a pending booking first, then get a PaymentIntent for it
+      const dateISO  = date.toISOString().slice(0, 10);
+      const timeHHMM = timeToHHMM(widget.state.time);
+      const { data: booking, error: bookErr } = await sb.from('bookings')
+        .insert({
+          client_id:   widget.businessId,
+          customer_id: customerId,
+          service_id:  service.id,
+          date:        dateISO,
+          time:        timeHHMM,
+          status:      'pending_payment',
+        })
+        .select('id')
+        .single();
+      if (bookErr) throw bookErr;
+      widget.state.bookingId = booking.id;
+
+      const piRes  = await fetch(CREATE_PAYMENT_INTENT_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          bookingId:     booking.id,
           clientId:      widget.businessId,
+          amountCents:   Math.round(parseFloat(service.price) * 100),
           customerEmail: contact.email,
-          customerName:  contact.name,
-        },
-      }),
-    });
-    const { clientSecret, error: siErr } = await res.json();
-    if (siErr) throw new Error(siErr);
+        }),
+      });
+      const piJson = await piRes.json();
+      if (piJson.error) throw new Error(piJson.error);
+      clientSecret = piJson.clientSecret;
+    } else {
+      // SetupIntent — save card for noshow_only or after
+      const siRes  = await fetch(CREATE_SETUP_INTENT_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          bookingData: {
+            customerId,
+            serviceId:     service.id,
+            clientId:      widget.businessId,
+            customerEmail: contact.email,
+            customerName:  contact.name,
+          },
+        }),
+      });
+      const siJson = await siRes.json();
+      if (siJson.error) throw new Error(siJson.error);
+      clientSecret = siJson.clientSecret;
+    }
 
     // Stripe cannot mount inside a shadow root — create light DOM slot containers
     // that are projected into the shadow DOM via named slots.
@@ -107,8 +145,8 @@
     widget._host.appendChild(ceDiv);
     widget._host.appendChild(ccDiv);
 
-    const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
-    const elements = stripe.elements();
+    const stripe     = window.Stripe(STRIPE_PUBLISHABLE_KEY);
+    const elements   = stripe.elements();
     const cardNumber = elements.create('cardNumber');
     const cardExpiry = elements.create('cardExpiry');
     const cardCvc    = elements.create('cardCvc');
@@ -116,7 +154,7 @@
     cardExpiry.mount(ceDiv);
     cardCvc.mount(ccDiv);
 
-    widget._stripeElements = { stripe, cardNumber, clientSecret, _slotDivs: [cnDiv, ceDiv, ccDiv] };
+    widget._stripeElements = { stripe, cardNumber, clientSecret, mode, _slotDivs: [cnDiv, ceDiv, ccDiv] };
   }
 
   function destroyStripeSlots(widget) {
@@ -732,18 +770,17 @@
 
       // Booking state
       this.state = {
-        step:     1,          // 1-6
-        service:  null,
-        date:     null,
-        time:     null,
-        contact:  {},
-        ref:      null,
-        calYear:  new Date().getFullYear(),
-        calMonth: new Date().getMonth(),
+        step:      1,          // 1-6
+        service:   null,
+        date:      null,
+        time:      null,
+        contact:   {},
+        ref:       null,
+        bookingId: null,
+        calYear:   new Date().getFullYear(),
+        calMonth:  new Date().getMonth(),
       };
 
-      // Off by default — only enabled once Stripe is connected and toggled on
-      this._requirePayment  = false;
       // Availability unknown until loaded
       this._hasAvailability = false;
 
@@ -784,8 +821,10 @@
     }
 
     _headerHTML() {
-      const labels = ['Service','Date','Time','Contact', this._requirePayment ? 'Payment' : 'Confirm','Done'];
-      const bars   = labels.map((_, i) => {
+      const mode      = this.state.service?.payment_mode;
+      const needsCard = mode && mode !== 'free';
+      const labels    = ['Service','Date','Time','Contact', needsCard ? 'Payment' : 'Confirm','Done'];
+      const bars      = labels.map((_, i) => {
         const n = i + 1;
         let cls = '';
         if (n < this.state.step)  cls = 'done';
@@ -794,7 +833,7 @@
       }).join('');
 
       const stepNames = ['Select a Service','Choose a Date','Choose a Time',
-        'Your Details', this._requirePayment ? 'Payment' : 'Review & Confirm','Confirmation'];
+        'Your Details', needsCard ? 'Payment' : 'Review & Confirm','Confirmation'];
       return `
         <div class="bw-header">
           <h2>Book an Appointment</h2>
@@ -822,17 +861,12 @@
       if (!this._services) {
         (async () => {
           await sbReady;
-          const [{ data }, { data: settings }, { data: rules }] = await Promise.all([
+          const [{ data }, { data: rules }] = await Promise.all([
             sb.from('services')
-              .select('id, name, duration_mins, price, noshow_fee')
+              .select('id, name, duration_mins, price, noshow_fee, payment_mode')
               .eq('client_id', this.businessId)
               .eq('active', true)
               .order('created_at', { ascending: true }),
-            sb.from('booking_settings')
-              .select('require_payment')
-              .eq('client_id', this.businessId)
-              .limit(1)
-              .maybeSingle(),
             sb.from('availability_rules')
               .select('id')
               .eq('client_id', this.businessId)
@@ -841,7 +875,6 @@
               .maybeSingle(),
           ]);
           this._services = data || [];
-          this._requirePayment = settings ? (settings.require_payment === true) : false;
           this._hasAvailability = !!rules;
           if (this.state.step === 1) this._render();
         })();
@@ -871,7 +904,7 @@
               <div class="bw-service-name">${s.name}</div>
               <div class="bw-service-meta">${fmtDuration(s.duration_mins)}</div>
             </div>
-            ${this._requirePayment ? `<div class="bw-service-price">$${s.price}</div>` : ''}
+            ${s.payment_mode !== 'free' ? `<div class="bw-service-price">$${s.price}</div>` : ''}
           </div>`;
       }).join('');
 
@@ -1012,9 +1045,10 @@
         </div>`;
     }
 
-    // Step 5 — Payment (Stripe) or simple confirm if payment disabled
+    // Step 5 — Payment / card save / confirm depending on service payment_mode
     _step5() {
       const { service, date, time } = this.state;
+      const mode    = service?.payment_mode || 'free';
       const dateStr = date
         ? date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})
         : '';
@@ -1035,8 +1069,7 @@
           </div>
         </div>`;
 
-      if (!this._requirePayment) {
-        // No payment required — just show summary and confirm button
+      if (mode === 'free') {
         return `
           <div class="bw-step-title">Review &amp; Confirm</div>
           ${summaryRows}
@@ -1047,21 +1080,28 @@
           </div>`;
       }
 
-      // Payment required — show Stripe card fields
+      // Card-required modes (noshow_only, after, upfront)
+      const chargeRow = mode === 'upfront'
+        ? `<div class="bw-summary-row"><span class="bw-summary-label">Charge today</span><span class="bw-summary-val">$${service.price}</span></div>`
+        : mode === 'after'
+        ? `<div class="bw-summary-row"><span class="bw-summary-label">Due after appointment</span><span class="bw-summary-val">$${service.price}</span></div>
+           <div class="bw-summary-row"><span class="bw-summary-label">No-show fee</span><span class="bw-summary-val">$${service.noshow_fee}</span></div>`
+        : `<div class="bw-summary-row"><span class="bw-summary-label">No-show fee (if applicable)</span><span class="bw-summary-val">$${service.noshow_fee}</span></div>`;
+
+      const modeNote = mode === 'upfront'
+        ? 'Pay now to secure your booking.'
+        : mode === 'after'
+        ? 'Card saved — you will be charged after your appointment.'
+        : 'Card saved for no-show protection only. No charge today.';
+
+      const confirmLabel = mode === 'upfront' ? 'Pay &amp; Book' : 'Save Card &amp; Book';
+
       return `
-        <div class="bw-step-title">Review &amp; Payment</div>
+        <div class="bw-step-title">Review &amp; ${mode === 'upfront' ? 'Pay' : 'Card Details'}</div>
         ${summaryRows}
-        <div class="bw-summary" style="margin-top:-8px;">
-          <div class="bw-summary-row">
-            <span class="bw-summary-label">Total</span>
-            <span class="bw-summary-val">${service ? '$' + service.price : ''}</span>
-          </div>
-          <div class="bw-summary-row">
-            <span class="bw-summary-label">No-show fee</span>
-            <span class="bw-summary-val">${service ? '$' + service.noshow_fee : ''}</span>
-          </div>
-        </div>
+        <div class="bw-summary" style="margin-top:-8px;">${chargeRow}</div>
         <div class="bw-form">
+          <div style="font-size:0.77rem;opacity:0.65;margin-bottom:4px;">${modeNote}</div>
           <div class="bw-field">
             <label>Card Number</label>
             <div class="bw-stripe-box" id="stripe-card-number-wrap">
@@ -1078,14 +1118,12 @@
               <div class="bw-stripe-box" id="stripe-card-cvc-wrap"><slot name="stripe-card-cvc">•••</slot></div>
             </div>
           </div>
-          <div class="bw-secure-note">
-            &#128274; Payments are encrypted and secured by Stripe.
-          </div>
+          <div class="bw-secure-note">&#128274; Payments are encrypted and secured by Stripe.</div>
         </div>
         <div class="bw-error" id="bw-confirm-err"></div>
         <div class="bw-btn-row">
           <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-          <button class="bw-btn bw-btn-primary" id="bw-next">Confirm Booking</button>
+          <button class="bw-btn bw-btn-primary" id="bw-next">${confirmLabel}</button>
         </div>`;
     }
 
@@ -1118,6 +1156,7 @@
         </div>
         <div class="bw-btn-row">
           <button class="bw-btn bw-btn-secondary" id="bw-new-booking">Book Another</button>
+          <button class="bw-btn bw-btn-secondary" id="bw-cancel-booking" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">Cancel Booking</button>
         </div>`;
     }
 
@@ -1131,23 +1170,27 @@
       if (nextBtn) nextBtn.addEventListener('click', () => this._next());
       if (backBtn) backBtn.addEventListener('click', () => this._back());
 
-      // New booking button (step 6)
+      // New booking / cancel buttons (step 6)
       const newBtn = root.querySelector('#bw-new-booking');
       if (newBtn) newBtn.addEventListener('click', () => this._reset());
+      const cancelBookingBtn = root.querySelector('#bw-cancel-booking');
+      if (cancelBookingBtn) cancelBookingBtn.addEventListener('click', () => this._cancelBooking());
 
       // Step-specific listeners
       switch (this.state.step) {
         case 1: this._bindStep1(); break;
         case 2: this._bindStep2(); break;
         case 3: this._bindStep3(); break;
-        case 5:
-          if (this._requirePayment && !this._stripeElements) {
+        case 5: {
+          const mode = this.state.service?.payment_mode || 'free';
+          if (mode !== 'free' && !this._stripeElements) {
             mountStripeElements(this).catch(err => {
               const errEl = this.root.querySelector('#bw-confirm-err');
               if (errEl) { errEl.textContent = err.message; errEl.classList.add('visible'); }
             });
           }
           break;
+        }
       }
     }
 
@@ -1231,52 +1274,61 @@
 
         try {
           const { contact, service, date } = this.state;
+          const mode     = service.payment_mode || 'free';
           const dateISO  = date.toISOString().slice(0, 10);
           const timeHHMM = timeToHHMM(this.state.time);
 
           await sbReady;
 
-          if (!this._requirePayment) {
-            // ── No payment path: upsert customer then insert booking directly ──
+          if (mode === 'free') {
+            // No card — upsert customer and insert booking directly
             let customerId;
             const { data: existing } = await sb.from('customers')
-              .select('id')
-              .eq('client_id', this.businessId)
-              .eq('email', contact.email)
-              .limit(1)
-              .maybeSingle();
+              .select('id').eq('client_id', this.businessId).eq('email', contact.email)
+              .limit(1).maybeSingle();
             if (existing) {
               customerId = existing.id;
             } else {
               const { data: newCust, error: custErr } = await sb.from('customers')
                 .insert({ client_id: this.businessId, name: contact.name,
                           email: contact.email, phone: contact.phone })
-                .select('id')
-                .single();
+                .select('id').single();
               if (custErr) throw custErr;
               customerId = newCust.id;
             }
-
             const { data: booking, error: bookErr } = await sb.from('bookings')
-              .insert({
-                client_id:   this.businessId,
-                customer_id: customerId,
-                service_id:  service.id,
-                date:        dateISO,
-                time:        timeHHMM,
-                status:      'scheduled',
-              })
-              .select('id')
-              .single();
+              .insert({ client_id: this.businessId, customer_id: customerId,
+                        service_id: service.id, date: dateISO, time: timeHHMM, status: 'scheduled' })
+              .select('id').single();
             if (bookErr) throw bookErr;
-
-            this.state.ref = 'BK-' + booking.id.slice(0, 6).toUpperCase();
+            this.state.bookingId = booking.id;
+            this.state.ref       = 'BK-' + booking.id.slice(0, 6).toUpperCase();
             this.state.step++;
             this._render();
             return;
           }
 
-          // ── Payment path: confirm Stripe card setup ──
+          if (mode === 'upfront') {
+            // Booking already created (pending_payment) during mountStripeElements — confirm payment
+            const { stripe, cardNumber, clientSecret } = this._stripeElements;
+            const { paymentIntent, error: stripeErr } = await stripe.confirmCardPayment(clientSecret, {
+              payment_method: {
+                card:            cardNumber,
+                billing_details: { name: contact.name, email: contact.email },
+              },
+            });
+            if (stripeErr) throw new Error(stripeErr.message);
+            await sb.from('bookings')
+              .update({ status: 'scheduled', payment_method_id: paymentIntent.payment_method })
+              .eq('id', this.state.bookingId);
+            this.state.ref = 'BK-' + this.state.bookingId.slice(0, 6).toUpperCase();
+            destroyStripeSlots(this);
+            this.state.step++;
+            this._render();
+            return;
+          }
+
+          // noshow_only or after — confirm card setup then insert booking
           const { stripe, cardNumber, clientSecret } = this._stripeElements;
           const { setupIntent, error: stripeErr } = await stripe.confirmCardSetup(clientSecret, {
             payment_method: {
@@ -1296,21 +1348,23 @@
               status:            'scheduled',
               payment_method_id: setupIntent.payment_method,
             })
-            .select('id')
-            .single();
+            .select('id').single();
           if (bookErr) throw bookErr;
 
-          this.state.ref = 'BK-' + booking.id.slice(0, 6).toUpperCase();
+          this.state.bookingId = booking.id;
+          this.state.ref       = 'BK-' + booking.id.slice(0, 6).toUpperCase();
           destroyStripeSlots(this);
           this.state.step++;
           this._render();
         } catch (err) {
           const nextBtn2 = this.root.querySelector('#bw-next');
           const errEl2   = this.root.querySelector('#bw-confirm-err');
-          if (nextBtn2) { nextBtn2.disabled = false; nextBtn2.textContent = 'Confirm Booking'; }
+          const mode     = this.state.service?.payment_mode || 'free';
+          const label    = mode === 'upfront' ? 'Pay & Book' : mode === 'free' ? 'Confirm Booking' : 'Save Card & Book';
+          if (nextBtn2) { nextBtn2.disabled = false; nextBtn2.textContent = label; }
           if (errEl2)   { errEl2.textContent = err.message || 'Something went wrong. Please try again.'; errEl2.classList.add('visible'); }
         }
-        return; // do not fall through
+        return;
       }
 
       this.state.step++;
@@ -1318,26 +1372,52 @@
     }
 
     _back() {
-      if (this.state.step === 5 && this._requirePayment) { destroyStripeSlots(this); this._customerId = null; }
+      const mode = this.state.service?.payment_mode || 'free';
+      if (this.state.step === 5 && mode !== 'free') {
+        destroyStripeSlots(this);
+        this._customerId = null;
+        // Cancel the pending_payment booking created for upfront mode
+        if (mode === 'upfront' && this.state.bookingId) {
+          sbReady.then(() => sb.from('bookings').update({ status: 'cancelled' }).eq('id', this.state.bookingId));
+          this.state.bookingId = null;
+        }
+      }
       this.state.step--;
       this._render();
     }
 
     _reset() {
-      this._slots          = null; // clear slot cache (date will change); keep this._services
+      this._slots      = null; // clear slot cache (date will change); keep this._services
       destroyStripeSlots(this);
-      this._customerId     = null;
+      this._customerId = null;
       this.state = {
-        step:     1,
-        service:  null,
-        date:     null,
-        time:     null,
-        contact:  {},
-        ref:      null,
-        calYear:  new Date().getFullYear(),
-        calMonth: new Date().getMonth(),
+        step:      1,
+        service:   null,
+        date:      null,
+        time:      null,
+        contact:   {},
+        ref:       null,
+        bookingId: null,
+        calYear:   new Date().getFullYear(),
+        calMonth:  new Date().getMonth(),
       };
       this._render();
+    }
+
+    async _cancelBooking() {
+      const btn = this.root.querySelector('#bw-cancel-booking');
+      if (!this.state.bookingId) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Cancelled'; }
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.textContent = 'Cancelling\u2026'; }
+      await sbReady;
+      await sb.from('bookings').update({ status: 'cancelled' }).eq('id', this.state.bookingId);
+      const h3 = this.root.querySelector('.bw-confirm h3');
+      const p  = this.root.querySelector('.bw-confirm p');
+      if (h3) h3.textContent = 'Booking cancelled.';
+      if (p)  p.innerHTML    = 'Your booking has been cancelled.';
+      if (btn) btn.textContent = 'Cancelled';
     }
   }
 
