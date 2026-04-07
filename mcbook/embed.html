@@ -233,6 +233,12 @@
     .btn-save:hover { filter: brightness(1.1); }
     .btn-save:disabled { opacity: 0.5; cursor: default; }
     .card-divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+    .page-field { margin-bottom: 14px; }
+    .field-label { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 7px; }
+    .field-hint  { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-3); }
+    .promo-note  { font-size: 0.74rem; color: var(--text-3); line-height: 1.5; }
+    .promo-note a { color: rgba(74,222,128,0.55); text-decoration: none; transition: color var(--ease); }
+    .promo-note a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
 
     /* ── Preview link ── */
     .preview-link {
@@ -273,7 +279,7 @@
     // ── Load client details ───────────────────────────────────────────────────
     const { data: client } = await supabase
       .from('clients')
-      .select('id, business_name, email, booking_page_bio')
+      .select('id, business_name, email, booking_page_bio, booking_page_description, booking_page_location')
       .eq('id', session.user.id)
       .single()
 
@@ -290,9 +296,13 @@
     document.getElementById('booking-page-url').value = bookingPageUrl
     document.getElementById('open-page-btn').href = bookingPageUrl
 
-    // Populate bio
-    const bioEl = document.getElementById('bio-textarea')
-    if (client?.booking_page_bio) bioEl.value = client.booking_page_bio
+    // Populate page fields
+    const bioEl  = document.getElementById('bio-textarea')
+    const descEl = document.getElementById('desc-textarea')
+    const locEl  = document.getElementById('location-input')
+    if (client?.booking_page_bio)         bioEl.value  = client.booking_page_bio
+    if (client?.booking_page_description) descEl.value = client.booking_page_description
+    if (client?.booking_page_location)    locEl.value  = client.booking_page_location
 
     // Copy booking page URL
     document.getElementById('copy-url-btn').addEventListener('click', async () => {
@@ -308,16 +318,18 @@
       setTimeout(() => { btn.innerHTML = '&#128279; Copy link'; btn.classList.remove('copied') }, 2000)
     })
 
-    // Save bio
+    // Save page customisation
     document.getElementById('save-bio-btn').addEventListener('click', async () => {
       const btn = document.getElementById('save-bio-btn')
       btn.disabled = true; btn.textContent = 'Saving…'
-      const { error } = await supabase.from('clients')
-        .update({ booking_page_bio: bioEl.value.trim() || null })
-        .eq('id', session.user.id)
+      const { error } = await supabase.from('clients').update({
+        booking_page_bio:         bioEl.value.trim()  || null,
+        booking_page_description: descEl.value.trim() || null,
+        booking_page_location:    locEl.value.trim()  || null,
+      }).eq('id', session.user.id)
       btn.disabled = false
-      btn.textContent = error ? 'Error' : '✓ Saved'
-      setTimeout(() => { btn.textContent = 'Save' }, 2000)
+      btn.textContent = error ? 'Error saving' : '✓ Saved'
+      setTimeout(() => { btn.textContent = 'Save page' }, 2000)
     })
 
     // ── Build the snippet ─────────────────────────────────────────────────────
@@ -430,12 +442,26 @@
 
           <hr class="card-divider">
 
-          <label style="display:block;font-size:0.7rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">
-            Tagline <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">(optional — shown below your business name)</span>
-          </label>
-          <textarea class="bio-textarea" id="bio-textarea" placeholder="e.g. Brisbane's friendliest barber — walk-ins welcome"></textarea>
-          <div style="margin-top:8px;">
-            <button class="btn-save" id="save-bio-btn">Save</button>
+          <div class="page-field">
+            <label class="field-label">Tagline <span class="field-hint">(shown below your business name)</span></label>
+            <textarea class="bio-textarea" id="bio-textarea" placeholder="e.g. Brisbane's friendliest barber — walk-ins welcome"></textarea>
+          </div>
+
+          <div class="page-field">
+            <label class="field-label">About your business <span class="field-hint">(optional — a short description for visitors)</span></label>
+            <textarea class="bio-textarea" id="desc-textarea" style="min-height:80px;" placeholder="e.g. We've been serving the local community since 2015. Specialising in cuts, colour, and styling for all hair types."></textarea>
+          </div>
+
+          <div class="page-field">
+            <label class="field-label">Location <span class="field-hint">(optional — suburb or full address)</span></label>
+            <input type="text" class="url-input" id="location-input" placeholder="e.g. Fortitude Valley, Brisbane QLD" style="cursor:text;color:var(--text);">
+          </div>
+
+          <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <button class="btn-save" id="save-bio-btn">Save page</button>
+            <div class="promo-note">
+              &#127760; Don't have a full website? <a href="https://matthiasdev.com" target="_blank" rel="noopener">I can build you a professional one</a>
+            </div>
           </div>
 
         </div>
