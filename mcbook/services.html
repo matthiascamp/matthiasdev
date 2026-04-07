@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services — BookEase</title>
+  <style>
+    /* ── Design tokens ── */
+    :root {
+      --navy:       #1e2d40;
+      --navy-mid:   #263447;
+      --navy-light: #2f4160;
+      --blue:       #3b82f6;
+      --blue-dark:  #2563eb;
+      --blue-pale:  #eff6ff;
+      --green:      #10b981;
+      --green-pale: #ecfdf5;
+      --amber:      #f59e0b;
+      --amber-pale: #fffbeb;
+      --red:        #ef4444;
+      --red-pale:   #fef2f2;
+      --gray-50:    #f8fafc;
+      --gray-100:   #f1f5f9;
+      --gray-200:   #e2e8f0;
+      --gray-400:   #94a3b8;
+      --gray-500:   #64748b;
+      --gray-600:   #475569;
+      --white:      #ffffff;
+      --sidebar-w:  240px;
+      --radius:     10px;
+      --shadow:     0 2px 12px rgba(30,45,64,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--gray-100);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
+      background: var(--navy); display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-decoration: none;
+    }
+    .sidebar-logo-icon {
+      width: 34px; height: 34px; background: var(--blue); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+    }
+    .sidebar-logo-text { color: var(--white); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .nav-section-label {
+      padding: 20px 20px 6px; font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.30);
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--white); background: rgba(255,255,255,0.07); }
+    .nav-link.active { color: var(--white); background: rgba(59,130,246,0.20); border-right: 3px solid var(--blue); }
+    .nav-icon { width: 18px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-avatar {
+      width: 32px; height: 32px; background: var(--navy-light); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: var(--white); flex-shrink: 0;
+    }
+    .sidebar-user-name { font-size: 0.83rem; font-weight: 600; color: var(--white); }
+    .sidebar-user-role { font-size: 0.73rem; color: rgba(255,255,255,0.40); }
+
+    /* ── Main layout ── */
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      height: 64px; background: var(--white); border-bottom: 1px solid var(--gray-200);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1.05rem; font-weight: 700; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-date { font-size: 0.82rem; color: var(--gray-400); }
+    .content { flex: 1; padding: 28px; }
+
+    /* ── Page-specific ── */
+
+    /* Add service button */
+    .btn-primary {
+      padding: 9px 18px;
+      background: var(--blue); color: var(--white);
+      border: none; border-radius: var(--radius);
+      font-size: 0.86rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; white-space: nowrap; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--blue-dark); }
+
+    /* Services list */
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Service card */
+    .service-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .service-card-main {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 22px;
+    }
+
+    /* Colour dot */
+    .service-dot {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .dot-blue   { background: var(--blue-pale); }
+    .dot-green  { background: var(--green-pale); }
+    .dot-amber  { background: var(--amber-pale); }
+    .dot-purple { background: #f5f3ff; }
+
+    .service-info { min-width: 0; }
+    .service-name {
+      font-size: 0.975rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .service-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .service-tag {
+      font-size: 0.74rem;
+      font-weight: 500;
+      padding: 2px 9px;
+      border-radius: 20px;
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+    .service-tag.price { background: var(--green-pale); color: var(--green); font-weight: 700; }
+    .service-tag.nosho { background: var(--red-pale);   color: var(--red); }
+
+    /* Actions area */
+    .service-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .service-active-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--gray-500);
+    }
+    /* Reuse toggle styles from availability page */
+    .toggle {
+      position: relative; width: 38px; height: 22px; flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: var(--gray-200); border-radius: 20px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle input:checked + .toggle-track { background: var(--blue); }
+    .toggle-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: var(--white); border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.20);
+    }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+    .service-edit-btns { display: flex; gap: 6px; }
+    .btn-edit {
+      padding: 5px 12px;
+      background: transparent; border: 1.5px solid var(--gray-200);
+      color: var(--gray-600); border-radius: 6px;
+      font-size: 0.75rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-edit:hover { background: var(--gray-100); border-color: var(--gray-300); }
+    .btn-delete {
+      padding: 5px 12px;
+      background: transparent; border: 1.5px solid transparent;
+      color: var(--gray-400); border-radius: 6px;
+      font-size: 0.75rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-delete:hover { color: var(--red); border-color: var(--red); background: var(--red-pale); }
+
+    /* ── Add new service form (at bottom) ── */
+    .add-service-panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-top: 24px;
+    }
+    .add-service-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .add-service-header-title { font-size: 0.9rem; font-weight: 700; }
+    .add-service-body { padding: 22px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .field label {
+      display: block;
+      font-size: 0.76rem; font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.88rem; font-family: inherit;
+      color: var(--navy); background: var(--white);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+    .field input::placeholder, .field textarea::placeholder { color: var(--gray-400); }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 4px;
+    }
+    .btn-cancel {
+      padding: 9px 18px;
+      background: transparent; border: 1.5px solid var(--gray-200);
+      color: var(--gray-600); border-radius: var(--radius);
+      font-size: 0.86rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: var(--gray-100); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .form-grid   { grid-template-columns: 1fr; }
+      .form-grid-3 { grid-template-columns: 1fr 1fr; }
+      .service-card-main { grid-template-columns: auto 1fr; }
+      .service-actions { display: none; }
+    }
+    @media (max-width: 480px) {
+      .content { padding: 16px; }
+      .form-grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="sidebar-logo-icon">&#128197;</div>
+      <span class="sidebar-logo-text">BookEase</span>
+    </a>
+    <span class="nav-section-label">Main</span>
+    <a href="dashboard.html" class="nav-link"><span class="nav-icon">&#9707;</span> Dashboard</a>
+    <a href="bookings.html"  class="nav-link"><span class="nav-icon">&#128203;</span> Bookings</a>
+    <a href="customers.html" class="nav-link"><span class="nav-icon">&#128100;</span> Customers</a>
+    <span class="nav-section-label">Setup</span>
+    <a href="services.html"     class="nav-link active"><span class="nav-icon">&#10024;</span> Services</a>
+    <a href="availability.html" class="nav-link"><span class="nav-icon">&#128197;</span> Availability</a>
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link"><span class="nav-icon">&#9881;</span> Settings</a>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">JS</div>
+        <div>
+          <div class="sidebar-user-name">Jane's Studio</div>
+          <div class="sidebar-user-role">Business Owner</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Services</span>
+      <div class="topbar-right">
+        <span class="topbar-date">Monday, 7 April 2025</span>
+        <button class="btn-primary">+ Add New Service</button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- Services list -->
+      <div class="services-list">
+
+        <!-- Service: Haircut -->
+        <div class="service-card">
+          <div class="service-card-main">
+            <div class="service-dot dot-blue">&#9986;</div>
+            <div class="service-info">
+              <div class="service-name">Haircut</div>
+              <div class="service-tags">
+                <span class="service-tag">30 minutes</span>
+                <span class="service-tag price">$35</span>
+                <span class="service-tag nosho">No-show: $17.50</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <div class="service-active-toggle">
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-thumb"></span>
+                </label>
+                Active
+              </div>
+              <div class="service-edit-btns">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-delete">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service: Color Treatment -->
+        <div class="service-card">
+          <div class="service-card-main">
+            <div class="service-dot dot-purple">&#127775;</div>
+            <div class="service-info">
+              <div class="service-name">Color Treatment</div>
+              <div class="service-tags">
+                <span class="service-tag">2 hours</span>
+                <span class="service-tag price">$120</span>
+                <span class="service-tag nosho">No-show: $60</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <div class="service-active-toggle">
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-thumb"></span>
+                </label>
+                Active
+              </div>
+              <div class="service-edit-btns">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-delete">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service: Beard Trim -->
+        <div class="service-card">
+          <div class="service-card-main">
+            <div class="service-dot dot-amber">&#128248;</div>
+            <div class="service-info">
+              <div class="service-name">Beard Trim</div>
+              <div class="service-tags">
+                <span class="service-tag">20 minutes</span>
+                <span class="service-tag price">$25</span>
+                <span class="service-tag nosho">No-show: $15</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <div class="service-active-toggle">
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-thumb"></span>
+                </label>
+                Active
+              </div>
+              <div class="service-edit-btns">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-delete">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service: Full Styling (inactive) -->
+        <div class="service-card">
+          <div class="service-card-main">
+            <div class="service-dot dot-green">&#10024;</div>
+            <div class="service-info">
+              <div class="service-name">Full Styling</div>
+              <div class="service-tags">
+                <span class="service-tag">1 hour</span>
+                <span class="service-tag price">$80</span>
+                <span class="service-tag nosho">No-show: $40</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <div class="service-active-toggle">
+                <label class="toggle">
+                  <input type="checkbox">
+                  <span class="toggle-track"></span>
+                  <span class="toggle-thumb"></span>
+                </label>
+                Inactive
+              </div>
+              <div class="service-edit-btns">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-delete">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /services-list -->
+
+      <!-- ── Add new service form ── -->
+      <div class="add-service-panel">
+        <div class="add-service-header">
+          <span style="font-size:1.1rem;">&#43;</span>
+          <span class="add-service-header-title">Add New Service</span>
+        </div>
+        <div class="add-service-body">
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Service Name</label>
+              <input type="text" placeholder="e.g. Deep Conditioning">
+            </div>
+            <div class="field">
+              <label>Description (optional)</label>
+              <input type="text" placeholder="Short description shown to customers">
+            </div>
+          </div>
+
+          <div class="form-grid form-grid-3">
+            <div class="field">
+              <label>Duration</label>
+              <select>
+                <option>15 min</option>
+                <option>20 min</option>
+                <option selected>30 min</option>
+                <option>45 min</option>
+                <option>1 hour</option>
+                <option>1.5 hours</option>
+                <option>2 hours</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Price ($)</label>
+              <input type="number" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="field">
+              <label>No-show Fee ($)</label>
+              <input type="number" placeholder="0.00" min="0" step="0.01">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-primary">Save Service</button>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+</body>
+</html>

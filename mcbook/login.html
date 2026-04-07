@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — McBook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design tokens ── */
+    :root {
+      --bg:          #0a0a0f;
+      --surface:     #111118;
+      --border:      #1e1e2e;
+      --accent:      #4ade80;
+      --accent-dim:  rgba(74,222,128,0.75);
+      --accent-bg:   rgba(74,222,128,0.07);
+      --accent-glow: 0 0 12px rgba(74,222,128,0.15);
+      --text:        #ffffff;
+      --text-2:      #8b8b9e;
+      --danger:      #ef4444;
+      --radius-sm:   8px;
+      --radius:      12px;
+      --ease:        0.2s ease;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Scrollbar ── */
+    * { scrollbar-width: thin; scrollbar-color: var(--border) var(--bg); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(74,222,128,0.35); }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── Login card ── */
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+    }
+
+    /* ── Card header ── */
+    .login-header {
+      padding: 28px 32px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .login-logo-icon {
+      width: 34px; height: 34px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .login-logo-text {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+
+    /* ── Card body ── */
+    .login-body { padding: 28px 32px; }
+
+    .login-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .login-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-2);
+      margin-bottom: 26px;
+    }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color var(--ease), box-shadow var(--ease);
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: var(--accent-glow);
+    }
+    .field input::placeholder { color: var(--text-2); opacity: 0.6; }
+
+    /* ── Forgot password row ── */
+    .forgot-row {
+      display: flex;
+      justify-content: flex-end;
+      margin: -6px 0 22px;
+    }
+    .forgot-row a {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color var(--ease);
+    }
+    .forgot-row a:hover { color: var(--accent); }
+
+    /* ── Submit button ── */
+    .btn-login {
+      width: 100%;
+      padding: 11px;
+      background: var(--accent);
+      color: #0a0a0f;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: filter var(--ease), box-shadow var(--ease);
+    }
+    .btn-login:hover {
+      filter: brightness(1.08);
+      box-shadow: var(--accent-glow);
+    }
+
+    /* ── Footer ── */
+    .login-footer {
+      padding: 16px 32px 22px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.76rem;
+      color: var(--text-2);
+    }
+    .login-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .login-footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .login-body, .login-header, .login-footer { padding-left: 22px; padding-right: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+
+    <!-- Branding -->
+    <div class="login-header">
+      <div class="login-logo-icon">&#128197;</div>
+      <span class="login-logo-text">McBook</span>
+    </div>
+
+    <!-- Form -->
+    <div class="login-body">
+      <h1 class="login-title">Welcome back</h1>
+      <p class="login-subtitle">Sign in to your dashboard</p>
+
+      <form action="dashboard.html" method="get">
+
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email"
+            placeholder="you@yourbusiness.com" autocomplete="email">
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+            placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <div class="forgot-row">
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-login">Sign In</button>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      Need help? <a href="#">Contact support</a>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget Demo — McBook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Demo host page — dark theme to showcase McBook dark widget palette ── */
+    :root {
+      --bg:      #0a0a0f;
+      --surface: #111118;
+      --border:  #1e1e2e;
+      --accent:  #4ade80;
+      --text:    #ffffff;
+      --sub:     #8b8b9e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    /* Scrollbar */
+    * { scrollbar-width: thin; scrollbar-color: var(--border) var(--bg); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(74,222,128,0.35); }
+
+    /* Header */
+    header {
+      max-width: 680px;
+      margin: 0 auto 52px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    header p {
+      color: var(--sub);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      max-width: 460px;
+    }
+
+    /* A demo "host" button so the widget can detect the accent colour */
+    .demo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--sub);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Main content */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sub);
+      margin-bottom: 16px;
+    }
+    .intro {
+      margin-bottom: 32px;
+    }
+    .intro p {
+      color: var(--sub);
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+    .intro strong { color: var(--text); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-eyebrow">McBook Widget Demo</div>
+    <h1>Luxe Hair Studio</h1>
+    <p>Premium hair services in the heart of the city.
+       Book online in under a minute.</p>
+    <button class="demo-btn">&#10024; View Services</button>
+  </header>
+
+  <main>
+    <div class="intro">
+      <p class="section-label">Book an appointment</p>
+      <p>
+        Select a service, choose a time that works for you, and we'll take care of the rest.
+        A <strong>no-show fee</strong> of up to 50% applies — see your confirmation for details.
+      </p>
+    </div>
+
+    <!--
+      McBook widget embed.
+      On a dark host page (like this one) the widget automatically adopts
+      the full McBook dark palette. On a light page it switches to sage-green
+      light mode. No configuration needed.
+    -->
+    <script src="widget.js" data-business-id="123"></script>
+
+  </main>
+
+</body>
+</html>

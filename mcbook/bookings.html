@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookings — BookEase</title>
+  <style>
+    /* ── Design tokens ── */
+    :root {
+      --navy:       #1e2d40;
+      --navy-mid:   #263447;
+      --navy-light: #2f4160;
+      --blue:       #3b82f6;
+      --blue-dark:  #2563eb;
+      --blue-pale:  #eff6ff;
+      --green:      #10b981;
+      --green-pale: #ecfdf5;
+      --amber:      #f59e0b;
+      --amber-pale: #fffbeb;
+      --red:        #ef4444;
+      --red-pale:   #fef2f2;
+      --gray-50:    #f8fafc;
+      --gray-100:   #f1f5f9;
+      --gray-200:   #e2e8f0;
+      --gray-400:   #94a3b8;
+      --gray-500:   #64748b;
+      --gray-600:   #475569;
+      --white:      #ffffff;
+      --sidebar-w:  240px;
+      --radius:     10px;
+      --shadow:     0 2px 12px rgba(30,45,64,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--gray-100);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar (identical across all pages) ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--navy);
+      display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-decoration: none;
+    }
+    .sidebar-logo-icon {
+      width: 34px; height: 34px;
+      background: var(--blue); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .sidebar-logo-text { color: var(--white); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .nav-section-label {
+      padding: 20px 20px 6px;
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.30);
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--white); background: rgba(255,255,255,0.07); }
+    .nav-link.active { color: var(--white); background: rgba(59,130,246,0.20); border-right: 3px solid var(--blue); }
+    .nav-icon { width: 18px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-user { display: flex; align-items: center; gap: 10px; }
+    .sidebar-avatar {
+      width: 32px; height: 32px; background: var(--navy-light); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: var(--white); flex-shrink: 0;
+    }
+    .sidebar-user-name { font-size: 0.83rem; font-weight: 600; color: var(--white); }
+    .sidebar-user-role { font-size: 0.73rem; color: rgba(255,255,255,0.40); }
+
+    /* ── Main layout ── */
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      height: 64px; background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1.05rem; font-weight: 700; }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .topbar-date { font-size: 0.82rem; color: var(--gray-400); }
+    .content { flex: 1; padding: 28px; }
+
+    /* ── Page-specific ── */
+
+    /* Filters bar */
+    .filters-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-input {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+      padding: 9px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-size: 0.86rem;
+      font-family: inherit;
+      color: var(--navy);
+      background: var(--white);
+      outline: none;
+    }
+    .filter-input:focus { border-color: var(--blue); }
+    .filter-select {
+      padding: 9px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-size: 0.86rem;
+      font-family: inherit;
+      color: var(--navy);
+      background: var(--white);
+      outline: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      padding: 9px 18px;
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.86rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--blue-dark); }
+
+    /* Table card */
+    .table-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .table-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .table-card-title { font-size: 0.88rem; font-weight: 700; }
+    .table-count { font-size: 0.8rem; color: var(--gray-400); }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th {
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-500);
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      white-space: nowrap;
+    }
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--gray-100);
+      transition: background 0.12s;
+    }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--gray-50); }
+    .data-table tbody td {
+      padding: 13px 16px;
+      font-size: 0.86rem;
+      vertical-align: middle;
+    }
+
+    /* Customer cell */
+    .customer-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cust-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--gray-600);
+      flex-shrink: 0;
+    }
+    .cust-name { font-weight: 600; }
+    .cust-email { font-size: 0.75rem; color: var(--gray-400); margin-top: 1px; }
+
+    /* Status pills */
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .status-pill.scheduled { background: var(--blue-pale);  color: var(--blue); }
+    .status-pill.completed { background: var(--green-pale); color: var(--green); }
+    .status-pill.noshow    { background: var(--red-pale);   color: var(--red); }
+
+    /* Row action buttons */
+    .row-actions { display: flex; gap: 6px; }
+    .btn-noshow {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-noshow:hover { background: var(--red); color: var(--white); }
+    .btn-noshow:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: var(--gray-300);
+      color: var(--gray-300);
+    }
+    .btn-view {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1.5px solid var(--gray-200);
+      color: var(--gray-600);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-view:hover { background: var(--gray-100); border-color: var(--gray-300); }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-top: 1px solid var(--gray-100);
+      font-size: 0.82rem;
+      color: var(--gray-400);
+    }
+    .page-btns { display: flex; gap: 4px; }
+    .page-btn {
+      width: 32px; height: 32px;
+      border: 1.5px solid var(--gray-200);
+      background: var(--white);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .page-btn:hover { background: var(--gray-100); }
+    .page-btn.current { background: var(--navy); color: var(--white); border-color: var(--navy); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .data-table thead th:nth-child(3),
+      .data-table tbody td:nth-child(3) { display: none; }
+    }
+    @media (max-width: 480px) {
+      .content { padding: 16px; }
+      .data-table thead th:nth-child(4),
+      .data-table tbody td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="sidebar-logo-icon">&#128197;</div>
+      <span class="sidebar-logo-text">BookEase</span>
+    </a>
+    <span class="nav-section-label">Main</span>
+    <a href="dashboard.html" class="nav-link"><span class="nav-icon">&#9707;</span> Dashboard</a>
+    <a href="bookings.html"  class="nav-link active"><span class="nav-icon">&#128203;</span> Bookings</a>
+    <a href="customers.html" class="nav-link"><span class="nav-icon">&#128100;</span> Customers</a>
+    <span class="nav-section-label">Setup</span>
+    <a href="services.html"     class="nav-link"><span class="nav-icon">&#10024;</span> Services</a>
+    <a href="availability.html" class="nav-link"><span class="nav-icon">&#128197;</span> Availability</a>
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link"><span class="nav-icon">&#9881;</span> Settings</a>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">JS</div>
+        <div>
+          <div class="sidebar-user-name">Jane's Studio</div>
+          <div class="sidebar-user-role">Business Owner</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Bookings</span>
+      <div class="topbar-actions">
+        <span class="topbar-date">Monday, 7 April 2025</span>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <input type="search" class="filter-input" placeholder="&#128269; Search customer or service…">
+        <select class="filter-select">
+          <option>All Statuses</option>
+          <option>Scheduled</option>
+          <option>Completed</option>
+          <option>No-show</option>
+        </select>
+        <select class="filter-select">
+          <option>All Time</option>
+          <option>Today</option>
+          <option>This Week</option>
+          <option>This Month</option>
+        </select>
+        <button class="btn-primary">+ New Booking</button>
+      </div>
+
+      <!-- Bookings table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <span class="table-card-title">All Bookings</span>
+          <span class="table-count">Showing 1–10 of 48 results</span>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Service</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">SL</div>
+                  <div>
+                    <div class="cust-name">Sarah Lewis</div>
+                    <div class="cust-email">sarah@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Haircut</td>
+              <td>Apr 7, 2025</td>
+              <td>9:00 AM</td>
+              <td><span class="status-pill completed">Completed</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow" disabled>Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">MK</div>
+                  <div>
+                    <div class="cust-name">Mike Kowalski</div>
+                    <div class="cust-email">mike.k@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Beard Trim</td>
+              <td>Apr 7, 2025</td>
+              <td>10:00 AM</td>
+              <td><span class="status-pill completed">Completed</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow" disabled>Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">AP</div>
+                  <div>
+                    <div class="cust-name">Aisha Patel</div>
+                    <div class="cust-email">aisha.p@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Color Treatment</td>
+              <td>Apr 7, 2025</td>
+              <td>11:30 AM</td>
+              <td><span class="status-pill scheduled">Scheduled</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow">Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">TN</div>
+                  <div>
+                    <div class="cust-name">Tom Nguyen</div>
+                    <div class="cust-email">tom.ng@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Full Styling</td>
+              <td>Apr 7, 2025</td>
+              <td>2:00 PM</td>
+              <td><span class="status-pill scheduled">Scheduled</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow">Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">CW</div>
+                  <div>
+                    <div class="cust-name">Claire Watson</div>
+                    <div class="cust-email">claire.w@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Haircut</td>
+              <td>Apr 7, 2025</td>
+              <td>4:00 PM</td>
+              <td><span class="status-pill scheduled">Scheduled</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow">Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">ER</div>
+                  <div>
+                    <div class="cust-name">Emma Robinson</div>
+                    <div class="cust-email">emma.r@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Color Treatment</td>
+              <td>Apr 8, 2025</td>
+              <td>10:00 AM</td>
+              <td><span class="status-pill scheduled">Scheduled</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow">Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">JO</div>
+                  <div>
+                    <div class="cust-name">James O'Brien</div>
+                    <div class="cust-email">james.ob@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Beard Trim</td>
+              <td>Apr 9, 2025</td>
+              <td>3:30 PM</td>
+              <td><span class="status-pill scheduled">Scheduled</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow">Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">DM</div>
+                  <div>
+                    <div class="cust-name">Diana Mills</div>
+                    <div class="cust-email">d.mills@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Full Styling</td>
+              <td>Apr 3, 2025</td>
+              <td>1:00 PM</td>
+              <td><span class="status-pill noshow">No-show</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow" disabled>Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">RH</div>
+                  <div>
+                    <div class="cust-name">Ryan Holt</div>
+                    <div class="cust-email">r.holt@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Haircut</td>
+              <td>Apr 2, 2025</td>
+              <td>11:00 AM</td>
+              <td><span class="status-pill completed">Completed</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow" disabled>Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="cust-avatar">PS</div>
+                  <div>
+                    <div class="cust-name">Priya Sharma</div>
+                    <div class="cust-email">p.sharma@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td>Full Styling</td>
+              <td>Apr 10, 2025</td>
+              <td>1:00 PM</td>
+              <td><span class="status-pill scheduled">Scheduled</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-noshow">Mark No-show</button>
+                  <button class="btn-view">View</button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <span>Showing 1–10 of 48 bookings</span>
+          <div class="page-btns">
+            <button class="page-btn">&#8249;</button>
+            <button class="page-btn current">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">5</button>
+            <button class="page-btn">&#8250;</button>
+          </div>
+        </div>
+
+      </div>
+      <!-- /table-card -->
+
+    </main>
+  </div>
+
+</body>
+</html>
