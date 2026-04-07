@@ -123,16 +123,16 @@ Deno.serve(async (req: Request) => {
       })
       .eq('id', user.id)
 
-    // ── Generate an Express dashboard login link ──────────────────────────────
-    // This lets the seller manage their payouts directly inside Stripe's UI.
+    // ── Generate dashboard link ───────────────────────────────────────────────
+    // Express accounts get a single-use login link via the API.
+    // Standard accounts manage their own Stripe dashboard — just link to stripe.com.
     let dashboardUrl: string | null = null
-    if (account.charges_enabled) {
-      try {
-        const loginLink = await stripe.accounts.createLoginLink(accountId)
-        dashboardUrl = loginLink.url
-      } catch {
-        // Not fatal — some accounts aren't eligible yet
-      }
+    try {
+      const loginLink = await stripe.accounts.createLoginLink(accountId)
+      dashboardUrl = loginLink.url  // Express: direct login link
+    } catch {
+      // Standard accounts don't support createLoginLink — fall back to stripe.com
+      dashboardUrl = 'https://dashboard.stripe.com'
     }
 
     return new Response(
