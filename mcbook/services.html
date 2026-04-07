@@ -219,6 +219,7 @@
       border-color: var(--accent); box-shadow: var(--accent-glow);
     }
     .field input::placeholder, .field textarea::placeholder { color: var(--text-2); opacity: 0.6; }
+    .field.field-locked { opacity: 0.35; pointer-events: none; user-select: none; }
     .field textarea { resize: vertical; min-height: 80px; }
     .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
     .btn-cancel {
@@ -346,13 +347,13 @@
                 <option>2 hours</option>
               </select>
             </div>
-            <div class="field">
+            <div class="field" id="field-price">
               <label>Price ($)</label>
-              <input type="number" placeholder="0.00" min="0" step="0.01">
+              <input type="number" id="svc-price" placeholder="0.00" min="0" step="0.01">
             </div>
-            <div class="field">
+            <div class="field" id="field-noshow">
               <label>No-show Fee ($)</label>
-              <input type="number" placeholder="0.00" min="0" step="0.01">
+              <input type="number" id="svc-noshow" placeholder="0.00" min="0" step="0.01">
             </div>
             <div class="field">
               <label>Payment Mode</label>

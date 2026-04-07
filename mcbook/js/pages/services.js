@@ -96,14 +96,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const descInput  = textInputs[1]
   const durSelect   = panel.querySelector('select')
   const pmodeSelect = panel.querySelector('#svc-pmode')
+  const priceInput  = panel.querySelector('#svc-price')
+  const noshowInput = panel.querySelector('#svc-noshow')
   const saveBtn     = panel.querySelector('.btn-primary')
   const cancelBtn   = panel.querySelector('.btn-cancel')
 
   function getNumInputs() { return panel.querySelectorAll('input[type="number"]') }
+
+  function syncPriceFields() {
+    const locked = pmodeSelect.value === 'free'
+    document.getElementById('field-price').classList.toggle('field-locked', locked)
+    document.getElementById('field-noshow').classList.toggle('field-locked', locked)
+    if (locked) { priceInput.value = ''; noshowInput.value = '' }
+  }
+
+  pmodeSelect.addEventListener('change', syncPriceFields)
+  syncPriceFields()
+
   function clearForm() {
     nameInput.value = ''; descInput.value = ''
-    const nums = getNumInputs(); nums[0].value = ''; nums[1].value = ''
+    priceInput.value = ''; noshowInput.value = ''
     durSelect.value = '30 min'; pmodeSelect.value = 'after'; editId = null
+    syncPriceFields()
   }
 
   // Delegate: toggle active
@@ -136,25 +150,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       nameInput.value = data.name
       descInput.value = data.description ?? ''
       durSelect.value   = durationSelectValue(data.duration_mins)
-      pmodeSelect.value = data.payment_mode ?? 'noshow_only'
-      const nums = getNumInputs()
-      nums[0].value = data.price
-      nums[1].value = data.noshow_fee
+      pmodeSelect.value = data.payment_mode ?? 'after'
+      priceInput.value  = data.price
+      noshowInput.value = data.noshow_fee
       editId = id
+      syncPriceFields()
       panel.scrollIntoView({ behavior: 'smooth' })
     }
   })
 
   // Save service (insert or update)
   saveBtn.addEventListener('click', async () => {
-    const nums = getNumInputs()
     const payload = {
       name: nameInput.value.trim(),
       description: descInput.value.trim() || null,
       duration_mins: durationToMins(durSelect.value),
-      price: parseFloat(nums[0].value) || 0,
-      noshow_fee: parseFloat(nums[1].value) || 0,
-      payment_mode: pmodeSelect.value || 'noshow_only',
+      price: parseFloat(priceInput.value) || 0,
+      noshow_fee: parseFloat(noshowInput.value) || 0,
+      payment_mode: pmodeSelect.value || 'after',
     }
     if (!payload.name) return
 
