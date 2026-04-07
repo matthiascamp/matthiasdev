@@ -104,11 +104,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     .order('time', { ascending: true })
 
   const schedPanel = findPanel("Today's Schedule")
-  if (schedPanel && todayBookings) {
-    schedPanel.querySelectorAll('.booking-list-item').forEach(el => el.remove())
+  if (schedPanel) {
+    schedPanel.querySelectorAll('.booking-list-item, .panel-empty').forEach(el => el.remove())
     const badge = schedPanel.querySelector('.panel-badge')
-    if (badge) badge.textContent = `${todayBookings.length} bookings`
-    for (const b of todayBookings) {
+    if (badge) badge.textContent = todayBookings?.length ? `${todayBookings.length} bookings` : ''
+    if (!todayBookings || todayBookings.length === 0) {
+      const empty = document.createElement('div')
+      empty.className = 'panel-empty'
+      empty.textContent = 'No bookings today'
+      schedPanel.appendChild(empty)
+    }
+    for (const b of (todayBookings ?? [])) {
       const name = b.customers?.name ?? ''
       const el = document.createElement('div')
       el.className = 'booking-list-item'
@@ -127,31 +133,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── Upcoming ──────────────────────────────────────────────────────────────
-  const { data: upcoming } = await supabase.from('bookings')
+  const { data: upcoming, error: upErr } = await supabase.from('bookings')
     .select('id, date, time, status, customers(name), services(name)')
-    .eq('client_id', uid).gt('date', today)
+    .eq('client_id', uid).gt('date', today).neq('status', 'cancelled')
     .order('date', { ascending: true }).order('time', { ascending: true })
     .limit(5)
 
+  if (upErr) console.error('[MCBook] upcoming bookings query failed:', upErr.message)
+
   const upPanel = findPanel('Upcoming')
-  if (upPanel && upcoming) {
-    upPanel.querySelectorAll('.upcoming-item').forEach(el => el.remove())
-    for (const b of upcoming) {
-      const d = new Date(b.date + 'T00:00:00')
-      const el = document.createElement('div')
-      el.className = 'upcoming-item'
-      el.innerHTML = `
-        <div class="upcoming-date-box">
-          <span class="day">${d.getDate()}</span>
-          <span class="mon">${MONTHS[d.getMonth()]}</span>
-        </div>
-        <div class="upcoming-info">
-          <div class="upcoming-name">${b.customers?.name ?? ''}</div>
-          <div class="upcoming-meta">${b.services?.name ?? ''} · ${fmtTime(b.time)}</div>
-        </div>
-        <span class="status-pill ${b.status}">${b.status}</span>
-      `
-      upPanel.appendChild(el)
+  if (upPanel) {
+    upPanel.querySelectorAll('.upcoming-item, .panel-empty').forEach(el => el.remove())
+
+    if (!upcoming || upcoming.length === 0) {
+      const empty = document.createElement('div')
+      empty.className = 'panel-empty'
+      empty.textContent = 'No upcoming bookings'
+      upPanel.appendChild(empty)
+    } else {
+      for (const b of upcoming) {
+        const d = new Date(b.date + 'T00:00:00')
+        const el = document.createElement('div')
+        el.className = 'upcoming-item'
+        el.innerHTML = `
+          <div class="upcoming-date-box">
+            <span class="day">${d.getDate()}</span>
+            <span class="mon">${MONTHS[d.getMonth()]}</span>
+          </div>
+          <div class="upcoming-info">
+            <div class="upcoming-name">${b.customers?.name ?? ''}</div>
+            <div class="upcoming-meta">${b.services?.name ?? ''} · ${fmtTime(b.time)}</div>
+          </div>
+          <span class="status-pill ${b.status}">${capitalize(b.status)}</span>
+        `
+        upPanel.appendChild(el)
+      }
     }
   }
 

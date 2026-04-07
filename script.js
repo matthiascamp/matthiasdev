@@ -197,21 +197,36 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 const form     = document.getElementById('contactForm');
 const formNote = document.getElementById('formNote');
 
-form.addEventListener('submit', e => {
+form.addEventListener('submit', async e => {
   e.preventDefault();
   const btn = form.querySelector('button[type="submit"]');
-  btn.disabled   = true;
+  btn.disabled = true;
   btn.querySelector('span').textContent = 'Sending…';
 
-  // Simulate submission (replace with real API call / Formspree / EmailJS etc.)
-  setTimeout(() => {
-    btn.disabled   = false;
-    btn.querySelector('span').textContent = 'Send message';
-    formNote.className = 'form-note';
-    formNote.textContent = '✓ Message sent! I\'ll reply within 24 hours.';
-    form.reset();
-    setTimeout(() => { formNote.textContent = ''; }, 6000);
-  }, 1400);
+  try {
+    const data = new FormData(form);
+    const response = await fetch('https://formspree.io/f/mdapbdbp', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (response.ok) {
+      formNote.className = 'form-note form-note--success';
+      formNote.textContent = '✓ Message sent! I\'ll reply within 24 hours.';
+      form.reset();
+    } else {
+      formNote.className = 'form-note form-note--error';
+      formNote.textContent = 'Something went wrong. Please try again or email me directly.';
+    }
+  } catch {
+    formNote.className = 'form-note form-note--error';
+    formNote.textContent = 'Something went wrong. Please try again or email me directly.';
+  }
+
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Send message';
+  setTimeout(() => { formNote.textContent = ''; formNote.className = 'form-note'; }, 6000);
 });
 
 /* ── Active nav link highlight on scroll ── */

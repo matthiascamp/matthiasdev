@@ -1200,7 +1200,33 @@ canvas#particles {
   color: #4ade80;
   transition: opacity 0.3s;
 }
-.form-note.error { color: #f87171; }
+.form-note.error,
+.form-note.form-note--error { color: #f87171; }
+.form-note.form-note--success { color: #4ade80; }
+
+/* Beta stamp */
+.beta-stamp {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 4px;
+  padding: 2px 7px;
+  vertical-align: middle;
+  margin-left: 8px;
+  position: relative;
+  top: -2px;
+}
+
+/* Footer email */
+.footer-email {
+  color: var(--text-faint);
+  transition: color 0.25s;
+}
+.footer-email:hover { color: var(--accent); }
 
 /* ─────────────────────────
    FOOTER

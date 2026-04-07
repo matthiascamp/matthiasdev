@@ -225,6 +225,18 @@
     .slot-row:last-child { border-bottom: none; }
     .slot-label { font-weight: 500; color: var(--text); }
     .slot-sub   { font-size: 0.76rem; color: var(--text-2); margin-top: 2px; }
+    .stripe-lock-note {
+      font-size: 0.72rem;
+      color: var(--text-2);
+      white-space: nowrap;
+    }
+    .stripe-lock-note a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .stripe-lock-note a:hover { text-decoration: underline; }
+    .toggle input:disabled + .toggle-track { opacity: 0.35; cursor: not-allowed; }
+    .toggle input:disabled ~ .toggle-thumb { opacity: 0.35; cursor: not-allowed; }
 
     /* Responsive */
     @media (max-width: 960px) { .page-grid { grid-template-columns: 1fr; } }
@@ -476,6 +488,17 @@
                   <option>24 hours</option>
                   <option>48 hours</option>
                 </select>
+              </div>
+              <div class="slot-row">
+                <div>
+                  <div class="slot-label">Require payment at booking</div>
+                  <div class="slot-sub">Collect card details when customers book. Disable to accept bookings without payment.</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="toggle-require-payment">
+                  <span class="toggle-track"></span>
+                  <span class="toggle-thumb"></span>
+                </label>
               </div>
             </div>
           </div>

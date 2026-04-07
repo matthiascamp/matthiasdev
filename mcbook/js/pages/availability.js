@@ -119,11 +119,36 @@ async function loadBookingSettings() {
   const slotSel    = slotRows[0]?.querySelector('select')
   const advanceSel = slotRows[1]?.querySelector('select')
   const noticeSel  = slotRows[2]?.querySelector('select')
+  const payToggle  = document.getElementById('toggle-require-payment')
 
   if (slotSel)    slotSel.value    = `${data.slot_duration_mins} minutes`
   if (advanceSel) advanceSel.value = `${data.advance_window_weeks} weeks`
   if (noticeSel)  noticeSel.value  = data.min_notice_hours === 1
     ? '1 hour' : `${data.min_notice_hours} hours`
+  if (payToggle)
+    payToggle.checked = data.require_payment === true
+}
+
+// ── Stripe connection check ───────────────────────────────────────────────────
+async function applyStripeGate() {
+  const { data } = await supabase.from('clients')
+    .select('stripe_account_id').eq('id', uid).maybeSingle()
+  const connected = !!data?.stripe_account_id
+  const toggle    = document.getElementById('toggle-require-payment')
+  const row       = toggle?.closest('.slot-row')
+  if (!toggle || !row) return
+
+  if (!connected) {
+    toggle.disabled = true
+    toggle.checked  = false
+    // Add a lock note if not already there
+    if (!row.querySelector('.stripe-lock-note')) {
+      const note = document.createElement('span')
+      note.className = 'stripe-lock-note'
+      note.innerHTML = '&#128274; <a href="stripe-onboarding.html">Connect Stripe</a> to enable'
+      row.appendChild(note)
+    }
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -135,6 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadSidebarUser(uid)
 
   await Promise.all([loadWeeklySchedule(), loadBlockedDates(), loadBookingSettings()])
+  await applyStripeGate()
 
   const saveBtns = document.querySelectorAll('.btn-save')
 
@@ -164,11 +190,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const slotSel    = slotRows[0]?.querySelector('select')
     const advanceSel = slotRows[1]?.querySelector('select')
     const noticeSel  = slotRows[2]?.querySelector('select')
+    const payToggle  = document.getElementById('toggle-require-payment')
     const { error } = await supabase.from('booking_settings').upsert({
       client_id:            uid,
       slot_duration_mins:   parseInt(slotSel?.value   || '30'),
       advance_window_weeks: parseInt(advanceSel?.value || '4'),
-      min_notice_hours:     parseInt(noticeSel?.value  || '2')
+      min_notice_hours:     parseInt(noticeSel?.value  || '2'),
+      require_payment:      payToggle ? (payToggle.checked && !payToggle.disabled) : false,
     }, { onConflict: 'client_id' })
     if (!error) alert('Settings saved.')
     else console.error(error)

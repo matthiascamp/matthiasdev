@@ -28,8 +28,6 @@
   </div>
 
   <script type="module">
-    import { requireAuth } from './js/auth.js'
-
     const SUPABASE_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co'
     const card = document.getElementById('card')
 
@@ -56,9 +54,20 @@
       throw new Error('No OAuth code in URL')
     }
 
-    // ── Auth ──────────────────────────────────────────────────────────────────
-    const session = await requireAuth()
-    if (!session) throw new Error('No session')
+    // ── Auth — refresh session first to ensure token is fresh ─────────────────
+    import { supabase } from './js/supabase.js'
+    const { data: { session: freshSession } } = await supabase.auth.getSession()
+    if (!freshSession) {
+      // No session at all — redirect to login, then come back
+      window.location.href = 'login.html'
+      throw new Error('No session')
+    }
+    // Proactively refresh if token is close to expiry (within 60s)
+    const expiresAt  = freshSession.expires_at ?? 0
+    const nowSeconds = Math.floor(Date.now() / 1000)
+    const session    = (expiresAt - nowSeconds < 60)
+      ? (await supabase.auth.refreshSession()).data.session ?? freshSession
+      : freshSession
 
     // ── Exchange code for connected account ───────────────────────────────────
     try {
@@ -78,11 +87,16 @@
       window.location.href = 'stripe-return.html'
 
     } catch (err) {
+      const isAuth = err.message === 'Unauthorized'
       card.innerHTML = `
         <span class="icon">&#10060;</span>
         <h1>Connection failed</h1>
-        <p>${err.message}</p>
-        <a href="stripe-onboarding.html" class="btn btn-secondary">&#8592; Try again</a>`
+        <p>${isAuth
+          ? 'Your session expired during the Stripe redirect. Please sign in again and retry.'
+          : err.message}</p>
+        <a href="${isAuth ? 'login.html' : 'stripe-onboarding.html'}" class="btn btn-secondary">
+          &#8592; ${isAuth ? 'Sign in again' : 'Try again'}
+        </a>`
     }
   </script>
 </body>

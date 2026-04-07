@@ -722,6 +722,11 @@
         calMonth: new Date().getMonth(),
       };
 
+      // Off by default — only enabled once Stripe is connected and toggled on
+      this._requirePayment  = false;
+      // Availability unknown until loaded
+      this._hasAvailability = false;
+
       this._mount(scriptEl);
     }
 
@@ -756,7 +761,7 @@
     }
 
     _headerHTML() {
-      const labels = ['Service','Date','Time','Contact','Payment','Done'];
+      const labels = ['Service','Date','Time','Contact', this._requirePayment ? 'Payment' : 'Confirm','Done'];
       const bars   = labels.map((_, i) => {
         const n = i + 1;
         let cls = '';
@@ -765,11 +770,12 @@
         return `<div class="bw-progress-step ${cls}"></div>`;
       }).join('');
 
+      const stepNames = ['Select a Service','Choose a Date','Choose a Time',
+        'Your Details', this._requirePayment ? 'Payment' : 'Review & Confirm','Confirmation'];
       return `
         <div class="bw-header">
           <h2>Book an Appointment</h2>
-          <p>Step ${this.state.step} of 6 — ${['Select a Service','Choose a Date','Choose a Time',
-            'Your Details','Payment','Confirmation'][this.state.step - 1]}</p>
+          <p>Step ${this.state.step} of 6 — ${stepNames[this.state.step - 1]}</p>
         </div>
         <div class="bw-progress">${bars}</div>
       `;
@@ -793,19 +799,44 @@
       if (!this._services) {
         (async () => {
           await sbReady;
-          const { data } = await sb.from('services')
-            .select('id, name, duration_mins, price, noshow_fee')
-            .eq('client_id', this.businessId)
-            .eq('active', true)
-            .order('created_at', { ascending: true });
+          const [{ data }, { data: settings }, { data: rules }] = await Promise.all([
+            sb.from('services')
+              .select('id, name, duration_mins, price, noshow_fee')
+              .eq('client_id', this.businessId)
+              .eq('active', true)
+              .order('created_at', { ascending: true }),
+            sb.from('booking_settings')
+              .select('require_payment')
+              .eq('client_id', this.businessId)
+              .limit(1)
+              .maybeSingle(),
+            sb.from('availability_rules')
+              .select('id')
+              .eq('client_id', this.businessId)
+              .eq('enabled', true)
+              .limit(1)
+              .maybeSingle(),
+          ]);
           this._services = data || [];
+          this._requirePayment = settings ? (settings.require_payment === true) : false;
+          this._hasAvailability = !!rules;
           if (this.state.step === 1) this._render();
         })();
         return `
           <div class="bw-step-title">What service do you need?</div>
-          <div class="bw-services" style="padding:16px 0;color:inherit;opacity:0.55;font-size:0.84rem;">Loading services\u2026</div>
+          <div class="bw-services" style="padding:16px 0;color:inherit;opacity:0.55;font-size:0.84rem;">Loading\u2026</div>
           <div class="bw-btn-row">
             <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+          </div>`;
+      }
+
+      // No services or no availability set up — show a polite unavailable state
+      if (this._services.length === 0 || !this._hasAvailability) {
+        return `
+          <div class="bw-confirm" style="padding:24px 0 8px;">
+            <div class="bw-confirm-icon" style="font-size:1.4rem;">&#128197;</div>
+            <h3>No availability yet</h3>
+            <p>Online bookings aren't available right now.<br>Please get in touch directly to arrange an appointment.</p>
           </div>`;
       }
 
@@ -817,7 +848,7 @@
               <div class="bw-service-name">${s.name}</div>
               <div class="bw-service-meta">${fmtDuration(s.duration_mins)}</div>
             </div>
-            <div class="bw-service-price">$${s.price}</div>
+            ${this._requirePayment ? `<div class="bw-service-price">$${s.price}</div>` : ''}
           </div>`;
       }).join('');
 
@@ -958,16 +989,14 @@
         </div>`;
     }
 
-    // Step 5 — Payment (Stripe Elements placeholder)
+    // Step 5 — Payment (Stripe) or simple confirm if payment disabled
     _step5() {
       const { service, date, time } = this.state;
       const dateStr = date
         ? date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})
         : '';
 
-      return `
-        <div class="bw-step-title">Review &amp; Payment</div>
-        <!-- Booking summary -->
+      const summaryRows = `
         <div class="bw-summary">
           <div class="bw-summary-row">
             <span class="bw-summary-label">Service</span>
@@ -981,6 +1010,25 @@
             <span class="bw-summary-label">Duration</span>
             <span class="bw-summary-val">${service ? fmtDuration(service.duration_mins) : ''}</span>
           </div>
+        </div>`;
+
+      if (!this._requirePayment) {
+        // No payment required — just show summary and confirm button
+        return `
+          <div class="bw-step-title">Review &amp; Confirm</div>
+          ${summaryRows}
+          <div class="bw-error" id="bw-confirm-err"></div>
+          <div class="bw-btn-row">
+            <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+            <button class="bw-btn bw-btn-primary" id="bw-next">Confirm Booking</button>
+          </div>`;
+      }
+
+      // Payment required — show Stripe card fields
+      return `
+        <div class="bw-step-title">Review &amp; Payment</div>
+        ${summaryRows}
+        <div class="bw-summary" style="margin-top:-8px;">
           <div class="bw-summary-row">
             <span class="bw-summary-label">Total</span>
             <span class="bw-summary-val">${service ? '$' + service.price : ''}</span>
@@ -990,7 +1038,6 @@
             <span class="bw-summary-val">${service ? '$' + service.noshow_fee : ''}</span>
           </div>
         </div>
-        <!-- Card details — Stripe Elements will mount here -->
         <div class="bw-form">
           <div class="bw-field">
             <label>Card Number</label>
@@ -1072,7 +1119,7 @@
         case 2: this._bindStep2(); break;
         case 3: this._bindStep3(); break;
         case 5:
-          if (!this._stripeElements) {
+          if (this._requirePayment && !this._stripeElements) {
             mountStripeElements(this).catch(err => {
               const errEl = this.root.querySelector('#bw-confirm-err');
               if (errEl) { errEl.textContent = err.message; errEl.classList.add('visible'); }
@@ -1165,17 +1212,58 @@
           const dateISO  = date.toISOString().slice(0, 10);
           const timeHHMM = timeToHHMM(this.state.time);
 
-          // b. Confirm card setup with Stripe
+          await sbReady;
+
+          if (!this._requirePayment) {
+            // ── No payment path: upsert customer then insert booking directly ──
+            let customerId;
+            const { data: existing } = await sb.from('customers')
+              .select('id')
+              .eq('client_id', this.businessId)
+              .eq('email', contact.email)
+              .limit(1)
+              .maybeSingle();
+            if (existing) {
+              customerId = existing.id;
+            } else {
+              const { data: newCust, error: custErr } = await sb.from('customers')
+                .insert({ client_id: this.businessId, name: contact.name,
+                          email: contact.email, phone: contact.phone })
+                .select('id')
+                .single();
+              if (custErr) throw custErr;
+              customerId = newCust.id;
+            }
+
+            const { data: booking, error: bookErr } = await sb.from('bookings')
+              .insert({
+                client_id:   this.businessId,
+                customer_id: customerId,
+                service_id:  service.id,
+                date:        dateISO,
+                time:        timeHHMM,
+                status:      'scheduled',
+              })
+              .select('id')
+              .single();
+            if (bookErr) throw bookErr;
+
+            this.state.ref = 'BK-' + booking.id.slice(0, 6).toUpperCase();
+            this.state.step++;
+            this._render();
+            return;
+          }
+
+          // ── Payment path: confirm Stripe card setup ──
           const { stripe, cardNumber, clientSecret } = this._stripeElements;
           const { setupIntent, error: stripeErr } = await stripe.confirmCardSetup(clientSecret, {
             payment_method: {
-              card:             cardNumber,
-              billing_details:  { name: contact.name, email: contact.email },
+              card:            cardNumber,
+              billing_details: { name: contact.name, email: contact.email },
             },
           });
           if (stripeErr) throw new Error(stripeErr.message);
 
-          // d. & e. Insert booking with saved payment method ID
           const { data: booking, error: bookErr } = await sb.from('bookings')
             .insert({
               client_id:         this.businessId,
@@ -1190,7 +1278,6 @@
             .single();
           if (bookErr) throw bookErr;
 
-          // f. Advance to confirmation
           this.state.ref = 'BK-' + booking.id.slice(0, 6).toUpperCase();
           this._stripeElements = null;
           this.state.step++;
@@ -1209,7 +1296,7 @@
     }
 
     _back() {
-      if (this.state.step === 5) { this._stripeElements = null; this._customerId = null; }
+      if (this.state.step === 5 && this._requirePayment) { this._stripeElements = null; this._customerId = null; }
       this.state.step--;
       this._render();
     }
