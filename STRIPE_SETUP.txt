@@ -212,20 +212,72 @@ GOING LIVE (when ready)
 6. Update widget.js publishable key (pk_test_ → pk_live_) if hardcoded
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CURRENT OUTSTANDING ISSUE (7 Apr 2026)
+SWITCHED TO STANDARD CONNECT (7 Apr 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The Payouts page is showing "Verification in progress" for a restricted test
-account instead of the "Verification incomplete" banner with resume button.
+WHY WE SWITCHED:
+  Express Connect required a custom form (name, DOB, address, BSB) plus a
+  mandatory redirect to Stripe's hosted KYC page. The seller experience was
+  complex and the status detection was unreliable due to Stripe's controller
+  API behaving differently from standard Express accounts.
 
-Suspected cause: controller-based accounts may return requirements in a
-different structure than standard Express accounts, causing the status
-detection to fall through to 'pending'.
+  Standard Connect is simpler for everyone:
+  - Seller just clicks "Connect with Stripe" — one button, no form
+  - Seller logs into their existing Stripe account OR creates one on Stripe.com
+  - Stripe handles all KYC, bank account setup, and identity verification
+  - McBook just receives the connected account ID (stripe_user_id) via OAuth
+  - Payment routing is identical — 3% fee still deducted automatically
 
-Debug added: verify-connect-account now logs the full Stripe account
-requirements object to Supabase Edge Function logs. The frontend also
-logs the API response to the browser console (DevTools → Console).
+HOW STANDARD CONNECT OAUTH WORKS:
+  1. Seller clicks "Connect with Stripe" on stripe-onboarding.html
+  2. Redirected to: https://connect.stripe.com/oauth/authorize?...
+     (with client_id, scope=read_write, redirect_uri)
+  3. Seller logs in or creates a Stripe account, approves the connection
+  4. Stripe redirects back to stripe-oauth-callback.html?code=ac_...
+  5. stripe-oauth-callback.html calls create-connect-account Edge Function
+  6. Edge Function exchanges the code for stripe_user_id via Stripe OAuth API
+  7. stripe_user_id saved to clients.stripe_account_id in Supabase
+  8. Seller redirected to stripe-return.html showing their account status
 
-Next step: reload the Payouts page, open DevTools Console, and copy the
-[McBook] verify-connect-account response line to diagnose the exact
-Stripe fields being returned.
+WHAT CHANGED IN CODE:
+  - create-connect-account Edge Function: completely rewritten — no longer
+    creates accounts via API. Now just exchanges OAuth code for account ID.
+  - stripe-onboarding.html: entire form removed, replaced with a single
+    "Connect with Stripe" button and 3-step explanation
+  - stripe-oauth-callback.html: NEW page — handles Stripe's OAuth redirect,
+    calls Edge Function with the code, redirects to stripe-return.html
+  - stripe-refresh.html: simplified — just redirects to stripe-onboarding.html
+    (account links don't exist for Standard Connect)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACTION REQUIRED TO ACTIVATE STANDARD CONNECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two things needed from the Stripe Dashboard before the Connect button works:
+
+STEP A — Get your Client ID
+  Stripe Dashboard → Connect → Settings → OAuth settings → Client ID
+  Looks like: ca_XXXXXXXXXXXXXXXXXXXXXXXXXX
+  This is NOT a secret — safe to put in frontend HTML.
+
+STEP B — Register the redirect URI
+  On the same OAuth settings page, add this to "Redirects":
+    https://matthiasdev.com/mcbook/stripe-oauth-callback.html
+  Stripe will reject the OAuth flow if this URI isn't registered.
+
+STEP C — Paste the Client ID into the code
+  Open: mcbook/stripe-onboarding.html
+  Find line:  const STRIPE_CLIENT_ID = 'YOUR_STRIPE_CLIENT_ID'
+  Replace with your actual ca_... value, then push to GitHub.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST CONNECTED ACCOUNT (created during Express testing — can ignore)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An "Any Any" test account was created during Express Connect testing. It is
+restricted due to incomplete onboarding and can be deleted from:
+  Stripe Dashboard → Connect → Accounts → find "Any Any" → Delete
+
+This account's stripe_account_id may still be saved in the Supabase clients
+table for the test user. Once Standard Connect is set up, connecting via OAuth
+will overwrite it with the new Standard account ID.
