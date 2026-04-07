@@ -5,8 +5,8 @@ import { setTopbarDate, loadSidebarUser } from '../ui.js'
 const DOTS = ['dot-blue', 'dot-purple', 'dot-amber', 'dot-green']
 
 const PMODE_LABELS = {
-  free:        'Free',
-  noshow_only: 'No-show protection',
+  free:        'Pay in person',
+  noshow_only: 'Pay in person',  // legacy — treat same as free
   after:       'Charge after',
   upfront:     'Charge upfront',
 }
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function clearForm() {
     nameInput.value = ''; descInput.value = ''
     const nums = getNumInputs(); nums[0].value = ''; nums[1].value = ''
-    durSelect.value = '30 min'; pmodeSelect.value = 'noshow_only'; editId = null
+    durSelect.value = '30 min'; pmodeSelect.value = 'after'; editId = null
   }
 
   // Delegate: toggle active

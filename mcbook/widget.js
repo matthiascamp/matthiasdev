@@ -1073,6 +1073,7 @@
         return `
           <div class="bw-step-title">Review &amp; Confirm</div>
           ${summaryRows}
+          <div style="font-size:0.77rem;opacity:0.65;margin-bottom:4px;">Payment is not collected online — please arrange payment directly with the business.</div>
           <div class="bw-error" id="bw-confirm-err"></div>
           <div class="bw-btn-row">
             <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
@@ -1083,16 +1084,11 @@
       // Card-required modes (noshow_only, after, upfront)
       const chargeRow = mode === 'upfront'
         ? `<div class="bw-summary-row"><span class="bw-summary-label">Charge today</span><span class="bw-summary-val">$${service.price}</span></div>`
-        : mode === 'after'
-        ? `<div class="bw-summary-row"><span class="bw-summary-label">Due after appointment</span><span class="bw-summary-val">$${service.price}</span></div>
-           <div class="bw-summary-row"><span class="bw-summary-label">No-show fee</span><span class="bw-summary-val">$${service.noshow_fee}</span></div>`
-        : `<div class="bw-summary-row"><span class="bw-summary-label">No-show fee (if applicable)</span><span class="bw-summary-val">$${service.noshow_fee}</span></div>`;
+        : `<div class="bw-summary-row"><span class="bw-summary-label">Due after appointment</span><span class="bw-summary-val">$${service.price}</span></div>`;
 
       const modeNote = mode === 'upfront'
         ? 'Pay now to secure your booking.'
-        : mode === 'after'
-        ? 'Card saved — you will be charged after your appointment.'
-        : 'Card saved for no-show protection only. No charge today.';
+        : 'Your card will be saved and charged after your appointment.';
 
       const confirmLabel = mode === 'upfront' ? 'Pay &amp; Book' : 'Save Card &amp; Book';
 
