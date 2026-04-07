@@ -76,17 +76,19 @@ Deno.serve(async (req: Request) => {
     // ── Fetch live account data from Stripe ───────────────────────────────────
     const account = await stripe.accounts.retrieve(accountId)
 
-    // Collect outstanding requirements (errors + currently_due)
+    // Collect outstanding requirements
     const reqs: string[] = [
-      ...(account.requirements?.currently_due ?? []),
+      ...(account.requirements?.currently_due  ?? []),
+      ...(account.requirements?.past_due       ?? []),
       ...(account.requirements?.errors?.map((e) => e.requirement) ?? []),
     ]
 
-    // Determine status
+    // Determine status — check past_due and disabled_reason, not just disabled_reason
+    const hasPastDue = (account.requirements?.past_due?.length ?? 0) > 0
     let status: 'pending' | 'restricted' | 'enabled' = 'pending'
     if (account.charges_enabled && account.payouts_enabled) {
       status = 'enabled'
-    } else if (account.requirements?.disabled_reason) {
+    } else if (account.requirements?.disabled_reason || hasPastDue) {
       status = 'restricted'
     }
 

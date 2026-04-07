@@ -121,15 +121,15 @@
         </div>`
 
     } else if (data.status === 'restricted') {
-      // Stripe blocked the account — something's wrong
+      // Stripe needs more info — let them resume the hosted onboarding
       card.className = 'card status-restricted'
       card.innerHTML = `
         <span class="icon">&#9888;&#65039;</span>
-        <h1>Action required</h1>
-        <p>Stripe needs additional information before your account can be approved.
-           Please return to the setup page and re-submit, or contact Stripe support.</p>
+        <h1>A few more details needed</h1>
+        <p>Stripe still needs to verify some information before payouts can be enabled.
+           Click below to pick up where you left off — it only takes a minute.</p>
         <div class="btn-row">
-          <a href="stripe-onboarding.html" class="btn btn-primary">Back to Setup</a>
+          <a href="stripe-onboarding.html" class="btn btn-primary">Complete verification</a>
         </div>`
 
     } else {

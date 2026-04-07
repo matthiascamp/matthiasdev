@@ -312,16 +312,21 @@
               <div class="status-sub">Your bank account is verified. Funds are paid out automatically each day.</div>
             </div>
             ${data.dashboardUrl ? `<a href="${data.dashboardUrl}" target="_blank" class="btn-stripe-dashboard">&#128200; Stripe Dashboard</a>` : ''}`
-          formCard.style.display = 'none'   // hide form once enabled
+          formCard.style.display = 'none'
+
         } else if (data.status === 'restricted') {
+          // Account exists but has overdue/incomplete requirements — show resume button
           banner.className = 'status-banner restricted'
           banner.innerHTML = `
             <span class="status-icon">&#9888;&#65039;</span>
             <div class="status-text">
-              <div class="status-title">Action required</div>
-              <div class="status-sub">Stripe needs more information before payouts can be enabled.</div>
+              <div class="status-title">Verification incomplete</div>
+              <div class="status-sub">Stripe needs a few more details before payouts can be enabled. Click below to pick up where you left off — it only takes a minute.</div>
             </div>`
-          formCard.style.display = 'block'
+          formCard.style.display = 'none'
+          // Show resume button instead of the full form
+          document.getElementById('resume-card').style.display = 'block'
+
         } else {
           banner.className = 'status-banner pending'
           banner.innerHTML = `
@@ -340,6 +345,36 @@
     }
 
     await renderStatus()
+
+    // ── Resume onboarding (for restricted accounts) ───────────────────────────
+    window.resumeOnboarding = async function() {
+      const btn     = document.getElementById('resume-btn')
+      const spinner = document.getElementById('resume-spinner')
+      const errBox  = document.getElementById('resume-error')
+      btn.disabled = true
+      spinner.style.display = 'block'
+      errBox.style.display  = 'none'
+      try {
+        // Calling with empty body — Edge Function detects existing account and
+        // just returns a fresh Stripe Account Link
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-connect-account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({}),
+        })
+        const data = await res.json()
+        if (!res.ok || !data.url) throw new Error(data.error ?? 'Could not generate link.')
+        window.location.href = data.url
+      } catch (err) {
+        errBox.textContent = err.message
+        errBox.style.display = 'block'
+        btn.disabled = false
+        spinner.style.display = 'none'
+      }
+    }
 
     // ── Handle sign-out ───────────────────────────────────────────────────────
     document.addEventListener('click', (e) => {
@@ -465,6 +500,28 @@
       <div id="status-banner" class="status-banner none">
         <span class="status-icon">&#9203;</span>
         <div class="status-text"><div class="status-title">Loading…</div></div>
+      </div>
+
+      <!-- Resume card — shown when account exists but verification is incomplete -->
+      <div class="card" id="resume-card" style="display:none">
+        <div class="card-header">
+          <div class="card-header-icon">&#9654;&#65038;</div>
+          <div>
+            <div class="card-title">Complete Your Verification</div>
+            <div class="card-sub">Stripe is waiting on a few details — resume where you left off.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="font-size:0.83rem;color:var(--text-2);line-height:1.6;margin-bottom:18px;">
+            Your account was created but Stripe still needs to verify your identity and bank details
+            before payouts can be enabled. This is a one-time process that takes about 2 minutes.
+          </p>
+          <div id="resume-error" class="form-error"></div>
+          <button class="btn-submit" id="resume-btn" onclick="resumeOnboarding()">
+            <span id="resume-spinner" class="btn-spinner"></span>
+            Continue verification on Stripe &#8594;
+          </button>
+        </div>
       </div>
 
       <!-- Onboarding form -->
