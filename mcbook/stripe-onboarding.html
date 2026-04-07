@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payouts Setup — McBook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design tokens (match all McBook pages) ── */
+    :root {
+      --bg:          #0a0a0f;
+      --surface:     #111118;
+      --surface-2:   #14141d;
+      --border:      #1e1e2e;
+      --accent:      #4ade80;
+      --accent-dim:  rgba(74,222,128,0.75);
+      --accent-bg:   rgba(74,222,128,0.07);
+      --accent-glow: 0 0 12px rgba(74,222,128,0.15);
+      --text:        #ffffff;
+      --text-2:      #8b8b9e;
+      --warning:     #f59e0b;
+      --danger:      #ef4444;
+      --radius-sm:   8px;
+      --radius:      12px;
+      --sidebar-w:   228px;
+      --topbar-h:    60px;
+      --ease:        0.2s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { scrollbar-width: thin; scrollbar-color: var(--border) var(--bg); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 9px;
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .sidebar-logo-icon {
+      width: 30px; height: 30px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0;
+    }
+    .sidebar-logo-text { font-size: 1rem; font-weight: 800; letter-spacing: -0.03em; color: var(--accent); }
+    .nav-section-label {
+      padding: 18px 18px 5px;
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.2);
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 18px;
+      color: var(--text-2); text-decoration: none;
+      font-size: 0.835rem; font-weight: 500; letter-spacing: -0.01em;
+      border-right: 2px solid transparent;
+      transition: color var(--ease), background var(--ease), border-color var(--ease);
+    }
+    .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .nav-link.active { color: var(--accent); background: var(--accent-bg); border-right-color: var(--accent); }
+    .nav-icon { width: 16px; text-align: center; font-size: 0.9rem; flex-shrink: 0; opacity: 0.75; }
+    .nav-link.active .nav-icon { opacity: 1; }
+    .sidebar-footer { margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--border); }
+    .sidebar-user { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+    .sidebar-avatar {
+      width: 30px; height: 30px; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; color: var(--text-2); flex-shrink: 0;
+    }
+    .sidebar-user-name { font-size: 0.8rem; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+    .sidebar-user-role { font-size: 0.7rem; color: var(--text-2); margin-top: 1px; }
+
+    /* ── Main layout ── */
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.02em; }
+    .topbar-date { font-size: 0.78rem; color: var(--text-2); }
+    .content { flex: 1; padding: 24px; max-width: 780px; }
+
+    /* ── Status banner ── */
+    .status-banner {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      font-size: 0.83rem;
+    }
+    .status-banner.enabled  { background: var(--accent-bg);           border-color: rgba(74,222,128,0.25);  color: var(--accent); }
+    .status-banner.pending  { background: rgba(245,158,11,0.06);      border-color: rgba(245,158,11,0.2);   color: var(--warning); }
+    .status-banner.restricted{ background: rgba(239,68,68,0.06);      border-color: rgba(239,68,68,0.2);    color: var(--danger); }
+    .status-banner.none     { background: var(--surface);             border-color: var(--border);          color: var(--text-2); }
+    .status-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .status-text { flex: 1; }
+    .status-title { font-weight: 700; }
+    .status-sub   { font-size: 0.76rem; margin-top: 2px; opacity: 0.8; }
+
+    /* ── Stripe dashboard button ── */
+    .btn-stripe-dashboard {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      color: var(--text); font-size: 0.78rem; font-weight: 600;
+      text-decoration: none; transition: background var(--ease), border-color var(--ease);
+      white-space: nowrap;
+    }
+    .btn-stripe-dashboard:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
+
+    /* ── Card / panel ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-header-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent-bg); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; flex-shrink: 0;
+    }
+    .card-title { font-size: 0.88rem; font-weight: 700; letter-spacing: -0.01em; }
+    .card-sub   { font-size: 0.73rem; color: var(--text-2); margin-top: 2px; }
+    .card-body  { padding: 20px; }
+
+    /* ── Form elements ── */
+    .form-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-row-3  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-group  { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); letter-spacing: 0.01em; }
+    label .required { color: var(--danger); margin-left: 2px; }
+
+    input, select {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 12px;
+      color: var(--text); font-family: inherit; font-size: 0.85rem;
+      outline: none; transition: border-color var(--ease), box-shadow var(--ease);
+      width: 100%;
+    }
+    input::placeholder { color: var(--text-2); }
+    input:focus, select:focus {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 0 3px rgba(74,222,128,0.08);
+    }
+    select option { background: var(--surface-2); }
+
+    /* ── Form helper text ── */
+    .form-hint { font-size: 0.71rem; color: var(--text-2); margin-top: 3px; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* ── Security note ── */
+    .security-note {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px;
+      font-size: 0.76rem; color: var(--text-2); margin-bottom: 20px;
+    }
+    .security-note-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 13px 20px;
+      background: var(--accent); border: none; border-radius: var(--radius-sm);
+      color: #0a0a0f; font-family: inherit; font-size: 0.9rem; font-weight: 700;
+      letter-spacing: -0.01em; cursor: pointer;
+      transition: opacity var(--ease), box-shadow var(--ease);
+    }
+    .btn-submit:hover:not(:disabled) { opacity: 0.9; box-shadow: var(--accent-glow); }
+    .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #0a0a0f; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error message ── */
+    .form-error {
+      display: none; background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm);
+      padding: 10px 14px; color: var(--danger); font-size: 0.8rem;
+      margin-bottom: 14px;
+    }
+
+    /* ── Action required notice (non-error, just needs a step) ── */
+    .action-notice {
+      display: none;
+      background: rgba(245,158,11,0.06);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .action-notice-title {
+      font-size: 0.82rem; font-weight: 700;
+      color: var(--warning); margin-bottom: 6px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .action-notice-body {
+      font-size: 0.78rem; color: var(--text-2); line-height: 1.55;
+    }
+    .action-notice-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 10px; padding: 7px 12px;
+      background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+      border-radius: var(--radius-sm); color: var(--warning);
+      font-size: 0.78rem; font-weight: 600; text-decoration: none;
+      transition: background var(--ease);
+    }
+    .action-notice-link:hover { background: rgba(245,158,11,0.18); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) { .content { padding: 16px; } }
+  </style>
+</head>
+<body>
+
+  <script type="module">
+    import { requireAuth, signOut } from './js/auth.js'
+    import { supabase } from './js/supabase.js'
+
+    const SUPABASE_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co'
+
+    // ── Auth guard ────────────────────────────────────────────────────────────
+    const session = await requireAuth()
+    if (!session) throw new Error('No session')
+
+    // ── Populate sidebar user ─────────────────────────────────────────────────
+    const { data: client } = await supabase
+      .from('clients')
+      .select('business_name, email, stripe_account_id, stripe_account_status, stripe_charges_enabled, stripe_payouts_enabled')
+      .eq('id', session.user.id)
+      .single()
+
+    if (client) {
+      const initials = (client.business_name ?? 'MB').slice(0, 2).toUpperCase()
+      document.getElementById('sidebar-avatar').textContent = initials
+      document.getElementById('sidebar-name').textContent   = client.business_name ?? client.email
+    }
+
+    // ── Show current payout status ────────────────────────────────────────────
+    async function renderStatus() {
+      const banner = document.getElementById('status-banner')
+      const formCard = document.getElementById('form-card')
+
+      if (!client?.stripe_account_id) {
+        // No account yet — show the form
+        banner.className = 'status-banner none'
+        banner.innerHTML = `
+          <span class="status-icon">&#128274;</span>
+          <div class="status-text">
+            <div class="status-title">Payouts not set up</div>
+            <div class="status-sub">Complete the form below to enable payouts to your bank account.</div>
+          </div>`
+        formCard.style.display = 'block'
+        return
+      }
+
+      // Account exists — fetch live status from Stripe via Edge Function
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-connect-account`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        })
+        const data = await res.json()
+
+        if (data.status === 'enabled') {
+          banner.className = 'status-banner enabled'
+          banner.innerHTML = `
+            <span class="status-icon">&#9989;</span>
+            <div class="status-text">
+              <div class="status-title">Payouts enabled</div>
+              <div class="status-sub">Your bank account is verified. Funds are paid out automatically each day.</div>
+            </div>
+            ${data.dashboardUrl ? `<a href="${data.dashboardUrl}" target="_blank" class="btn-stripe-dashboard">&#128200; Stripe Dashboard</a>` : ''}`
+          formCard.style.display = 'none'   // hide form once enabled
+        } else if (data.status === 'restricted') {
+          banner.className = 'status-banner restricted'
+          banner.innerHTML = `
+            <span class="status-icon">&#9888;&#65039;</span>
+            <div class="status-text">
+              <div class="status-title">Action required</div>
+              <div class="status-sub">Stripe needs more information before payouts can be enabled.</div>
+            </div>`
+          formCard.style.display = 'block'
+        } else {
+          banner.className = 'status-banner pending'
+          banner.innerHTML = `
+            <span class="status-icon">&#9203;</span>
+            <div class="status-text">
+              <div class="status-title">Verification in progress</div>
+              <div class="status-sub">Stripe is reviewing your details. This usually takes a few minutes.</div>
+            </div>`
+          formCard.style.display = 'none'
+        }
+      } catch {
+        // Fall back gracefully
+        banner.className = 'status-banner pending'
+        banner.innerHTML = `<span class="status-icon">&#9203;</span><div class="status-text"><div class="status-title">Status unavailable</div></div>`
+      }
+    }
+
+    await renderStatus()
+
+    // ── Handle sign-out ───────────────────────────────────────────────────────
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="signout"]')) { e.preventDefault(); signOut() }
+    })
+
+    // ── Form submission ───────────────────────────────────────────────────────
+    document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const btn     = document.getElementById('submit-btn')
+      const spinner = document.getElementById('btn-spinner')
+      const errBox  = document.getElementById('form-error')
+      const form    = e.target
+
+      // Validate BSB (must be 6 digits, ignoring dash)
+      const bsb = form.bsb.value.replace(/\D/g, '')
+      if (bsb.length !== 6) {
+        errBox.textContent = 'BSB must be 6 digits (e.g. 062-000).'
+        errBox.style.display = 'block'
+        return
+      }
+      errBox.style.display = 'none'
+
+      btn.disabled = true
+      spinner.style.display = 'block'
+
+      try {
+        const payload = {
+          firstName:     form.firstName.value.trim(),
+          lastName:      form.lastName.value.trim(),
+          dob: {
+            day:   parseInt(form.dobDay.value),
+            month: parseInt(form.dobMonth.value),
+            year:  parseInt(form.dobYear.value),
+          },
+          address: {
+            line1:    form.addressLine1.value.trim(),
+            city:     form.addressCity.value.trim(),
+            state:    form.addressState.value,
+            postcode: form.addressPostcode.value.trim(),
+          },
+          bsb,
+          accountNumber: form.accountNumber.value.trim(),
+        }
+
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-connect-account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(payload),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) throw new Error(data.error ?? 'Something went wrong.')
+
+        // Redirect to Stripe's hosted onboarding page
+        window.location.href = data.url
+
+      } catch (err) {
+        const notice = document.getElementById('action-notice')
+        notice.style.display = 'none'
+        errBox.textContent = err.message
+        errBox.style.display = 'block'
+        btn.disabled = false
+        spinner.style.display = 'none'
+      }
+    })
+
+    // ── Topbar date ───────────────────────────────────────────────────────────
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-AU', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    })
+  </script>
+
+  <!-- ── SIDEBAR ────────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <div class="sidebar-logo-icon">&#128197;</div>
+      <span class="sidebar-logo-text">McBook</span>
+    </a>
+
+    <span class="nav-section-label">Main</span>
+    <a href="dashboard.html"  class="nav-link"><span class="nav-icon">&#9707;</span> Dashboard</a>
+    <a href="bookings.html"   class="nav-link"><span class="nav-icon">&#128203;</span> Bookings</a>
+    <a href="customers.html"  class="nav-link"><span class="nav-icon">&#128100;</span> Customers</a>
+
+    <span class="nav-section-label">Setup</span>
+    <a href="services.html"         class="nav-link"><span class="nav-icon">&#10024;</span> Services</a>
+    <a href="availability.html"     class="nav-link"><span class="nav-icon">&#128197;</span> Availability</a>
+    <a href="stripe-onboarding.html" class="nav-link active"><span class="nav-icon">&#128176;</span> Payouts</a>
+
+    <span class="nav-section-label">Account</span>
+    <a href="#" class="nav-link"><span class="nav-icon">&#9881;</span> Settings</a>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebar-avatar">MB</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+          <div class="sidebar-user-role">Business Owner</div>
+        </div>
+      </div>
+      <a href="#" class="nav-link" data-action="signout"><span class="nav-icon">&#10148;</span> Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Payouts Setup</span>
+      <div class="topbar-actions">
+        <span class="topbar-date" id="topbar-date"></span>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- Current status -->
+      <div id="status-banner" class="status-banner none">
+        <span class="status-icon">&#9203;</span>
+        <div class="status-text"><div class="status-title">Loading…</div></div>
+      </div>
+
+      <!-- Onboarding form -->
+      <div class="card" id="form-card" style="display:none">
+        <div class="card-header">
+          <div class="card-header-icon">&#128176;</div>
+          <div>
+            <div class="card-title">Bank Account &amp; Identity</div>
+            <div class="card-sub">Enter your details once — Stripe handles everything securely.</div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="security-note">
+            <span class="security-note-icon">&#128274;</span>
+            <span>Your bank details are sent directly to Stripe and are never stored on McBook's servers.
+              Stripe is a PCI-DSS Level 1 certified payment processor.
+            </span>
+          </div>
+
+          <form id="onboarding-form" novalidate>
+
+            <!-- Personal details -->
+            <div class="card-title" style="font-size:0.8rem;margin-bottom:14px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.07em;">Personal Details</div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">First name <span class="required">*</span></label>
+                <input type="text" id="firstName" name="firstName" placeholder="Jane" required>
+              </div>
+              <div class="form-group">
+                <label for="lastName">Last name <span class="required">*</span></label>
+                <input type="text" id="lastName" name="lastName" placeholder="Smith" required>
+              </div>
+            </div>
+
+            <!-- Date of birth -->
+            <div class="form-group">
+              <label>Date of birth <span class="required">*</span></label>
+              <div class="form-row-3" style="margin-bottom:0">
+                <div>
+                  <input type="number" id="dobDay"   name="dobDay"   placeholder="Day"  min="1" max="31"   required>
+                </div>
+                <div>
+                  <input type="number" id="dobMonth" name="dobMonth" placeholder="Month" min="1" max="12" required>
+                </div>
+                <div>
+                  <input type="number" id="dobYear"  name="dobYear"  placeholder="Year"  min="1900" max="2006" required>
+                </div>
+              </div>
+              <span class="form-hint">Day / Month / Year — e.g. 15 / 3 / 1990</span>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Address -->
+            <div class="card-title" style="font-size:0.8rem;margin-bottom:14px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.07em;">Australian Address</div>
+
+            <div class="form-group">
+              <label for="addressLine1">Street address <span class="required">*</span></label>
+              <input type="text" id="addressLine1" name="addressLine1" placeholder="123 Main St" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="addressCity">City / Suburb <span class="required">*</span></label>
+                <input type="text" id="addressCity" name="addressCity" placeholder="Sydney" required>
+              </div>
+              <div class="form-group">
+                <label for="addressPostcode">Postcode <span class="required">*</span></label>
+                <input type="text" id="addressPostcode" name="addressPostcode" placeholder="2000" maxlength="4" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="addressState">State / Territory <span class="required">*</span></label>
+              <select id="addressState" name="addressState" required>
+                <option value="" disabled selected>Select state…</option>
+                <option value="NSW">New South Wales</option>
+                <option value="VIC">Victoria</option>
+                <option value="QLD">Queensland</option>
+                <option value="SA">South Australia</option>
+                <option value="WA">Western Australia</option>
+                <option value="TAS">Tasmania</option>
+                <option value="NT">Northern Territory</option>
+                <option value="ACT">Australian Capital Territory</option>
+              </select>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Bank account -->
+            <div class="card-title" style="font-size:0.8rem;margin-bottom:14px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.07em;">Bank Account (AUD)</div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bsb">BSB <span class="required">*</span></label>
+                <input type="text" id="bsb" name="bsb" placeholder="062-000" maxlength="7"
+                       pattern="\d{3}-?\d{3}" required>
+                <span class="form-hint">6 digits — e.g. 062-000</span>
+              </div>
+              <div class="form-group">
+                <label for="accountNumber">Account number <span class="required">*</span></label>
+                <input type="text" id="accountNumber" name="accountNumber" placeholder="12345678"
+                       inputmode="numeric" maxlength="9" required>
+              </div>
+            </div>
+
+            <!-- Shown when Stripe requires platform profile to be completed first -->
+            <div id="action-notice" class="action-notice">
+              <div class="action-notice-title">&#9888;&#65039; One step needed before continuing</div>
+              <div class="action-notice-body">
+                Stripe requires you to review your platform responsibilities before creating seller accounts.
+                This is a one-time step — it only takes a minute.
+              </div>
+              <a href="https://dashboard.stripe.com/settings/connect/platform-profile"
+                 target="_blank" class="action-notice-link">
+                &#128279; Complete platform profile on Stripe
+              </a>
+              <div class="action-notice-body" style="margin-top:10px">
+                Once done, come back here and click Continue again.
+              </div>
+            </div>
+
+            <div id="form-error" class="form-error"></div>
+
+            <button type="submit" class="btn-submit" id="submit-btn">
+              <span id="btn-spinner" class="btn-spinner"></span>
+              <span id="btn-label">Continue to Stripe verification &#8594;</span>
+            </button>
+
+            <p style="font-size:0.72rem;color:var(--text-2);margin-top:12px;text-align:center;">
+              You will be redirected to Stripe to complete identity verification.
+              Your bank details are pre-filled — Stripe may ask for a photo ID.
+            </p>
+
+          </form>
+        </div>
+      </div><!-- /form-card -->
+
+    </main>
+  </div>
+
+</body>
+</html>
