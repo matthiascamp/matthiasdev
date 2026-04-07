@@ -76,6 +76,19 @@ Deno.serve(async (req: Request) => {
     // ── Fetch live account data from Stripe ───────────────────────────────────
     const account = await stripe.accounts.retrieve(accountId)
 
+    // Debug log so we can inspect the raw Stripe response in Supabase logs
+    console.log('Stripe account:', JSON.stringify({
+      id:               account.id,
+      charges_enabled:  account.charges_enabled,
+      payouts_enabled:  account.payouts_enabled,
+      disabled_reason:  account.requirements?.disabled_reason,
+      currently_due:    account.requirements?.currently_due,
+      past_due:         account.requirements?.past_due,
+      eventually_due:   account.requirements?.eventually_due,
+      fut_currently_due:(account as any).future_requirements?.currently_due,
+      fut_past_due:     (account as any).future_requirements?.past_due,
+    }))
+
     // Collect outstanding requirements
     const reqs: string[] = [
       ...(account.requirements?.currently_due  ?? []),

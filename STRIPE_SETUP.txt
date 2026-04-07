@@ -1,31 +1,11 @@
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                    McBook — Stripe Connect Setup Guide                     ║
-║                         COMPLETED — 7 April 2026                           ║
+║                         Last updated: 7 April 2026                         ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 Project:   McBook (matthiasdev.com)
 Backend:   Supabase (uijudgnqawtvjyjuyuwo.supabase.co)
 Mode:      TEST (swap to live keys when ready to take real payments)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHAT WAS SET UP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✓ Stripe Connect enabled on your platform account (acct_1TIM7l3td247MyPL)
-✓ Two webhooks registered in Stripe (see details below)
-✓ Four Edge Functions deployed to Supabase
-✓ Three new columns added to the database (clients, bookings, payments tables)
-✓ Platform fee set to 3% of every booking payment
-✓ Platform profile acknowledged (Refunds/compliance liability set to Stripe)
-
-CURRENT STATUS (7 Apr 2026):
-  ✓ Platform Connect Agreement confirmed in Stripe Dashboard
-  ✓ Loss liability set to 'application' (McBook responsible for seller chargebacks)
-  ✓ Switched to Stripe controller API (required for Express with platform losses)
-  ✓ Fixed HTTPS redirect URL issue — local LiveServer sends http://, Stripe
-    requires https://. Edge Function now always falls back to https://matthiasdev.com
-    for refresh_url and return_url when origin is not HTTPS.
-  → Testing seller onboarding end-to-end
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 STRIPE ACCOUNT
@@ -36,47 +16,114 @@ Business name:        MC FILE HOSTING sandbox
 Mode:                 TEST
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT WAS COMPLETED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Stripe Connect enabled and platform profile acknowledged in Stripe Dashboard
+✓ Connect Platform Agreement confirmed (Stripe → Connect → Settings)
+✓ Loss liability set to 'application' — McBook is responsible for seller chargebacks
+✓ Two webhooks registered in Stripe via stripe-setup.js script
+✓ Four Edge Functions written and deployed to Supabase
+✓ Three new DB columns added (clients, bookings, payments tables)
+✓ Platform fee set to 3% on all booking payments
+✓ Seller onboarding page built (stripe-onboarding.html)
+✓ Post-onboarding return and link-refresh pages built
+✓ Restricted/incomplete account detection and resume flow built
+✓ Widget embed page built (embed.html) with copy button and install guide
+✓ Widget widened to min(90vw, 680px) — responsive
+✓ Widget preview wired to real business ID via ?id= URL param
+✓ Payouts + Widget nav links added to all dashboard pages
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ISSUES HIT DURING SETUP & HOW THEY WERE FIXED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. "Please review responsibilities of managing losses"
+   Cause:  Stripe platform profile not confirmed before making API calls.
+   Fix:    Confirmed Connect Platform Agreement in Stripe Dashboard → Connect
+           → Settings. Also switched account creation from `type: 'express'`
+           to the `controller` API object to explicitly declare loss liability
+           in the API call itself.
+
+2. "With a dashboard type of express, the Connect application must control losses"
+   Cause:  Initially set `losses: { payments: 'stripe' }` — not allowed for Express.
+   Fix:    Changed to `losses: { payments: 'application' }`. This means McBook
+           is responsible for negative balances on connected accounts.
+
+3. "Livemode requests must always be redirected via HTTPS"
+   Cause:  Local LiveServer runs on http://, so redirect URLs sent to Stripe
+           were http://127.0.0.1:5502/... which Stripe rejects.
+   Fix:    Edge Function now checks if origin is HTTPS. If not, falls back to
+           https://matthiasdev.com for the refresh_url and return_url.
+
+4. Restricted accounts showing as "Verification in progress"
+   Cause:  Status detection only checked `disabled_reason` and `past_due`.
+           Controller-based accounts also use `currently_due` and `eventually_due`.
+   Fix:    Updated verify-connect-account to check all three requirement fields.
+           Also added debug logging to Edge Function and console.log on frontend
+           to surface the raw Stripe API response for easier debugging.
+
+5. Stripe hosted onboarding is required (can't stay fully on McBook site)
+   Cause:  Express Connect always requires Stripe's hosted KYC flow for identity
+           verification, ToS acceptance, and bank account verification. There is
+           no way around this with Express accounts.
+   Note:   McBook pre-fills name, DOB, and address to minimise what the seller
+           sees on Stripe's form. Bank details (BSB + account number) are added
+           to the Stripe account via a separate API call after account creation.
+           If you want fully on-site onboarding, you would need Stripe Connect
+           Custom — which requires building your own KYC flow and carries heavy
+           compliance obligations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 WEBHOOKS (registered in Stripe)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Both webhooks point to the same URL:
+Both webhooks point to:
    https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/stripe-webhook
 
 ── Platform webhook (events on YOUR account) ──────────────────────────────
    ID:      we_1TJTWK3td247MyPL62mXlrWH
-   Secret:  whsec_vIfqDg1erZvaBDJ56S1PQ7xEXoLmM8Uo  → saved as STRIPE_WEBHOOK_SECRET
-   Events:  payment_intent.succeeded
-            payment_intent.payment_failed
-            charge.refunded
-            payout.paid
-            payout.failed
+   Secret:  whsec_vIfqDg1erZvaBDJ56S1PQ7xEXoLmM8Uo  → STRIPE_WEBHOOK_SECRET
+   Events:  payment_intent.succeeded, payment_intent.payment_failed,
+            charge.refunded, payout.paid, payout.failed
 
 ── Connect webhook (events on SELLER accounts) ─────────────────────────────
    ID:      we_1TJTWL3td247MyPLKUGi0eR7
-   Secret:  whsec_8cPo2rH4QSUmdgFVgcVSlpTyWM8LlkCy  → saved as STRIPE_CONNECT_SECRET
-   Events:  account.updated
-            payout.paid
-            payout.failed
+   Secret:  whsec_8cPo2rH4QSUmdgFVgcVSlpTyWM8LlkCy  → STRIPE_CONNECT_SECRET
+   Events:  account.updated, payout.paid, payout.failed
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SUPABASE EDGE FUNCTIONS (deployed)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-create-connect-account    — creates a Stripe Express account for a seller,
-                            pre-fills their bank details (BSB + account number),
-                            returns a Stripe-hosted onboarding URL
+create-connect-account    — creates a Stripe Connect account for a seller using
+                            the controller API (Express-equivalent). Pre-fills
+                            name/DOB/address. Adds bank account (BSB + account
+                            number) as a separate API call after creation.
+                            Returns a Stripe-hosted onboarding URL.
+                            If seller already has an account, just returns a
+                            fresh onboarding link (used by resume flow).
 
-create-payment-intent     — creates a Stripe PaymentIntent for a customer booking,
-                            routes funds to the seller's account minus 3% platform fee
+create-payment-intent     — creates a Stripe PaymentIntent for a customer booking.
+                            Routes funds to seller's connected account via
+                            transfer_data.destination. Deducts 3% platform fee
+                            via application_fee_amount. Saves PaymentIntent ID
+                            to the bookings table.
 
-stripe-webhook            — handles all incoming Stripe events (payments, refunds,
-                            account verification updates, payouts)
+stripe-webhook            — verifies Stripe webhook signatures (tries both
+                            STRIPE_WEBHOOK_SECRET and STRIPE_CONNECT_SECRET).
+                            Handles: payment_intent.succeeded,
+                            payment_intent.payment_failed, charge.refunded,
+                            account.updated, payout.paid, payout.failed.
 
-verify-connect-account    — checks live Stripe status for a seller's account
-                            and syncs it back to Supabase
+verify-connect-account    — fetches live account data from Stripe API.
+                            Checks currently_due, past_due, eventually_due,
+                            and disabled_reason to determine status.
+                            Generates an Express dashboard login link if enabled.
+                            Syncs status back to Supabase clients table.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SUPABASE SECRETS (set in Settings → Edge Functions → Secrets)
+SUPABASE SECRETS (Settings → Edge Functions → Secrets)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 STRIPE_SECRET_KEY        sk_test_51TIM7l... (your Stripe secret key)
@@ -84,76 +131,101 @@ STRIPE_WEBHOOK_SECRET    whsec_vIfqDg1erZvaBDJ56S1PQ7xEXoLmM8Uo
 STRIPE_CONNECT_SECRET    whsec_8cPo2rH4QSUmdgFVgcVSlpTyWM8LlkCy
 PLATFORM_FEE_PERCENT     3
 
+Note: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set automatically by Supabase.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DATABASE CHANGES (run via Supabase SQL Editor)
+DATABASE CHANGES (applied via Supabase SQL Editor)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Added to clients table:
-   stripe_account_id       text         — seller's Stripe Connect account ID (acct_...)
-   stripe_account_status   text         — 'none' | 'pending' | 'restricted' | 'enabled'
-   stripe_charges_enabled  boolean      — whether the seller can accept payments
-   stripe_payouts_enabled  boolean      — whether Stripe can pay out to their bank
+ALTER TABLE clients
+  ADD COLUMN stripe_account_id      text,
+  ADD COLUMN stripe_account_status  text    DEFAULT 'none',
+  ADD COLUMN stripe_charges_enabled boolean DEFAULT false,
+  ADD COLUMN stripe_payouts_enabled boolean DEFAULT false;
 
-Added to bookings table:
-   stripe_payment_intent_id  text       — tracks the Stripe PaymentIntent for each booking
-   payment_status            text       — 'unpaid' | 'paid' | 'failed' | 'refunded'
+ALTER TABLE bookings
+  ADD COLUMN stripe_payment_intent_id text,
+  ADD COLUMN payment_status           text DEFAULT 'unpaid';
 
-Added to payments table:
-   type                    text         — 'booking_payment' | 'noshow_fee' | 'refund' | 'payout'
+ALTER TABLE payments
+  ADD COLUMN type text;
+  -- values: 'booking_payment' | 'noshow_fee' | 'refund' | 'payout'
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HOW IT ALL WORKS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 SELLER ONBOARDING:
-  1. Seller logs into McBook dashboard → clicks "Payouts" in sidebar
-  2. Fills in name, DOB, address, BSB + account number
-  3. McBook calls create-connect-account → Stripe Express account created
-  4. Seller redirected to Stripe-hosted page to verify their identity (photo ID etc.)
-  5. Stripe fires account.updated webhook → McBook updates seller status to 'enabled'
-  6. Seller redirected back to stripe-return.html → sees "Payouts enabled ✓"
-  7. Bank details are NEVER stored in McBook — Stripe holds everything
+  1. Seller logs into McBook → clicks Payouts in sidebar
+  2. If no account: fills in form (name, DOB, address, BSB, account number)
+  3. create-connect-account Edge Function creates Stripe account + bank account
+  4. Seller redirected to Stripe-hosted onboarding (identity verification, ToS)
+     NOTE: This step cannot be skipped with Express accounts — Stripe requires it
+  5. Seller returns to stripe-return.html → status shown
+  6. If incomplete (restricted): resume button shown → generates fresh Stripe link
+  7. Once verified: account.updated webhook fires → status set to 'enabled'
+  8. Bank details are NEVER stored in McBook — Stripe holds everything securely
 
 CUSTOMER PAYMENT:
-  1. Customer books a service via the widget
-  2. Widget calls create-payment-intent with the booking + seller details
-  3. Stripe creates a PaymentIntent — full amount charged to customer
-  4. Stripe keeps 3% as McBook's platform fee, transfers rest to seller
-  5. Stripe fires payment_intent.succeeded → McBook marks booking as paid
-  6. Stripe automatically pays seller's bank account daily
+  1. Customer books via widget → create-payment-intent called
+  2. PaymentIntent created: full amount charged, 3% kept by platform, rest to seller
+  3. payment_intent.succeeded webhook → booking marked as paid in Supabase
+  4. Stripe pays seller's bank automatically each day
 
 REFUNDS:
-  1. Refund issued via Stripe Dashboard or API
-  2. Stripe fires charge.refunded webhook
-  3. McBook marks booking as cancelled + refunded in database
+  1. Refund issued via Stripe Dashboard
+  2. charge.refunded webhook → booking marked cancelled + refunded
 
 SELLER PAYOUTS:
-  1. Happen automatically — no action needed
-  2. Daily schedule set when account was created
-  3. Stripe fires payout.paid webhook → logged in payments table
+  1. Automatic daily schedule — no action needed from seller
+  2. payout.paid webhook → logged in payments table
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGES CREATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+mcbook/stripe-onboarding.html   Seller payout setup — form, status banner,
+                                 resume button for incomplete accounts
+mcbook/stripe-return.html        Shown after Stripe redirects seller back —
+                                 shows enabled/pending/restricted status
+mcbook/stripe-refresh.html       Auto-regenerates expired Stripe onboarding links
+mcbook/embed.html                Widget embed page — shows client's snippet
+                                 with real business ID, copy button, install guide
+mcbook/widget-demo.html          Stripped to just the widget box. Accepts ?id=
+                                 param so preview link passes real business ID.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GOING LIVE (when ready)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Switch Stripe Dashboard to Live mode
-2. Get your sk_live_... key from Developers → API Keys
+2. Get sk_live_... key from Developers → API Keys
 3. Run: node stripe-setup.js sk_live_YOUR_KEY_HERE
-4. Update STRIPE_SECRET_KEY in Supabase secrets to the live key
-5. Update STRIPE_WEBHOOK_SECRET + STRIPE_CONNECT_SECRET with the new whsec_ values
-6. Redeploy functions: supabase functions deploy (all four)
-7. Update any hardcoded Stripe publishable keys in widget.js to pk_live_...
+   (registers new live webhooks and prints new whsec_ secrets)
+4. Update Supabase secrets: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+   STRIPE_CONNECT_SECRET with the live values
+5. Redeploy all four functions:
+     supabase functions deploy create-connect-account
+     supabase functions deploy create-payment-intent
+     supabase functions deploy stripe-webhook
+     supabase functions deploy verify-connect-account
+6. Update widget.js publishable key (pk_test_ → pk_live_) if hardcoded
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FILES CREATED
+CURRENT OUTSTANDING ISSUE (7 Apr 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-mcbook/stripe-onboarding.html                          Seller payout setup page
-mcbook/stripe-return.html                              Post-onboarding status page
-mcbook/stripe-refresh.html                             Regenerates expired onboarding links
-supabase/functions/create-connect-account/index.ts     Creates Stripe Express account
-supabase/functions/create-payment-intent/index.ts      Routes customer payment to seller
-supabase/functions/stripe-webhook/index.ts             Handles all Stripe webhook events
-supabase/functions/verify-connect-account/index.ts     Live status check from Stripe
-stripe-setup.js                                        One-time setup script (can delete)
-STRIPE_SETUP.txt                                       This file
+The Payouts page is showing "Verification in progress" for a restricted test
+account instead of the "Verification incomplete" banner with resume button.
+
+Suspected cause: controller-based accounts may return requirements in a
+different structure than standard Express accounts, causing the status
+detection to fall through to 'pending'.
+
+Debug added: verify-connect-account now logs the full Stripe account
+requirements object to Supabase Edge Function logs. The frontend also
+logs the API response to the browser console (DevTools → Console).
+
+Next step: reload the Payouts page, open DevTools Console, and copy the
+[McBook] verify-connect-account response line to diagnose the exact
+Stripe fields being returned.

@@ -302,6 +302,7 @@
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         })
         const data = await res.json()
+        console.log('[McBook] verify-connect-account response:', data)
 
         if (data.status === 'enabled') {
           banner.className = 'status-banner enabled'
