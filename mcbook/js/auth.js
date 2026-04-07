@@ -36,6 +36,12 @@ export async function ensureClientProfile(uid, businessName) {
   }
 }
 
+export async function resetPassword(email) {
+  return supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/mcbook/login.html`
+  })
+}
+
 export async function signOut() {
   await supabase.auth.signOut()
   window.location.href = 'login.html'

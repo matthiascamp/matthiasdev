@@ -331,46 +331,157 @@
       text-underline-offset: 2px;
     }
 
-    /* ── Feature strip below card ── */
-    .login-features {
-      margin-top: 24px;
-      max-width: 430px;
+    /* ── Info section below card ── */
+    .login-info {
+      margin-top: 28px;
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      max-width: 820px;
       animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
     }
-    .login-feature-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 13px 16px;
+    .info-heading {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .feature-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
+      padding: 14px 15px;
+      transition: border-color 0.2s ease;
     }
-    .login-feature-icon {
-      width: 30px; height: 30px;
-      border-radius: 8px;
-      background: var(--accent-bg);
-      border: 1px solid rgba(74,222,128,0.18);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.95rem;
-      flex-shrink: 0;
+    .feature-card:hover { border-color: rgba(74,222,128,0.22); }
+    .feature-card-icon {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      display: block;
     }
-    .login-feature-title {
+    .feature-card-title {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       color: var(--text);
       letter-spacing: -0.01em;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
-    .login-feature-desc {
-      font-size: 0.72rem;
+    .feature-card-desc {
+      font-size: 0.7rem;
       color: var(--text-2);
-      line-height: 1.5;
+      line-height: 1.55;
+    }
+
+    /* ── API section ── */
+    .api-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .api-section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .api-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.22);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .api-section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .api-section-body {
+      padding: 16px 18px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .api-text { flex: 1; }
+    .api-desc {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .api-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .api-points li {
+      font-size: 0.71rem;
+      color: var(--text-2);
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+    .api-points li::before {
+      content: '→';
+      color: var(--accent);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .api-code-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      flex-shrink: 0;
+      width: 310px;
+    }
+    .api-code-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+    .api-code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.72rem;
+      line-height: 1.7;
+      white-space: pre;
+      color: var(--text);
+    }
+    .tok-tag  { color: #7dd3fc; }
+    .tok-attr { color: #86efac; }
+    .tok-val  { color: #fcd34d; }
+
+    @media (max-width: 820px) {
+      .feature-grid { grid-template-columns: 1fr 1fr; }
+      .api-section-body { flex-direction: column; }
+      .api-code-wrap { width: 100%; }
+      .api-code { white-space: pre-wrap; word-break: break-all; }
+    }
+    @media (max-width: 520px) {
+      .feature-grid { grid-template-columns: 1fr; }
     }
 
     /* ── Responsive ── */
@@ -400,6 +511,7 @@
     <div class="login-tabs">
       <button class="login-tab active" id="tab-signin" type="button">Sign In</button>
       <button class="login-tab" id="tab-signup" type="button">Create Account</button>
+      <button class="login-tab" id="tab-reset" type="button">Reset Password</button>
     </div>
 
     <!-- Body -->
@@ -437,6 +549,20 @@
             </div>
           </div>
           <button type="submit" class="btn-login">Sign In</button>
+        </form>
+      </div>
+
+      <!-- Reset Password form -->
+      <div id="form-reset" style="display:none;">
+        <h1 class="login-title">Reset password</h1>
+        <p class="login-subtitle">Enter your email and we'll send a reset link.</p>
+        <div class="login-msg" id="reset-msg"></div>
+        <form id="resetForm">
+          <div class="field">
+            <label for="reset-email">Email Address</label>
+            <input type="email" id="reset-email" placeholder="you@yourbusiness.com" autocomplete="email" required>
+          </div>
+          <button type="submit" class="btn-login">Send reset link</button>
         </form>
       </div>
 
@@ -487,32 +613,70 @@
 
   </div>
 
-  <div class="login-features">
-    <div class="login-feature-row">
-      <div class="login-feature-icon">&#128197;</div>
-      <div>
-        <div class="login-feature-title">Online bookings, 24/7</div>
-        <div class="login-feature-desc">Clients book directly from your website — no back-and-forth messages, no phone calls.</div>
+  <div class="login-info">
+    <div class="info-heading">Everything you need to run your bookings</div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="feature-card-icon">&#128197;</span>
+        <div class="feature-card-title">Online bookings, 24/7</div>
+        <div class="feature-card-desc">Clients book directly from your website — no back-and-forth messages, no phone calls.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card-icon">&#9881;&#65039;</span>
+        <div class="feature-card-title">Full schedule control</div>
+        <div class="feature-card-desc">Set your services, working hours, and blocked dates. MCBook handles the rest automatically.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card-icon">&#128176;</span>
+        <div class="feature-card-title">Get paid with Stripe</div>
+        <div class="feature-card-desc">Connect Stripe to collect payment at booking. Funds land in your bank account daily.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card-icon">&#128683;</span>
+        <div class="feature-card-title">No-show protection</div>
+        <div class="feature-card-desc">Require a deposit or full payment upfront to protect your time from last-minute cancellations.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card-icon">&#128101;</span>
+        <div class="feature-card-title">Customer tracking</div>
+        <div class="feature-card-desc">Every booking builds your customer list automatically — view history, contact details, and more.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card-icon">&#127758;</span>
+        <div class="feature-card-title">Hosted booking page</div>
+        <div class="feature-card-desc">Get a shareable booking link you can send to clients directly — no website needed.</div>
       </div>
     </div>
-    <div class="login-feature-row">
-      <div class="login-feature-icon">&#9881;</div>
-      <div>
-        <div class="login-feature-title">Manage your schedule your way</div>
-        <div class="login-feature-desc">Set your services, hours, and blocked dates. MCBook handles the rest automatically.</div>
+
+    <div class="api-section">
+      <div class="api-section-header">
+        <span class="api-badge">API</span>
+        <span class="api-section-title">Embed on any website — or build your own integration</span>
       </div>
-    </div>
-    <div class="login-feature-row">
-      <div class="login-feature-icon">&#128176;</div>
-      <div>
-        <div class="login-feature-title">Get paid with Stripe</div>
-        <div class="login-feature-desc">Connect Stripe to collect payment at booking. Funds land in your bank daily.</div>
+      <div class="api-section-body">
+        <div class="api-text">
+          <p class="api-desc">MCBook provides a simple JavaScript embed you can drop into any webpage. For developers, the REST API lets you build custom booking flows, trigger automations, or integrate with any platform.</p>
+          <ul class="api-points">
+            <li>One-line embed for any website or CMS</li>
+            <li>REST API access for custom integrations</li>
+            <li>Works with WordPress, Squarespace, Webflow, and more</li>
+            <li>Fully customisable widget appearance</li>
+          </ul>
+        </div>
+        <div class="api-code-wrap">
+          <div class="api-code-label">Embed snippet</div>
+          <div class="api-code"><span class="tok-tag">&lt;script</span>
+  <span class="tok-attr">src</span>=<span class="tok-val">"https://matthiasdev.com/mcbook/widget.js"</span>
+  <span class="tok-attr">data-business-id</span>=<span class="tok-val">"your-id"</span>
+<span class="tok-tag">&gt;&lt;/script&gt;</span></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { signIn, signUp, ensureClientProfile } from './js/auth.js'
+    import { signIn, signUp, resetPassword, ensureClientProfile } from './js/auth.js'
 
     /* ── Password visibility toggles ── */
     document.querySelectorAll('.btn-eye').forEach(btn => {
@@ -528,24 +692,25 @@
     /* ── Tab switching ── */
     const tabSignIn  = document.getElementById('tab-signin')
     const tabSignUp  = document.getElementById('tab-signup')
+    const tabReset   = document.getElementById('tab-reset')
     const formSignIn = document.getElementById('form-signin')
     const formSignUp = document.getElementById('form-signup')
+    const formReset  = document.getElementById('form-reset')
     const blurb      = document.getElementById('mcbook-blurb')
 
-    tabSignIn.addEventListener('click', () => {
-      tabSignIn.classList.add('active')
-      tabSignUp.classList.remove('active')
-      formSignIn.style.display = ''
-      formSignUp.style.display = 'none'
-      blurb.classList.remove('visible')
-    })
-    tabSignUp.addEventListener('click', () => {
-      tabSignUp.classList.add('active')
-      tabSignIn.classList.remove('active')
-      formSignIn.style.display = 'none'
-      formSignUp.style.display = ''
-      blurb.classList.add('visible')
-    })
+    function showTab(active) {
+      tabSignIn.classList.toggle('active', active === 'signin')
+      tabSignUp.classList.toggle('active', active === 'signup')
+      tabReset.classList.toggle('active',  active === 'reset')
+      formSignIn.style.display = active === 'signin' ? '' : 'none'
+      formSignUp.style.display = active === 'signup' ? '' : 'none'
+      formReset.style.display  = active === 'reset'  ? '' : 'none'
+      blurb.classList.toggle('visible', active === 'signup')
+    }
+
+    tabSignIn.addEventListener('click', () => showTab('signin'))
+    tabSignUp.addEventListener('click', () => showTab('signup'))
+    tabReset.addEventListener('click',  () => showTab('reset'))
 
     /* ── Sign In ── */
     document.getElementById('signinForm').addEventListener('submit', async (e) => {
@@ -614,9 +779,36 @@
 
       // Switch to sign-in tab after 3 seconds
       setTimeout(() => {
-        tabSignIn.click()
+        showTab('signin')
         document.getElementById('signin-email').value = email
       }, 3000)
+    })
+
+    /* ── Reset Password ── */
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const msg   = document.getElementById('reset-msg')
+      const btn   = e.target.querySelector('button[type="submit"]')
+      const email = document.getElementById('reset-email').value.trim()
+
+      msg.className = 'login-msg'
+      btn.disabled  = true
+      btn.textContent = 'Sending…'
+
+      const { error } = await resetPassword(email)
+
+      btn.disabled    = false
+      btn.textContent = 'Send reset link'
+
+      if (error) {
+        msg.textContent = error.message
+        msg.classList.add('error')
+        return
+      }
+
+      msg.textContent = '✓ Reset link sent — check your email.'
+      msg.classList.add('success')
+      document.getElementById('reset-email').value = ''
     })
   </script>
 </body>
