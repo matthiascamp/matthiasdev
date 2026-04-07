@@ -319,6 +319,17 @@
 </head>
 <body>
 
+  <script type="module">
+    import { requireAuth, signOut } from './js/auth.js'
+    requireAuth()
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="signout"]')) {
+        e.preventDefault()
+        signOut()
+      }
+    })
+  </script>
+
   <!-- ══════════════════════════════════════ SIDEBAR ══════════════════════════════════════ -->
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
@@ -346,6 +357,7 @@
           <div class="sidebar-user-role">Business Owner</div>
         </div>
       </div>
+      <a href="#" class="nav-link" data-action="signout"><span class="nav-icon">&#10148;</span> Sign Out</a>
     </div>
   </aside>
 
@@ -370,8 +382,8 @@
             <div class="stat-icon green">&#128197;</div>
           </div>
           <div>
-            <div class="stat-value">8</div>
-            <div class="stat-delta up">+2 from yesterday</div>
+            <div class="stat-value">—</div>
+            <div class="stat-delta up"></div>
           </div>
         </div>
         <div class="stat-card">
@@ -380,8 +392,8 @@
             <div class="stat-icon green">&#128200;</div>
           </div>
           <div>
-            <div class="stat-value">34</div>
-            <div class="stat-delta up">+12% vs last week</div>
+            <div class="stat-value">—</div>
+            <div class="stat-delta up"></div>
           </div>
         </div>
         <div class="stat-card">
@@ -390,8 +402,8 @@
             <div class="stat-icon amber">&#128178;</div>
           </div>
           <div>
-            <div class="stat-value">$2,140</div>
-            <div class="stat-delta up">+8% vs last month</div>
+            <div class="stat-value">—</div>
+            <div class="stat-delta up"></div>
           </div>
         </div>
         <div class="stat-card">
@@ -400,8 +412,8 @@
             <div class="stat-icon red">&#128683;</div>
           </div>
           <div>
-            <div class="stat-value">3</div>
-            <div class="stat-delta down">$75 collected in fees</div>
+            <div class="stat-value">—</div>
+            <div class="stat-delta down"></div>
           </div>
         </div>
       </div>
@@ -413,54 +425,9 @@
         <div class="panel">
           <div class="panel-header">
             <span class="panel-title">Today's Schedule</span>
-            <span class="panel-badge">8 bookings</span>
+            <span class="panel-badge"></span>
           </div>
 
-          <div class="booking-list-item">
-            <span class="booking-time">9:00 AM</span>
-            <div class="booking-avatar">SL</div>
-            <div class="booking-info">
-              <div class="booking-name">Sarah Lewis</div>
-              <div class="booking-service">Haircut · 30 min</div>
-            </div>
-            <span class="status-pill completed">Completed</span>
-          </div>
-          <div class="booking-list-item">
-            <span class="booking-time">10:00 AM</span>
-            <div class="booking-avatar">MK</div>
-            <div class="booking-info">
-              <div class="booking-name">Mike Kowalski</div>
-              <div class="booking-service">Beard Trim · 20 min</div>
-            </div>
-            <span class="status-pill completed">Completed</span>
-          </div>
-          <div class="booking-list-item">
-            <span class="booking-time">11:30 AM</span>
-            <div class="booking-avatar">AP</div>
-            <div class="booking-info">
-              <div class="booking-name">Aisha Patel</div>
-              <div class="booking-service">Color Treatment · 2 hr</div>
-            </div>
-            <span class="status-pill scheduled">Scheduled</span>
-          </div>
-          <div class="booking-list-item">
-            <span class="booking-time">2:00 PM</span>
-            <div class="booking-avatar">TN</div>
-            <div class="booking-info">
-              <div class="booking-name">Tom Nguyen</div>
-              <div class="booking-service">Full Styling · 1 hr</div>
-            </div>
-            <span class="status-pill scheduled">Scheduled</span>
-          </div>
-          <div class="booking-list-item">
-            <span class="booking-time">4:00 PM</span>
-            <div class="booking-avatar">CW</div>
-            <div class="booking-info">
-              <div class="booking-name">Claire Watson</div>
-              <div class="booking-service">Haircut · 30 min</div>
-            </div>
-            <span class="status-pill scheduled">Scheduled</span>
-          </div>
         </div>
 
         <!-- Right: upcoming + chart -->
@@ -471,45 +438,13 @@
               <span class="panel-title">Upcoming</span>
               <a href="bookings.html" class="section-link">View all</a>
             </div>
-            <div class="upcoming-item">
-              <div class="upcoming-date-box"><span class="day">8</span><span class="mon">Apr</span></div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">Emma Robinson</div>
-                <div class="upcoming-meta">Color Treatment · 10:00 AM</div>
-              </div>
-              <span class="status-pill scheduled">Scheduled</span>
-            </div>
-            <div class="upcoming-item">
-              <div class="upcoming-date-box"><span class="day">9</span><span class="mon">Apr</span></div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">James O'Brien</div>
-                <div class="upcoming-meta">Beard Trim · 3:30 PM</div>
-              </div>
-              <span class="status-pill scheduled">Scheduled</span>
-            </div>
-            <div class="upcoming-item">
-              <div class="upcoming-date-box"><span class="day">10</span><span class="mon">Apr</span></div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">Priya Sharma</div>
-                <div class="upcoming-meta">Full Styling · 1:00 PM</div>
-              </div>
-              <span class="status-pill scheduled">Scheduled</span>
-            </div>
           </div>
 
           <div class="panel">
             <div class="panel-header">
               <span class="panel-title">Revenue — Last 7 Days</span>
             </div>
-            <div class="chart-placeholder">
-              <div class="chart-bar-row"><span class="chart-label">Mon</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:55%"></div></div><span class="chart-val">$280</span></div>
-              <div class="chart-bar-row"><span class="chart-label">Tue</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:80%"></div></div><span class="chart-val">$410</span></div>
-              <div class="chart-bar-row"><span class="chart-label">Wed</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:35%"></div></div><span class="chart-val">$175</span></div>
-              <div class="chart-bar-row"><span class="chart-label">Thu</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:90%"></div></div><span class="chart-val">$460</span></div>
-              <div class="chart-bar-row"><span class="chart-label">Fri</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:100%"></div></div><span class="chart-val">$510</span></div>
-              <div class="chart-bar-row"><span class="chart-label">Sat</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:70%"></div></div><span class="chart-val">$360</span></div>
-              <div class="chart-bar-row"><span class="chart-label">Sun</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:0%"></div></div><span class="chart-val">—</span></div>
-            </div>
+            <div class="chart-placeholder"></div>
           </div>
 
         </div>
@@ -519,5 +454,6 @@
     </main>
   </div>
 
+  <script type="module" src="./js/pages/dashboard.js"></script>
 </body>
 </html>

@@ -244,6 +244,17 @@
 </head>
 <body>
 
+  <script type="module">
+    import { requireAuth, signOut } from './js/auth.js'
+    requireAuth()
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="signout"]')) {
+        e.preventDefault()
+        signOut()
+      }
+    })
+  </script>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
@@ -267,6 +278,7 @@
           <div class="sidebar-user-role">Business Owner</div>
         </div>
       </div>
+      <a href="#" class="nav-link" data-action="signout"><span class="nav-icon">&#10148;</span> Sign Out</a>
     </div>
   </aside>
 
@@ -284,21 +296,21 @@
         <div class="stat-chip">
           <div class="stat-chip-icon blue">&#128100;</div>
           <div>
-            <div class="stat-chip-val">84</div>
+            <div class="stat-chip-val">—</div>
             <div class="stat-chip-label">Total Customers</div>
           </div>
         </div>
         <div class="stat-chip">
           <div class="stat-chip-icon green">&#128200;</div>
           <div>
-            <div class="stat-chip-val">7</div>
+            <div class="stat-chip-val">—</div>
             <div class="stat-chip-label">New This Month</div>
           </div>
         </div>
         <div class="stat-chip">
           <div class="stat-chip-icon amber">&#11088;</div>
           <div>
-            <div class="stat-chip-val">23</div>
+            <div class="stat-chip-val">—</div>
             <div class="stat-chip-label">Repeat Customers</div>
           </div>
         </div>
@@ -319,7 +331,7 @@
       <div class="table-card">
         <div class="table-card-header">
           <span class="table-card-title">All Customers</span>
-          <span class="table-count">Showing 1–10 of 84</span>
+          <span class="table-count"></span>
         </div>
 
         <table class="data-table">
@@ -334,177 +346,6 @@
             </tr>
           </thead>
           <tbody>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c1">SL</div>
-                  <div>
-                    <div class="cust-name">Sarah Lewis</div>
-                    <div class="cust-since">Customer since Jan 2024</div>
-                  </div>
-                </div>
-              </td>
-              <td>sarah@example.com</td>
-              <td>+1 (555) 012-3456</td>
-              <td><span class="booking-count">12</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c2">MK</div>
-                  <div>
-                    <div class="cust-name">Mike Kowalski</div>
-                    <div class="cust-since">Customer since Mar 2024</div>
-                  </div>
-                </div>
-              </td>
-              <td>mike.k@example.com</td>
-              <td>+1 (555) 234-5678</td>
-              <td><span class="booking-count">8</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c3">AP</div>
-                  <div>
-                    <div class="cust-name">Aisha Patel</div>
-                    <div class="cust-since">Customer since Oct 2023</div>
-                  </div>
-                </div>
-              </td>
-              <td>aisha.p@example.com</td>
-              <td>+1 (555) 345-6789</td>
-              <td><span class="booking-count">19</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c4">TN</div>
-                  <div>
-                    <div class="cust-name">Tom Nguyen</div>
-                    <div class="cust-since">Customer since Feb 2025</div>
-                  </div>
-                </div>
-              </td>
-              <td>tom.ng@example.com</td>
-              <td>+1 (555) 456-7890</td>
-              <td><span class="booking-count">3</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c5">CW</div>
-                  <div>
-                    <div class="cust-name">Claire Watson</div>
-                    <div class="cust-since">Customer since Jun 2024</div>
-                  </div>
-                </div>
-              </td>
-              <td>claire.w@example.com</td>
-              <td>+1 (555) 567-8901</td>
-              <td><span class="booking-count">6</span></td>
-              <td><span class="noshow-count">1</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c6">DM</div>
-                  <div>
-                    <div class="cust-name">Diana Mills</div>
-                    <div class="cust-since">Customer since Aug 2024</div>
-                  </div>
-                </div>
-              </td>
-              <td>d.mills@example.com</td>
-              <td>+1 (555) 678-9012</td>
-              <td><span class="booking-count">5</span></td>
-              <td><span class="noshow-count">2</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c7">RH</div>
-                  <div>
-                    <div class="cust-name">Ryan Holt</div>
-                    <div class="cust-since">Customer since Nov 2024</div>
-                  </div>
-                </div>
-              </td>
-              <td>r.holt@example.com</td>
-              <td>+1 (555) 789-0123</td>
-              <td><span class="booking-count">4</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c8">ER</div>
-                  <div>
-                    <div class="cust-name">Emma Robinson</div>
-                    <div class="cust-since">Customer since Jan 2025</div>
-                  </div>
-                </div>
-              </td>
-              <td>emma.r@example.com</td>
-              <td>+1 (555) 890-1234</td>
-              <td><span class="booking-count">2</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c1">JO</div>
-                  <div>
-                    <div class="cust-name">James O'Brien</div>
-                    <div class="cust-since">Customer since Dec 2024</div>
-                  </div>
-                </div>
-              </td>
-              <td>james.ob@example.com</td>
-              <td>+1 (555) 901-2345</td>
-              <td><span class="booking-count">3</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar c2">PS</div>
-                  <div>
-                    <div class="cust-name">Priya Sharma</div>
-                    <div class="cust-since">Customer since Mar 2025</div>
-                  </div>
-                </div>
-              </td>
-              <td>p.sharma@example.com</td>
-              <td>+1 (555) 012-3456</td>
-              <td><span class="booking-count">1</span></td>
-              <td><span class="noshow-count none">0</span></td>
-              <td><button class="btn-view">View</button></td>
-            </tr>
-
           </tbody>
         </table>
 
@@ -526,5 +367,6 @@
     </main>
   </div>
 
+  <script type="module" src="./js/pages/customers.js"></script>
 </body>
 </html>

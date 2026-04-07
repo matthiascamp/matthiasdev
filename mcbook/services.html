@@ -246,6 +246,17 @@
 </head>
 <body>
 
+  <script type="module">
+    import { requireAuth, signOut } from './js/auth.js'
+    requireAuth()
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="signout"]')) {
+        e.preventDefault()
+        signOut()
+      }
+    })
+  </script>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
@@ -269,6 +280,7 @@
           <div class="sidebar-user-role">Business Owner</div>
         </div>
       </div>
+      <a href="#" class="nav-link" data-action="signout"><span class="nav-icon">&#10148;</span> Sign Out</a>
     </div>
   </aside>
 
@@ -286,123 +298,6 @@
 
       <!-- Services list -->
       <div class="services-list">
-
-        <!-- Service: Haircut -->
-        <div class="service-card">
-          <div class="service-card-main">
-            <div class="service-dot dot-blue">&#9986;</div>
-            <div class="service-info">
-              <div class="service-name">Haircut</div>
-              <div class="service-tags">
-                <span class="service-tag">30 minutes</span>
-                <span class="service-tag price">$35</span>
-                <span class="service-tag nosho">No-show: $17.50</span>
-              </div>
-            </div>
-            <div class="service-actions">
-              <div class="service-active-toggle">
-                <label class="toggle">
-                  <input type="checkbox" checked>
-                  <span class="toggle-track"></span>
-                  <span class="toggle-thumb"></span>
-                </label>
-                Active
-              </div>
-              <div class="service-edit-btns">
-                <button class="btn-edit">Edit</button>
-                <button class="btn-delete">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Service: Color Treatment -->
-        <div class="service-card">
-          <div class="service-card-main">
-            <div class="service-dot dot-purple">&#127775;</div>
-            <div class="service-info">
-              <div class="service-name">Color Treatment</div>
-              <div class="service-tags">
-                <span class="service-tag">2 hours</span>
-                <span class="service-tag price">$120</span>
-                <span class="service-tag nosho">No-show: $60</span>
-              </div>
-            </div>
-            <div class="service-actions">
-              <div class="service-active-toggle">
-                <label class="toggle">
-                  <input type="checkbox" checked>
-                  <span class="toggle-track"></span>
-                  <span class="toggle-thumb"></span>
-                </label>
-                Active
-              </div>
-              <div class="service-edit-btns">
-                <button class="btn-edit">Edit</button>
-                <button class="btn-delete">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Service: Beard Trim -->
-        <div class="service-card">
-          <div class="service-card-main">
-            <div class="service-dot dot-amber">&#128248;</div>
-            <div class="service-info">
-              <div class="service-name">Beard Trim</div>
-              <div class="service-tags">
-                <span class="service-tag">20 minutes</span>
-                <span class="service-tag price">$25</span>
-                <span class="service-tag nosho">No-show: $15</span>
-              </div>
-            </div>
-            <div class="service-actions">
-              <div class="service-active-toggle">
-                <label class="toggle">
-                  <input type="checkbox" checked>
-                  <span class="toggle-track"></span>
-                  <span class="toggle-thumb"></span>
-                </label>
-                Active
-              </div>
-              <div class="service-edit-btns">
-                <button class="btn-edit">Edit</button>
-                <button class="btn-delete">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Service: Full Styling (inactive) -->
-        <div class="service-card">
-          <div class="service-card-main">
-            <div class="service-dot dot-green">&#10024;</div>
-            <div class="service-info">
-              <div class="service-name">Full Styling</div>
-              <div class="service-tags">
-                <span class="service-tag">1 hour</span>
-                <span class="service-tag price">$80</span>
-                <span class="service-tag nosho">No-show: $40</span>
-              </div>
-            </div>
-            <div class="service-actions">
-              <div class="service-active-toggle">
-                <label class="toggle">
-                  <input type="checkbox">
-                  <span class="toggle-track"></span>
-                  <span class="toggle-thumb"></span>
-                </label>
-                Inactive
-              </div>
-              <div class="service-edit-btns">
-                <button class="btn-edit">Edit</button>
-                <button class="btn-delete">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
       <!-- /services-list -->
 
@@ -459,5 +354,6 @@
     </main>
   </div>
 
+  <script type="module" src="./js/pages/services.js"></script>
 </body>
 </html>

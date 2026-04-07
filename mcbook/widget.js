@@ -23,6 +23,175 @@
   // Days blocked (0 = Sunday, 6 = Saturday) — Sundays unavailable in demo
   const BLOCKED_WEEKDAYS = [0];
 
+  // ─── Supabase client (self-contained, no import from js/supabase.js) ────────
+  const SUPABASE_URL      = 'https://uijudgnqawtvjyjuyuwo.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpanVkZ25xYXd0dmp5anV5dXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MjI1NDQsImV4cCI6MjA5MTA5ODU0NH0.MkIJL-GmeAzUsyinykQWa0-4mjAWTf-WEuZelLouDYg';
+  let sb = null;
+  const sbReady = (async () => {
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  })();
+
+  // ─── Stripe constants ─────────────────────────────────────────────────────
+  const STRIPE_PUBLISHABLE_KEY  = 'pk_live_51TIM7W3KdzLQ6RvXRpuNTwZtQjLGq9s18uWusHKHo3aaoL2KmYccr2so1Zy0o1IkuzG0pi1WEzh82MiQPtoMrC6W00iOR1stqs';
+  const CREATE_SETUP_INTENT_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/create-setup-intent';
+
+  // ─── Mount real Stripe Elements into shadow root ──────────────────────────
+  async function mountStripeElements(widget) {
+    // Inject Stripe.js into the host document once
+    if (!window.Stripe) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://js.stripe.com/v3/';
+        s.onload  = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    await sbReady;
+
+    const { contact, service } = widget.state;
+
+    // Upsert customer (look up by email; create if missing)
+    let customerId;
+    const { data: existing } = await sb.from('customers')
+      .select('id')
+      .eq('client_id', widget.businessId)
+      .eq('email', contact.email)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      customerId = existing.id;
+    } else {
+      const { data: newCust, error: custErr } = await sb.from('customers')
+        .insert({ client_id: widget.businessId, name: contact.name,
+                  email: contact.email, phone: contact.phone })
+        .select('id')
+        .single();
+      if (custErr) throw custErr;
+      customerId = newCust.id;
+    }
+    widget._customerId = customerId;
+
+    // Fetch SetupIntent client secret from Edge Function
+    const res = await fetch(CREATE_SETUP_INTENT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        bookingData: {
+          customerId,
+          serviceId:     service.id,
+          clientId:      widget.businessId,
+          customerEmail: contact.email,
+          customerName:  contact.name,
+        },
+      }),
+    });
+    const { clientSecret, error: siErr } = await res.json();
+    if (siErr) throw new Error(siErr);
+
+    // Mount Stripe Elements inside the shadow root
+    const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
+    const elements = stripe.elements({ clientSecret });
+    const cardNumber = elements.create('cardNumber');
+    const cardExpiry = elements.create('cardExpiry');
+    const cardCvc    = elements.create('cardCvc');
+    const root = widget.root;
+    cardNumber.mount(root.querySelector('#stripe-card-number'));
+    cardExpiry.mount(root.querySelector('#stripe-card-expiry'));
+    cardCvc.mount(root.querySelector('#stripe-card-cvc'));
+
+    widget._stripeElements = { stripe, cardNumber, clientSecret };
+  }
+
+  // Convert "h:mm AM/PM" → "HH:MM"
+  function timeToHHMM(t) {
+    const [time, ampm] = t.split(' ');
+    let [h, m] = time.split(':').map(Number);
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  // Format duration_mins as "X min" or "X hr"
+  function fmtDuration(mins) {
+    if (mins < 60) return `${mins} min`;
+    return `${mins / 60} hr`;
+  }
+
+  // ─── Live slot generation ─────────────────────────────────────────────────
+  async function getAvailableSlots(businessId, dateObj) {
+    const dateISO   = dateObj.toISOString().slice(0, 10);
+    const dayOfWeek = dateObj.getDay();
+
+    await sbReady;
+
+    // a. Availability rule for this day
+    const { data: rule } = await sb.from('availability_rules')
+      .select('start_time, end_time')
+      .eq('client_id', businessId)
+      .eq('day_of_week', dayOfWeek)
+      .eq('enabled', true)
+      .limit(1)
+      .maybeSingle();
+    if (!rule) return [];
+
+    // b. Booking settings (slot size, min notice)
+    const { data: settings } = await sb.from('booking_settings')
+      .select('slot_duration_mins, min_notice_hours')
+      .eq('client_id', businessId)
+      .limit(1)
+      .maybeSingle();
+    const slotMins       = settings ? settings.slot_duration_mins : 30;
+    const minNoticeHours = settings ? settings.min_notice_hours   : 2;
+
+    // c. Already-booked times for this date
+    const { data: booked } = await sb.from('bookings')
+      .select('time')
+      .eq('client_id', businessId)
+      .eq('date', dateISO)
+      .neq('status', 'cancelled');
+    const bookedSet = new Set((booked || []).map(b => b.time.slice(0, 5)));
+
+    // d. Blocked date check
+    const { data: blocked } = await sb.from('blocked_dates')
+      .select('id')
+      .eq('client_id', businessId)
+      .eq('date', dateISO)
+      .limit(1)
+      .maybeSingle();
+    if (blocked) return [];
+
+    // e. Generate slots
+    const slots      = [];
+    const now        = new Date();
+    const noticeMs   = minNoticeHours * 60 * 60 * 1000;
+    const [startH, startM] = rule.start_time.split(':').map(Number);
+    const [endH,   endM  ] = rule.end_time.split(':').map(Number);
+    let cur = startH * 60 + startM;
+    const endTotal = endH * 60 + endM;
+
+    while (cur < endTotal) {
+      const h = Math.floor(cur / 60);
+      const m = cur % 60;
+      const slotTime = new Date(dateObj);
+      slotTime.setHours(h, m, 0, 0);
+
+      if (slotTime - now >= noticeMs) {
+        const hhMM = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        if (!bookedSet.has(hhMM)) {
+          const ampm    = h >= 12 ? 'PM' : 'AM';
+          const display = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+          slots.push(display);
+        }
+      }
+      cur += slotMins;
+    }
+    return slots;
+  }
+
   // ─── Detect host-page styles ───────────────────────────────────────────────
   function detectHostStyles() {
     try {
@@ -621,15 +790,35 @@
 
     // Step 1 — Service selection
     _step1() {
-      const cards = MOCK_SERVICES.map(s => {
+      // If services not yet loaded, show loading state and kick off fetch
+      if (!this._services) {
+        (async () => {
+          await sbReady;
+          const { data } = await sb.from('services')
+            .select('id, name, duration_mins, price, noshow_fee')
+            .eq('client_id', this.businessId)
+            .eq('active', true)
+            .order('created_at', { ascending: true });
+          this._services = data || [];
+          if (this.state.step === 1) this._render();
+        })();
+        return `
+          <div class="bw-step-title">What service do you need?</div>
+          <div class="bw-services" style="padding:16px 0;color:inherit;opacity:0.55;font-size:0.84rem;">Loading services\u2026</div>
+          <div class="bw-btn-row">
+            <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+          </div>`;
+      }
+
+      const cards = this._services.map(s => {
         const sel = this.state.service && this.state.service.id === s.id ? 'selected' : '';
         return `
           <div class="bw-service-card ${sel}" data-service-id="${s.id}">
             <div>
               <div class="bw-service-name">${s.name}</div>
-              <div class="bw-service-meta">${s.duration}</div>
+              <div class="bw-service-meta">${fmtDuration(s.duration_mins)}</div>
             </div>
-            <div class="bw-service-price">${s.price}</div>
+            <div class="bw-service-price">$${s.price}</div>
           </div>`;
       }).join('');
 
@@ -697,18 +886,43 @@
 
     // Step 3 — Time slot selection
     _step3() {
-      const slots = MOCK_TIMES.map(t => {
-        const sel = this.state.time === t ? 'selected' : '';
-        return `<div class="bw-time-slot ${sel}" data-time="${t}">${t}</div>`;
-      }).join('');
-
       const dateStr = this.state.date
         ? this.state.date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
         : '';
 
+      // If slots not yet loaded, show loading state and kick off fetch
+      if (!this._slots) {
+        (async () => {
+          this._slots = await getAvailableSlots(this.businessId, this.state.date);
+          if (this.state.step === 3) this._render();
+        })();
+        return `
+          <div class="bw-step-title">Available times &mdash; ${dateStr}</div>
+          <div class="bw-times" style="grid-column:1/-1;padding:16px 0;opacity:0.55;font-size:0.84rem;">Loading times\u2026</div>
+          <div class="bw-btn-row">
+            <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+            <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+          </div>`;
+      }
+
+      if (this._slots.length === 0) {
+        return `
+          <div class="bw-step-title">Available times &mdash; ${dateStr}</div>
+          <div style="font-size:0.84rem;opacity:0.65;padding:12px 0;">No available times for this date. Please choose another.</div>
+          <div class="bw-btn-row">
+            <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+            <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+          </div>`;
+      }
+
+      const slotsHTML = this._slots.map(t => {
+        const sel = this.state.time === t ? 'selected' : '';
+        return `<div class="bw-time-slot ${sel}" data-time="${t}">${t}</div>`;
+      }).join('');
+
       return `
         <div class="bw-step-title">Available times &mdash; ${dateStr}</div>
-        <div class="bw-times">${slots}</div>
+        <div class="bw-times">${slotsHTML}</div>
         <div class="bw-btn-row">
           <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
           <button class="bw-btn bw-btn-primary" id="bw-next"
@@ -766,15 +980,15 @@
           </div>
           <div class="bw-summary-row">
             <span class="bw-summary-label">Duration</span>
-            <span class="bw-summary-val">${service ? service.duration : ''}</span>
+            <span class="bw-summary-val">${service ? fmtDuration(service.duration_mins) : ''}</span>
           </div>
           <div class="bw-summary-row">
             <span class="bw-summary-label">Total</span>
-            <span class="bw-summary-val">${service ? service.price : ''}</span>
+            <span class="bw-summary-val">${service ? '$' + service.price : ''}</span>
           </div>
           <div class="bw-summary-row">
             <span class="bw-summary-label">No-show fee</span>
-            <span class="bw-summary-val">${service ? service.nosho : ''}</span>
+            <span class="bw-summary-val">${service ? '$' + service.noshow_fee : ''}</span>
           </div>
         </div>
         <!-- Card details — Stripe Elements will mount here -->
@@ -800,6 +1014,7 @@
             &#128274; Payments are encrypted and secured by Stripe.
           </div>
         </div>
+        <div class="bw-error" id="bw-confirm-err"></div>
         <div class="bw-btn-row">
           <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
           <button class="bw-btn bw-btn-primary" id="bw-next">Confirm Booking</button>
@@ -857,14 +1072,22 @@
         case 1: this._bindStep1(); break;
         case 2: this._bindStep2(); break;
         case 3: this._bindStep3(); break;
+        case 5:
+          if (!this._stripeElements) {
+            mountStripeElements(this).catch(err => {
+              const errEl = this.root.querySelector('#bw-confirm-err');
+              if (errEl) { errEl.textContent = err.message; errEl.classList.add('visible'); }
+            });
+          }
+          break;
       }
     }
 
     _bindStep1() {
       this.root.querySelectorAll('.bw-service-card').forEach(card => {
         card.addEventListener('click', () => {
-          const id  = parseInt(card.getAttribute('data-service-id'));
-          this.state.service = MOCK_SERVICES.find(s => s.id === id);
+          const id = card.getAttribute('data-service-id');
+          this.state.service = (this._services || []).find(s => s.id === id) || null;
           this._render();
         });
       });
@@ -902,6 +1125,7 @@
         cell.addEventListener('click', () => {
           const d = parseInt(cell.getAttribute('data-day'));
           this.state.date = new Date(this.state.calYear, this.state.calMonth, d);
+          this._slots = null; // clear cached slots for new date
           this._render();
         });
       });
@@ -917,7 +1141,7 @@
     }
 
     // ── Navigation logic ─────────────────────────────────────────────────────
-    _next() {
+    async _next() {
       if (this.state.step === 4) {
         // Validate contact fields
         const name  = this.root.querySelector('#bw-name').value.trim();
@@ -931,8 +1155,54 @@
       }
 
       if (this.state.step === 5) {
-        // In production: call Stripe, await confirmation, then advance
-        this.state.ref = genRef();
+        const nextBtn = this.root.querySelector('#bw-next');
+        const errEl   = this.root.querySelector('#bw-confirm-err');
+        nextBtn.disabled    = true;
+        nextBtn.textContent = 'Processing\u2026';
+        if (errEl) { errEl.textContent = ''; errEl.classList.remove('visible'); }
+
+        try {
+          const { contact, service, date } = this.state;
+          const dateISO  = date.toISOString().slice(0, 10);
+          const timeHHMM = timeToHHMM(this.state.time);
+
+          // b. Confirm card setup with Stripe
+          const { stripe, cardNumber, clientSecret } = this._stripeElements;
+          const { setupIntent, error: stripeErr } = await stripe.confirmCardSetup(clientSecret, {
+            payment_method: {
+              card:             cardNumber,
+              billing_details:  { name: contact.name, email: contact.email },
+            },
+          });
+          if (stripeErr) throw new Error(stripeErr.message);
+
+          // d. & e. Insert booking with saved payment method ID
+          const { data: booking, error: bookErr } = await sb.from('bookings')
+            .insert({
+              client_id:         this.businessId,
+              customer_id:       this._customerId,
+              service_id:        service.id,
+              date:              dateISO,
+              time:              timeHHMM,
+              status:            'scheduled',
+              payment_method_id: setupIntent.payment_method,
+            })
+            .select('id')
+            .single();
+          if (bookErr) throw bookErr;
+
+          // f. Advance to confirmation
+          this.state.ref = 'BK-' + booking.id.slice(0, 6).toUpperCase();
+          this._stripeElements = null;
+          this.state.step++;
+          this._render();
+        } catch (err) {
+          const nextBtn2 = this.root.querySelector('#bw-next');
+          const errEl2   = this.root.querySelector('#bw-confirm-err');
+          if (nextBtn2) { nextBtn2.disabled = false; nextBtn2.textContent = 'Confirm Booking'; }
+          if (errEl2)   { errEl2.textContent = err.message || 'Something went wrong. Please try again.'; errEl2.classList.add('visible'); }
+        }
+        return; // do not fall through
       }
 
       this.state.step++;
@@ -940,11 +1210,15 @@
     }
 
     _back() {
+      if (this.state.step === 5) { this._stripeElements = null; this._customerId = null; }
       this.state.step--;
       this._render();
     }
 
     _reset() {
+      this._slots          = null; // clear slot cache (date will change); keep this._services
+      this._stripeElements = null;
+      this._customerId     = null;
       this.state = {
         step:     1,
         service:  null,

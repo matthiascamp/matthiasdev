@@ -270,6 +270,17 @@
 </head>
 <body>
 
+  <script type="module">
+    import { requireAuth, signOut } from './js/auth.js'
+    requireAuth()
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="signout"]')) {
+        e.preventDefault()
+        signOut()
+      }
+    })
+  </script>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
@@ -293,6 +304,7 @@
           <div class="sidebar-user-role">Business Owner</div>
         </div>
       </div>
+      <a href="#" class="nav-link" data-action="signout"><span class="nav-icon">&#10148;</span> Sign Out</a>
     </div>
   </aside>
 
@@ -329,7 +341,7 @@
       <div class="table-card">
         <div class="table-card-header">
           <span class="table-card-title">All Bookings</span>
-          <span class="table-count">Showing 1–10 of 48 results</span>
+          <span class="table-count"></span>
         </div>
 
         <table class="data-table">
@@ -344,242 +356,13 @@
             </tr>
           </thead>
           <tbody>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">SL</div>
-                  <div>
-                    <div class="cust-name">Sarah Lewis</div>
-                    <div class="cust-email">sarah@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Haircut</td>
-              <td>Apr 7, 2025</td>
-              <td>9:00 AM</td>
-              <td><span class="status-pill completed">Completed</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow" disabled>Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">MK</div>
-                  <div>
-                    <div class="cust-name">Mike Kowalski</div>
-                    <div class="cust-email">mike.k@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Beard Trim</td>
-              <td>Apr 7, 2025</td>
-              <td>10:00 AM</td>
-              <td><span class="status-pill completed">Completed</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow" disabled>Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">AP</div>
-                  <div>
-                    <div class="cust-name">Aisha Patel</div>
-                    <div class="cust-email">aisha.p@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Color Treatment</td>
-              <td>Apr 7, 2025</td>
-              <td>11:30 AM</td>
-              <td><span class="status-pill scheduled">Scheduled</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow">Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">TN</div>
-                  <div>
-                    <div class="cust-name">Tom Nguyen</div>
-                    <div class="cust-email">tom.ng@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Full Styling</td>
-              <td>Apr 7, 2025</td>
-              <td>2:00 PM</td>
-              <td><span class="status-pill scheduled">Scheduled</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow">Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">CW</div>
-                  <div>
-                    <div class="cust-name">Claire Watson</div>
-                    <div class="cust-email">claire.w@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Haircut</td>
-              <td>Apr 7, 2025</td>
-              <td>4:00 PM</td>
-              <td><span class="status-pill scheduled">Scheduled</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow">Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">ER</div>
-                  <div>
-                    <div class="cust-name">Emma Robinson</div>
-                    <div class="cust-email">emma.r@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Color Treatment</td>
-              <td>Apr 8, 2025</td>
-              <td>10:00 AM</td>
-              <td><span class="status-pill scheduled">Scheduled</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow">Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">JO</div>
-                  <div>
-                    <div class="cust-name">James O'Brien</div>
-                    <div class="cust-email">james.ob@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Beard Trim</td>
-              <td>Apr 9, 2025</td>
-              <td>3:30 PM</td>
-              <td><span class="status-pill scheduled">Scheduled</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow">Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">DM</div>
-                  <div>
-                    <div class="cust-name">Diana Mills</div>
-                    <div class="cust-email">d.mills@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Full Styling</td>
-              <td>Apr 3, 2025</td>
-              <td>1:00 PM</td>
-              <td><span class="status-pill noshow">No-show</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow" disabled>Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">RH</div>
-                  <div>
-                    <div class="cust-name">Ryan Holt</div>
-                    <div class="cust-email">r.holt@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Haircut</td>
-              <td>Apr 2, 2025</td>
-              <td>11:00 AM</td>
-              <td><span class="status-pill completed">Completed</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow" disabled>Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="customer-cell">
-                  <div class="cust-avatar">PS</div>
-                  <div>
-                    <div class="cust-name">Priya Sharma</div>
-                    <div class="cust-email">p.sharma@example.com</div>
-                  </div>
-                </div>
-              </td>
-              <td>Full Styling</td>
-              <td>Apr 10, 2025</td>
-              <td>1:00 PM</td>
-              <td><span class="status-pill scheduled">Scheduled</span></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-noshow">Mark No-show</button>
-                  <button class="btn-view">View</button>
-                </div>
-              </td>
-            </tr>
-
           </tbody>
         </table>
 
         <!-- Pagination -->
         <div class="pagination">
-          <span>Showing 1–10 of 48 bookings</span>
-          <div class="page-btns">
-            <button class="page-btn">&#8249;</button>
-            <button class="page-btn current">1</button>
-            <button class="page-btn">2</button>
-            <button class="page-btn">3</button>
-            <button class="page-btn">4</button>
-            <button class="page-btn">5</button>
-            <button class="page-btn">&#8250;</button>
-          </div>
+          <span></span>
+          <div class="page-btns"></div>
         </div>
 
       </div>
@@ -588,5 +371,6 @@
     </main>
   </div>
 
+  <script type="module" src="./js/pages/bookings.js"></script>
 </body>
 </html>

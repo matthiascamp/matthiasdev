@@ -239,6 +239,17 @@
 </head>
 <body>
 
+  <script type="module">
+    import { requireAuth, signOut } from './js/auth.js'
+    requireAuth()
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="signout"]')) {
+        e.preventDefault()
+        signOut()
+      }
+    })
+  </script>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
@@ -262,6 +273,7 @@
           <div class="sidebar-user-role">Business Owner</div>
         </div>
       </div>
+      <a href="#" class="nav-link" data-action="signout"><span class="nav-icon">&#10148;</span> Sign Out</a>
     </div>
   </aside>
 
@@ -299,15 +311,11 @@
                     Monday
                   </div>
                   <div class="time-range">
-                    <select class="time-select">
-                      <option>9:00 AM</option><option>9:30 AM</option><option>10:00 AM</option>
-                    </select>
+                    <select class="time-select"></select>
                     <span class="time-sep">–</span>
-                    <select class="time-select">
-                      <option>5:00 PM</option><option>5:30 PM</option><option>6:00 PM</option>
-                    </select>
+                    <select class="time-select"></select>
                   </div>
-                  <div></div>
+                  <div class="day-closed" style="display:none">Closed</div>
                 </div>
 
                 <!-- Tuesday -->
@@ -321,11 +329,11 @@
                     Tuesday
                   </div>
                   <div class="time-range">
-                    <select class="time-select"><option>9:00 AM</option></select>
+                    <select class="time-select"></select>
                     <span class="time-sep">–</span>
-                    <select class="time-select"><option>5:00 PM</option></select>
+                    <select class="time-select"></select>
                   </div>
-                  <div></div>
+                  <div class="day-closed" style="display:none">Closed</div>
                 </div>
 
                 <!-- Wednesday -->
@@ -339,11 +347,11 @@
                     Wednesday
                   </div>
                   <div class="time-range">
-                    <select class="time-select"><option>10:00 AM</option></select>
+                    <select class="time-select"></select>
                     <span class="time-sep">–</span>
-                    <select class="time-select"><option>6:00 PM</option></select>
+                    <select class="time-select"></select>
                   </div>
-                  <div></div>
+                  <div class="day-closed" style="display:none">Closed</div>
                 </div>
 
                 <!-- Thursday -->
@@ -357,11 +365,11 @@
                     Thursday
                   </div>
                   <div class="time-range">
-                    <select class="time-select"><option>9:00 AM</option></select>
+                    <select class="time-select"></select>
                     <span class="time-sep">–</span>
-                    <select class="time-select"><option>5:00 PM</option></select>
+                    <select class="time-select"></select>
                   </div>
-                  <div></div>
+                  <div class="day-closed" style="display:none">Closed</div>
                 </div>
 
                 <!-- Friday -->
@@ -375,11 +383,11 @@
                     Friday
                   </div>
                   <div class="time-range">
-                    <select class="time-select"><option>9:00 AM</option></select>
+                    <select class="time-select"></select>
                     <span class="time-sep">–</span>
-                    <select class="time-select"><option>5:00 PM</option></select>
+                    <select class="time-select"></select>
                   </div>
-                  <div></div>
+                  <div class="day-closed" style="display:none">Closed</div>
                 </div>
 
                 <!-- Saturday -->
@@ -393,14 +401,14 @@
                     Saturday
                   </div>
                   <div class="time-range">
-                    <select class="time-select"><option>10:00 AM</option></select>
+                    <select class="time-select"></select>
                     <span class="time-sep">–</span>
-                    <select class="time-select"><option>3:00 PM</option></select>
+                    <select class="time-select"></select>
                   </div>
-                  <div></div>
+                  <div class="day-closed" style="display:none">Closed</div>
                 </div>
 
-                <!-- Sunday — closed -->
+                <!-- Sunday — closed by default -->
                 <div class="week-row">
                   <div class="day-label">
                     <label class="toggle">
@@ -410,8 +418,12 @@
                     </label>
                     Sunday
                   </div>
+                  <div class="time-range" style="display:none">
+                    <select class="time-select"></select>
+                    <span class="time-sep">–</span>
+                    <select class="time-select"></select>
+                  </div>
                   <div class="day-closed">Closed</div>
-                  <div></div>
                 </div>
 
               </div>
@@ -536,5 +548,6 @@
     </main>
   </div>
 
+  <script type="module" src="./js/pages/availability.js"></script>
 </body>
 </html>
