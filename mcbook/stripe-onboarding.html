@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payouts Setup — McBook</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:          #0a0a0f;
@@ -41,7 +41,7 @@
     }
     .sidebar-logo { display: flex; align-items: center; gap: 9px; padding: 18px 18px 16px; border-bottom: 1px solid var(--border); text-decoration: none; }
     .sidebar-logo-icon { width: 30px; height: 30px; background: var(--accent-bg); border: 1px solid rgba(74,222,128,0.2); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
-    .sidebar-logo-text { font-size: 1rem; font-weight: 800; letter-spacing: -0.03em; color: var(--accent); }
+    .sidebar-logo-text { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #4ade80, #86efac); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .nav-section-label { padding: 18px 18px 5px; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); }
     .nav-link { display: flex; align-items: center; gap: 9px; padding: 9px 18px; color: var(--text-2); text-decoration: none; font-size: 0.835rem; font-weight: 500; letter-spacing: -0.01em; border-right: 2px solid transparent; transition: color var(--ease), background var(--ease), border-color var(--ease); }
     .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
@@ -57,7 +57,7 @@
     /* ── Main ── */
     .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
     .topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
-    .topbar-title { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.02em; }
+    .topbar-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: -0.02em; }
     .topbar-date  { font-size: 0.78rem; color: var(--text-2); }
     .content { flex: 1; padding: 24px; max-width: 680px; }
 
@@ -266,6 +266,36 @@
       <div id="status-banner" class="status-banner none">
         <span class="status-icon">&#9203;</span>
         <div><div class="status-title">Loading…</div></div>
+      </div>
+
+      <!-- Fee disclosure — always visible -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-header-icon">&#128200;</div>
+          <div>
+            <div class="card-title">Pricing &amp; fees</div>
+            <div class="card-sub">Transparent breakdown of what MCBook and Stripe charge.</div>
+          </div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div>
+              <div style="font-size:0.82rem;font-weight:600;color:var(--text);">MCBook platform fee</div>
+              <div style="font-size:0.72rem;color:var(--text-2);margin-top:2px;">Applied to each paid booking</div>
+            </div>
+            <div style="font-size:1rem;font-weight:800;color:var(--accent);font-family:'Syne',sans-serif;">3%</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div>
+              <div style="font-size:0.82rem;font-weight:600;color:var(--text);">Stripe processing fee</div>
+              <div style="font-size:0.72rem;color:var(--text-2);margin-top:2px;">Stripe's standard card processing rate</div>
+            </div>
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text-2);">1.7% + 30¢</div>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-2);line-height:1.55;">
+            Fees are deducted automatically before funds are paid out to your bank. Your bank details are held securely by Stripe — never by MCBook.
+          </p>
+        </div>
       </div>
 
       <!-- Connect card -->

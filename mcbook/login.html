@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCBook — Sign In</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:          #0a0a0f;
@@ -108,10 +108,14 @@
       flex-shrink: 0;
     }
     .login-logo-text {
+      font-family: 'Syne', sans-serif;
       font-size: 1.15rem;
       font-weight: 800;
       letter-spacing: -0.03em;
-      color: var(--accent);
+      background: linear-gradient(135deg, #4ade80, #86efac);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     /* ── Tab switcher ── */
@@ -184,6 +188,7 @@
     }
 
     .login-title {
+      font-family: 'Syne', sans-serif;
       font-size: 1.25rem;
       font-weight: 800;
       letter-spacing: -0.03em;
@@ -326,19 +331,47 @@
       text-underline-offset: 2px;
     }
 
-    /* ── Description below card ── */
-    .login-desc {
-      margin-top: 22px;
-      max-width: 420px;
-      text-align: center;
+    /* ── Feature strip below card ── */
+    .login-features {
+      margin-top: 24px;
+      max-width: 430px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
     }
-    .login-desc p {
-      font-size: 0.74rem;
-      color: var(--text-3);
-      line-height: 1.7;
+    .login-feature-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
     }
-    .login-desc strong { color: var(--text-2); font-weight: 600; }
+    .login-feature-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(74,222,128,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .login-feature-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+    }
+    .login-feature-desc {
+      font-size: 0.72rem;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
 
     /* ── Responsive ── */
     @media (max-width: 480px) {
@@ -454,12 +487,28 @@
 
   </div>
 
-  <div class="login-desc">
-    <p>
-      <strong>MCBook</strong> is a lightweight booking system built for independent businesses —
-      take appointments, manage your schedule, and share your booking page with clients.
-      No complicated setup. No subscription fees.
-    </p>
+  <div class="login-features">
+    <div class="login-feature-row">
+      <div class="login-feature-icon">&#128197;</div>
+      <div>
+        <div class="login-feature-title">Online bookings, 24/7</div>
+        <div class="login-feature-desc">Clients book directly from your website — no back-and-forth messages, no phone calls.</div>
+      </div>
+    </div>
+    <div class="login-feature-row">
+      <div class="login-feature-icon">&#9881;</div>
+      <div>
+        <div class="login-feature-title">Manage your schedule your way</div>
+        <div class="login-feature-desc">Set your services, hours, and blocked dates. MCBook handles the rest automatically.</div>
+      </div>
+    </div>
+    <div class="login-feature-row">
+      <div class="login-feature-icon">&#128176;</div>
+      <div>
+        <div class="login-feature-title">Get paid with Stripe</div>
+        <div class="login-feature-desc">Connect Stripe to collect payment at booking. Funds land in your bank daily.</div>
+      </div>
+    </div>
   </div>
 
   <script type="module">
