@@ -259,9 +259,19 @@
     .page-btn:hover { border-color: var(--accent); color: var(--accent); }
     .page-btn.current { background: var(--accent); color: #0a0a0f; border-color: var(--accent); font-weight: 700; }
 
+    /* ── Hamburger + sidebar overlay ── */
+    .hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 6px; border-radius: 8px; flex-shrink: 0; }
+    .hamburger:hover { background: rgba(255,255,255,0.06); }
+    .hamburger span { display: block; width: 18px; height: 2px; background: var(--text-2); border-radius: 2px; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99; backdrop-filter: blur(2px); }
+    .sidebar-overlay.active { display: block; }
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
+      .hamburger { display: flex; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; z-index: 200; }
+      .sidebar.open { transform: none; }
       .main { margin-left: 0; }
       .data-table thead th:nth-child(3),
       .data-table tbody td:nth-child(3) { display: none; }
@@ -287,6 +297,7 @@
   </script>
 
   <!-- Sidebar -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
       <div class="sidebar-logo-icon">&#128197;</div>
@@ -318,6 +329,7 @@
   <!-- Main -->
   <div class="main">
     <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
       <span class="topbar-title">Bookings</span>
       <div class="topbar-actions">
         <span class="topbar-date">Monday, 7 April 2025</span>
@@ -351,7 +363,7 @@
           <span class="table-count"></span>
         </div>
 
-        <table class="data-table">
+        <div class="table-scroll"><table class="data-table">
           <thead>
             <tr>
               <th>Customer</th>
@@ -364,7 +376,7 @@
           </thead>
           <tbody>
           </tbody>
-        </table>
+        </table></div>
 
         <!-- Pagination -->
         <div class="pagination">
@@ -379,5 +391,10 @@
   </div>
 
   <script type="module" src="./js/pages/bookings.js"></script>
+  <script>
+    var _hbg = document.getElementById('hamburger'), _sb = document.querySelector('.sidebar'), _ov = document.getElementById('sidebar-overlay')
+    _hbg && _hbg.addEventListener('click', function() { _sb.classList.toggle('open'); _ov.classList.toggle('active') })
+    _ov  && _ov.addEventListener('click',  function() { _sb.classList.remove('open'); _ov.classList.remove('active') })
+  </script>
 </body>
 </html>

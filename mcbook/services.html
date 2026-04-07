@@ -229,9 +229,18 @@
     }
     .btn-cancel:hover { border-color: var(--text-2); color: var(--text); }
 
+    /* ── Hamburger + sidebar overlay ── */
+    .hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 6px; border-radius: 8px; flex-shrink: 0; }
+    .hamburger:hover { background: rgba(255,255,255,0.06); }
+    .hamburger span { display: block; width: 18px; height: 2px; background: var(--text-2); border-radius: 2px; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99; backdrop-filter: blur(2px); }
+    .sidebar-overlay.active { display: block; }
+
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
+      .hamburger { display: flex; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; z-index: 200; }
+      .sidebar.open { transform: none; }
       .main { margin-left: 0; }
       .form-grid   { grid-template-columns: 1fr; }
       .form-grid-3 { grid-template-columns: 1fr 1fr; }
@@ -258,6 +267,7 @@
   </script>
 
   <!-- Sidebar -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
   <aside class="sidebar">
     <a href="dashboard.html" class="sidebar-logo">
       <div class="sidebar-logo-icon">&#128197;</div>
@@ -289,6 +299,7 @@
   <!-- Main -->
   <div class="main">
     <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
       <span class="topbar-title">Services</span>
       <div class="topbar-right">
         <span class="topbar-date">Monday, 7 April 2025</span>
@@ -357,5 +368,10 @@
   </div>
 
   <script type="module" src="./js/pages/services.js"></script>
+  <script>
+    var _hbg = document.getElementById('hamburger'), _sb = document.querySelector('.sidebar'), _ov = document.getElementById('sidebar-overlay')
+    _hbg && _hbg.addEventListener('click', function() { _sb.classList.toggle('open'); _ov.classList.toggle('active') })
+    _ov  && _ov.addEventListener('click',  function() { _sb.classList.remove('open'); _ov.classList.remove('active') })
+  </script>
 </body>
 </html>
