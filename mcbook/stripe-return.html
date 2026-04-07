@@ -90,8 +90,20 @@
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
       data = await res.json()
-    } catch {
-      data = { status: 'pending', chargesEnabled: false, payoutsEnabled: false }
+      // Surface function errors rather than silently defaulting to pending
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? `HTTP ${res.status}`)
+      }
+    } catch (err) {
+      const card = document.getElementById('card')
+      card.innerHTML = `
+        <span class="icon">&#9888;&#65039;</span>
+        <h1 style="color:#ef4444">Could not verify status</h1>
+        <p>${err.message}</p>
+        <div class="btn-row" style="margin-top:24px">
+          <a href="stripe-onboarding.html" class="btn btn-primary">Back to Payouts Setup</a>
+        </div>`
+      throw err
     }
 
     const card = document.getElementById('card')

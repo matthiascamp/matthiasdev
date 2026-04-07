@@ -83,12 +83,20 @@ Deno.serve(async (req: Request) => {
       ...(account.requirements?.errors?.map((e) => e.requirement) ?? []),
     ]
 
-    // Determine status — check past_due and disabled_reason, not just disabled_reason
-    const hasPastDue = (account.requirements?.past_due?.length ?? 0) > 0
+    // Determine status
+    // 'enabled'    = charges + payouts both on
+    // 'restricted' = has any outstanding requirements (currently_due, past_due, or disabled)
+    // 'pending'    = no requirements left but Stripe still reviewing (rare)
+    const anyDue =
+      (account.requirements?.currently_due?.length ?? 0) > 0 ||
+      (account.requirements?.past_due?.length       ?? 0) > 0 ||
+      (account.requirements?.eventually_due?.length ?? 0) > 0
+
     let status: 'pending' | 'restricted' | 'enabled' = 'pending'
     if (account.charges_enabled && account.payouts_enabled) {
       status = 'enabled'
-    } else if (account.requirements?.disabled_reason || hasPastDue) {
+    } else if (account.requirements?.disabled_reason || anyDue) {
+      // Account has outstanding items OR is explicitly disabled — needs action
       status = 'restricted'
     }
 
