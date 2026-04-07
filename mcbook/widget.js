@@ -92,18 +92,38 @@
     const { clientSecret, error: siErr } = await res.json();
     if (siErr) throw new Error(siErr);
 
-    // Mount Stripe Elements inside the shadow root
+    // Stripe cannot mount inside a shadow root — create light DOM slot containers
+    // that are projected into the shadow DOM via named slots.
+    const cnDiv = document.createElement('div');
+    cnDiv.setAttribute('slot', 'stripe-card-number');
+    cnDiv.style.cssText = 'width:100%;';
+    const ceDiv = document.createElement('div');
+    ceDiv.setAttribute('slot', 'stripe-card-expiry');
+    ceDiv.style.cssText = 'width:100%;';
+    const ccDiv = document.createElement('div');
+    ccDiv.setAttribute('slot', 'stripe-card-cvc');
+    ccDiv.style.cssText = 'width:100%;';
+    widget._host.appendChild(cnDiv);
+    widget._host.appendChild(ceDiv);
+    widget._host.appendChild(ccDiv);
+
     const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
     const elements = stripe.elements();
     const cardNumber = elements.create('cardNumber');
     const cardExpiry = elements.create('cardExpiry');
     const cardCvc    = elements.create('cardCvc');
-    const root = widget.root;
-    cardNumber.mount(root.querySelector('#stripe-card-number'));
-    cardExpiry.mount(root.querySelector('#stripe-card-expiry'));
-    cardCvc.mount(root.querySelector('#stripe-card-cvc'));
+    cardNumber.mount(cnDiv);
+    cardExpiry.mount(ceDiv);
+    cardCvc.mount(ccDiv);
 
-    widget._stripeElements = { stripe, cardNumber, clientSecret };
+    widget._stripeElements = { stripe, cardNumber, clientSecret, _slotDivs: [cnDiv, ceDiv, ccDiv] };
+  }
+
+  function destroyStripeSlots(widget) {
+    if (widget._stripeElements?._slotDivs) {
+      widget._stripeElements._slotDivs.forEach(d => d.remove());
+    }
+    widget._stripeElements = null;
   }
 
   // Convert "h:mm AM/PM" → "HH:MM"
@@ -748,6 +768,9 @@
       this.root.className = 'bw-wrap';
       shadow.appendChild(this.root);
 
+      // Keep host reference so Stripe can mount in light DOM via slots
+      this._host = host;
+
       this._render();
     }
 
@@ -1041,19 +1064,18 @@
         <div class="bw-form">
           <div class="bw-field">
             <label>Card Number</label>
-            <div class="bw-stripe-box" id="stripe-card-number">
-              <span class="bw-stripe-icon">&#x1F4B3;</span>
-              <span>•••• •••• •••• ••••</span>
+            <div class="bw-stripe-box" id="stripe-card-number-wrap">
+              <slot name="stripe-card-number"><span class="bw-stripe-icon">&#x1F4B3;</span><span>•••• •••• •••• ••••</span></slot>
             </div>
           </div>
           <div class="bw-stripe-row">
             <div class="bw-field">
               <label>Expiry</label>
-              <div class="bw-stripe-box" id="stripe-card-expiry">MM / YY</div>
+              <div class="bw-stripe-box" id="stripe-card-expiry-wrap"><slot name="stripe-card-expiry">MM / YY</slot></div>
             </div>
             <div class="bw-field">
               <label>CVC</label>
-              <div class="bw-stripe-box" id="stripe-card-cvc">•••</div>
+              <div class="bw-stripe-box" id="stripe-card-cvc-wrap"><slot name="stripe-card-cvc">•••</slot></div>
             </div>
           </div>
           <div class="bw-secure-note">
@@ -1279,7 +1301,7 @@
           if (bookErr) throw bookErr;
 
           this.state.ref = 'BK-' + booking.id.slice(0, 6).toUpperCase();
-          this._stripeElements = null;
+          destroyStripeSlots(this);
           this.state.step++;
           this._render();
         } catch (err) {
@@ -1296,14 +1318,14 @@
     }
 
     _back() {
-      if (this.state.step === 5 && this._requirePayment) { this._stripeElements = null; this._customerId = null; }
+      if (this.state.step === 5 && this._requirePayment) { destroyStripeSlots(this); this._customerId = null; }
       this.state.step--;
       this._render();
     }
 
     _reset() {
       this._slots          = null; // clear slot cache (date will change); keep this._services
-      this._stripeElements = null;
+      destroyStripeSlots(this);
       this._customerId     = null;
       this.state = {
         step:     1,
