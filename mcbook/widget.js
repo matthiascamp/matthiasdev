@@ -321,7 +321,7 @@
         background: ${t.bg};
         border: 1px solid ${t.border};
         border-radius: 12px;
-        max-width: 480px;
+        max-width: 580px;
         width: 100%;
         margin: 0 auto;
         overflow: hidden;
