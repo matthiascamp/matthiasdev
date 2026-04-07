@@ -156,6 +156,7 @@
     const connect = document.getElementById('connect-card')
 
     if (!client?.stripe_account_id) {
+      // No account yet — show the connect button
       banner.className = 'status-banner none'
       banner.innerHTML = `
         <span class="status-icon">&#128274;</span>
@@ -164,53 +165,51 @@
           <div class="status-sub">Connect your Stripe account below to start receiving payments.</div>
         </div>`
       connect.style.display = 'block'
-      return
-    }
+    } else {
+      // Has an account — fetch live status from Stripe
+      try {
+        const res  = await fetch(`${SUPABASE_URL}/functions/v1/verify-connect-account`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        })
+        const data = await res.json()
+        console.log('[McBook] verify-connect-account:', data)
 
-    // Has an account — fetch live status from Stripe
-    try {
-      const res  = await fetch(`${SUPABASE_URL}/functions/v1/verify-connect-account`, {
-        headers: { 'Authorization': `Bearer ${session.access_token}` }
-      })
-      const data = await res.json()
-      console.log('[McBook] verify-connect-account:', data)
+        if (data.status === 'enabled') {
+          banner.className = 'status-banner enabled'
+          banner.innerHTML = `
+            <span class="status-icon">&#9989;</span>
+            <div style="flex:1">
+              <div class="status-title">Payouts enabled</div>
+              <div class="status-sub">Your Stripe account is connected. Funds are paid out automatically each day.</div>
+            </div>
+            ${data.dashboardUrl ? `<a href="${data.dashboardUrl}" target="_blank" class="btn-dashboard">&#128200; Stripe Dashboard</a>` : ''}`
+          connect.style.display = 'none'
 
-      if (data.status === 'enabled') {
-        banner.className = 'status-banner enabled'
-        banner.innerHTML = `
-          <span class="status-icon">&#9989;</span>
-          <div style="flex:1">
-            <div class="status-title">Payouts enabled</div>
-            <div class="status-sub">Your Stripe account is connected. Funds are paid out automatically each day.</div>
-          </div>
-          ${data.dashboardUrl ? `<a href="${data.dashboardUrl}" target="_blank" class="btn-dashboard">&#128200; Stripe Dashboard</a>` : ''}`
-        connect.style.display = 'none'
+        } else if (data.status === 'restricted') {
+          banner.className = 'status-banner restricted'
+          banner.innerHTML = `
+            <span class="status-icon">&#9888;&#65039;</span>
+            <div>
+              <div class="status-title">Stripe account needs attention</div>
+              <div class="status-sub">Log into your Stripe account to resolve any outstanding requirements.</div>
+            </div>`
+          connect.style.display = 'block'
+          document.getElementById('connect-label').textContent = 'Connect a different Stripe account'
 
-      } else if (data.status === 'restricted') {
-        banner.className = 'status-banner restricted'
-        banner.innerHTML = `
-          <span class="status-icon">&#9888;&#65039;</span>
-          <div>
-            <div class="status-title">Stripe account needs attention</div>
-            <div class="status-sub">Log into your Stripe account to resolve any outstanding requirements.</div>
-          </div>`
-        // Show connect button in case they want to connect a different account
+        } else {
+          banner.className = 'status-banner pending'
+          banner.innerHTML = `
+            <span class="status-icon">&#9203;</span>
+            <div>
+              <div class="status-title">Verification in progress</div>
+              <div class="status-sub">Stripe is reviewing your account. This usually takes a few minutes.</div>
+            </div>`
+          connect.style.display = 'none'
+        }
+      } catch (err) {
+        console.error('Status check failed:', err)
         connect.style.display = 'block'
-        document.getElementById('connect-label').textContent = 'Connect a different Stripe account'
-
-      } else {
-        banner.className = 'status-banner pending'
-        banner.innerHTML = `
-          <span class="status-icon">&#9203;</span>
-          <div>
-            <div class="status-title">Verification in progress</div>
-            <div class="status-sub">Stripe is reviewing your account. This usually takes a few minutes.</div>
-          </div>`
-        connect.style.display = 'none'
       }
-    } catch (err) {
-      console.error('Status check failed:', err)
-      connect.style.display = 'block'
     }
 
     // ── Sign out ──────────────────────────────────────────────────────────────
