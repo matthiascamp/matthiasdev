@@ -3,97 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resuming Payouts Setup — McBook</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Payouts Setup — McBook</title>
   <style>
-    :root {
-      --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e;
-      --accent: #4ade80; --text: #ffffff; --text-2: #8b8b9e;
-      --radius: 12px; --radius-sm: 8px;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-    }
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 40px;
-      max-width: 440px; width: 100%; text-align: center;
-    }
-    .spinner {
-      width: 36px; height: 36px; border: 3px solid rgba(74,222,128,0.15);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 24px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
-    p  { font-size: 0.85rem; color: var(--text-2); line-height: 1.6; }
-    .btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 11px 20px; margin-top: 24px;
-      border-radius: var(--radius-sm); background: var(--accent);
-      color: #0a0a0f; font-family: inherit; font-size: 0.88rem; font-weight: 700;
-      cursor: pointer; border: none; text-decoration: none;
-      transition: opacity 0.18s;
-    }
-    .btn:hover { opacity: 0.85; }
-    .error { color: #ef4444; margin-top: 16px; font-size: 0.8rem; display: none; }
+    body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
-
-  <div class="card">
-    <div class="spinner" id="spinner"></div>
-    <h1 id="title">Refreshing your onboarding link…</h1>
-    <p id="body">The previous link expired. We're generating a fresh one — you'll be redirected automatically.</p>
-    <div id="error" class="error"></div>
-    <a href="stripe-onboarding.html" class="btn" id="fallback-btn" style="display:none">
-      &#8592; Back to Payouts Setup
-    </a>
-  </div>
-
-  <script type="module">
-    import { requireAuth } from './js/auth.js'
-
-    const SUPABASE_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co'
-
-    const session = await requireAuth()
-    if (!session) throw new Error('No session')
-
-    // Re-call create-connect-account with no body fields — the Edge Function
-    // detects an existing stripe_account_id and just returns a fresh Account Link.
-    try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/create-connect-account`, {
-        method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({}), // empty — Edge Function reuses existing account
-      })
-
-      const data = await res.json()
-
-      if (!res.ok || !data.url) throw new Error(data.error ?? 'Could not generate link.')
-
-      // Redirect to fresh Stripe onboarding
-      window.location.href = data.url
-
-    } catch (err) {
-      document.getElementById('spinner').style.display = 'none'
-      document.getElementById('title').textContent = 'Could not refresh link'
-      document.getElementById('body').textContent   = 'Please return to the Payouts Setup page and try again.'
-      const errEl = document.getElementById('error')
-      errEl.textContent = err.message
-      errEl.style.display = 'block'
-      document.getElementById('fallback-btn').style.display = 'inline-flex'
-    }
+  <script>
+    // Standard Connect doesn't use account links — just send back to the payouts page
+    window.location.replace('stripe-onboarding.html')
   </script>
-
 </body>
 </html>
