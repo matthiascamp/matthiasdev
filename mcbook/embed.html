@@ -181,6 +181,59 @@
       color: var(--accent);
     }
 
+    /* ── URL row ── */
+    .url-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .url-input {
+      flex: 1;
+      padding: 9px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.75rem;
+      outline: none;
+      min-width: 0;
+      cursor: text;
+      user-select: all;
+    }
+    .url-input:focus { border-color: rgba(74,222,128,0.35); }
+    .bio-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color var(--ease);
+      min-height: 72px;
+    }
+    .bio-textarea:focus { border-color: rgba(74,222,128,0.35); }
+    .bio-textarea::placeholder { color: var(--text-3); }
+    .btn-save {
+      padding: 8px 16px;
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter var(--ease);
+    }
+    .btn-save:hover { filter: brightness(1.1); }
+    .btn-save:disabled { opacity: 0.5; cursor: default; }
+    .card-divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
     /* ── Preview link ── */
     .preview-link {
       display: inline-flex; align-items: center; gap: 7px;
@@ -220,7 +273,7 @@
     // ── Load client details ───────────────────────────────────────────────────
     const { data: client } = await supabase
       .from('clients')
-      .select('id, business_name, email')
+      .select('id, business_name, email, booking_page_bio')
       .eq('id', session.user.id)
       .single()
 
@@ -231,6 +284,41 @@
     const initials = (client?.business_name ?? 'MB').slice(0, 2).toUpperCase()
     document.getElementById('sidebar-avatar').textContent = initials
     document.getElementById('sidebar-name').textContent   = businessName
+
+    // ── Booking page URL ──────────────────────────────────────────────────────
+    const bookingPageUrl = `https://matthiasdev.com/mcbook/book.html?id=${businessId}`
+    document.getElementById('booking-page-url').value = bookingPageUrl
+    document.getElementById('open-page-btn').href = bookingPageUrl
+
+    // Populate bio
+    const bioEl = document.getElementById('bio-textarea')
+    if (client?.booking_page_bio) bioEl.value = client.booking_page_bio
+
+    // Copy booking page URL
+    document.getElementById('copy-url-btn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(bookingPageUrl)
+      } catch {
+        const inp = document.getElementById('booking-page-url')
+        inp.select(); document.execCommand('copy')
+      }
+      const btn = document.getElementById('copy-url-btn')
+      btn.textContent = '✓ Copied!'
+      btn.classList.add('copied')
+      setTimeout(() => { btn.innerHTML = '&#128279; Copy link'; btn.classList.remove('copied') }, 2000)
+    })
+
+    // Save bio
+    document.getElementById('save-bio-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-bio-btn')
+      btn.disabled = true; btn.textContent = 'Saving…'
+      const { error } = await supabase.from('clients')
+        .update({ booking_page_bio: bioEl.value.trim() || null })
+        .eq('id', session.user.id)
+      btn.disabled = false
+      btn.textContent = error ? 'Error' : '✓ Saved'
+      setTimeout(() => { btn.textContent = 'Save' }, 2000)
+    })
 
     // ── Build the snippet ─────────────────────────────────────────────────────
     const widgetUrl = 'https://matthiasdev.com/mcbook/widget.js'
@@ -292,7 +380,7 @@
     <a href="services.html"          class="nav-link"><span class="nav-icon">&#10024;</span> Services</a>
     <a href="availability.html"      class="nav-link"><span class="nav-icon">&#128197;</span> Availability</a>
     <a href="stripe-onboarding.html" class="nav-link"><span class="nav-icon">&#128176;</span> Payouts</a>
-    <a href="embed.html"             class="nav-link active"><span class="nav-icon">&#128279;</span> Widget</a>
+    <a href="embed.html"             class="nav-link active"><span class="nav-icon">&#128279;</span> Share</a>
 
     <span class="nav-section-label">Account</span>
     <a href="#" class="nav-link"><span class="nav-icon">&#9881;</span> Settings</a>
@@ -313,13 +401,45 @@
   <div class="main">
     <header class="topbar">
       <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
-      <span class="topbar-title">Booking Widget</span>
+      <span class="topbar-title">Share &amp; Embed</span>
       <div class="topbar-actions">
         <span class="topbar-date" id="topbar-date"></span>
       </div>
     </header>
 
     <main class="content">
+
+      <!-- Booking page card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">&#127758;</div>
+          <div>
+            <div class="card-title">Your Booking Page</div>
+            <div class="card-sub">A ready-made website your clients can visit to book with you — share this link anywhere.</div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="url-row">
+            <input type="text" class="url-input" id="booking-page-url" readonly placeholder="Loading…">
+            <button class="copy-btn" id="copy-url-btn">&#128279; Copy link</button>
+          </div>
+          <div style="margin-top:10px;">
+            <a id="open-page-btn" href="#" target="_blank" class="preview-link">&#9654;&#65038; Open page</a>
+          </div>
+
+          <hr class="card-divider">
+
+          <label style="display:block;font-size:0.7rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">
+            Tagline <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">(optional — shown below your business name)</span>
+          </label>
+          <textarea class="bio-textarea" id="bio-textarea" placeholder="e.g. Brisbane's friendliest barber — walk-ins welcome"></textarea>
+          <div style="margin-top:8px;">
+            <button class="btn-save" id="save-bio-btn">Save</button>
+          </div>
+
+        </div>
+      </div>
 
       <!-- Embed code card -->
       <div class="card">
