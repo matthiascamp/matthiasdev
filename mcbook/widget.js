@@ -147,37 +147,31 @@
     widget._host.appendChild(ccDiv);
 
     const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
-    const elements = stripe.elements();
-    const stripeStyle = {
-      base: {
-        color:           '#0a0a0f',
-        backgroundColor: '#ffffff',
-        fontFamily:      'Inter, system-ui, sans-serif',
-        fontSize:        '14px',
-        '::placeholder': { color: '#94a3b8' },
+    // appearance API properly controls the iframe background colour even when
+    // the host page is in dark mode — the old style.base.backgroundColor only
+    // applies to the input element, not the iframe body.
+    const elements = stripe.elements({
+      appearance: {
+        theme: 'flat',
+        variables: {
+          colorBackground:        '#ffffff',
+          colorText:              '#0a0a0f',
+          colorTextPlaceholder:   '#94a3b8',
+          fontFamily:             'Inter, system-ui, sans-serif',
+          fontSizeBase:           '14px',
+        },
+        rules: {
+          // Don't turn text red while the user is mid-entry — only on submit
+          '.Input--invalid': { color: '#0a0a0f' },
+        },
       },
-      // Don't turn text red while the user is mid-entry — only show errors on submit
-      invalid: {
-        color: '#0a0a0f',
-      },
-    };
-    const cardNumber = elements.create('cardNumber', { style: stripeStyle });
-    const cardExpiry = elements.create('cardExpiry', { style: stripeStyle });
-    const cardCvc    = elements.create('cardCvc',    { style: stripeStyle });
+    });
+    const cardNumber = elements.create('cardNumber');
+    const cardExpiry = elements.create('cardExpiry');
+    const cardCvc    = elements.create('cardCvc');
     cardNumber.mount(cnDiv);
     cardExpiry.mount(ceDiv);
     cardCvc.mount(ccDiv);
-
-    // Force Stripe iframes into light color scheme so they never render with a
-    // dark background regardless of the user's system dark mode setting.
-    // color-scheme on the *iframe element* (not its parent) is what actually
-    // propagates into the iframe's internal document.
-    if (!document.getElementById('mcbook-stripe-light')) {
-      const s = document.createElement('style');
-      s.id = 'mcbook-stripe-light';
-      s.textContent = '[data-booking-widget] [slot^="stripe-card"] iframe { color-scheme: light !important; background: #ffffff !important; }';
-      document.head.appendChild(s);
-    }
 
     // Focus/blur → highlight the shadow DOM wrapper so users see which box is active
     const cnWrap = widget.root.querySelector('#stripe-card-number-wrap');
