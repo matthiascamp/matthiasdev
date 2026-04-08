@@ -278,8 +278,9 @@
     .adv-day:hover { border-color: rgba(74,222,128,0.35); }
     .adv-day.adv-today { border-color: rgba(74,222,128,0.4); }
     .adv-day.adv-blocked { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.25); }
-    .adv-day.adv-custom { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.3); }
-    .adv-day.adv-closed { opacity: 0.38; cursor: default; }
+    .adv-day.adv-custom  { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.3); }
+    .adv-day.adv-break   { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.3); }
+    .adv-day.adv-closed  { opacity: 0.38; cursor: default; }
     .adv-day-num {
       font-size: 0.8rem;
       font-weight: 700;
@@ -292,8 +293,9 @@
       text-align: center;
     }
     .adv-day.adv-blocked .adv-day-label { color: #ef4444; }
-    .adv-day.adv-custom .adv-day-label { color: #60a5fa; }
-    .adv-day:not(.adv-blocked):not(.adv-custom):not(.adv-closed) .adv-day-label { color: var(--text-2); }
+    .adv-day.adv-custom  .adv-day-label { color: #60a5fa; }
+    .adv-day.adv-break   .adv-day-label { color: #f59e0b; }
+    .adv-day:not(.adv-blocked):not(.adv-custom):not(.adv-break):not(.adv-closed) .adv-day-label { color: var(--text-2); }
 
     /* Day editor popup */
     .adv-editor {
@@ -715,6 +717,14 @@
                     <select class="time-select" id="adv-start"></select>
                     <span class="time-sep">–</span>
                     <select class="time-select" id="adv-end"></select>
+                  </div>
+                  <label class="adv-radio">
+                    <input type="radio" name="adv-mode" value="break"> Block a time period
+                  </label>
+                  <div class="adv-custom-times" id="adv-break-times">
+                    <select class="time-select" id="adv-break-from"></select>
+                    <span class="time-sep">–</span>
+                    <select class="time-select" id="adv-break-to"></select>
                   </div>
                 </div>
                 <div class="adv-editor-actions">

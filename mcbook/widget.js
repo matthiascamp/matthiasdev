@@ -239,7 +239,22 @@
     let cur = startH * 60 + startM;
     const endTotal = endH * 60 + endM;
 
+    // Pre-compute blocked period in minutes (if any)
+    let breakStart = -1, breakEnd = -1;
+    if (override?.blocked_from && override?.blocked_to) {
+      const [bfH, bfM] = override.blocked_from.split(':').map(Number);
+      const [btH, btM] = override.blocked_to.split(':').map(Number);
+      breakStart = bfH * 60 + bfM;
+      breakEnd   = btH * 60 + btM;
+    }
+
     while (cur < endTotal) {
+      // Skip slots that fall inside the blocked period
+      if (breakStart >= 0 && cur >= breakStart && cur < breakEnd) {
+        cur += slotMins;
+        continue;
+      }
+
       const h = Math.floor(cur / 60);
       const m = cur % 60;
       const slotTime = new Date(dateObj);

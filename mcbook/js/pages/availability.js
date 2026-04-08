@@ -222,9 +222,12 @@ function renderAdvancedCalendar() {
       if (!ov.is_available) {
         cls += ' adv-blocked'
         label = 'Blocked'
+      } else if (ov.blocked_from && ov.blocked_to) {
+        cls += ' adv-break'
+        label = 'Break ' + to12h(ov.blocked_from).replace(':00 ',' ') + '–' + to12h(ov.blocked_to).replace(':00 ',' ')
       } else if (ov.start_time && ov.end_time) {
         cls += ' adv-custom'
-        label = to12h(ov.start_time).replace(':00','') + '–' + to12h(ov.end_time).replace(':00','')
+        label = to12h(ov.start_time).replace(':00 ',' ') + '–' + to12h(ov.end_time).replace(':00 ',' ')
       }
     } else if (!weekly?.enabled) {
       cls += ' adv-closed'
@@ -253,27 +256,34 @@ function renderAdvancedCalendar() {
 
 function openAdvEditor(dateStr, dateObj) {
   advSelectedDate = dateStr
-  const editor = document.getElementById('adv-editor')
-  const title  = document.getElementById('adv-editor-title')
-  const radios = document.querySelectorAll('input[name="adv-mode"]')
+  const editor     = document.getElementById('adv-editor')
+  const title      = document.getElementById('adv-editor-title')
+  const radios     = document.querySelectorAll('input[name="adv-mode"]')
   const customTimes = document.getElementById('adv-custom-times')
-  const startSel = document.getElementById('adv-start')
-  const endSel   = document.getElementById('adv-end')
+  const breakTimes  = document.getElementById('adv-break-times')
+  const startSel    = document.getElementById('adv-start')
+  const endSel      = document.getElementById('adv-end')
+  const breakFromSel = document.getElementById('adv-break-from')
+  const breakToSel   = document.getElementById('adv-break-to')
 
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   title.textContent = `${dateObj.toLocaleDateString('en-AU', { weekday: 'long' })} ${fmtAdvDate(dateStr)}`
 
   // Populate time selects if not already done
-  if (!startSel.options.length) {
-    populateSelect(startSel, '9:00 AM')
-    populateSelect(endSel,   '5:00 PM')
-  }
+  if (!startSel.options.length)     populateSelect(startSel,    '9:00 AM')
+  if (!endSel.options.length)       populateSelect(endSel,      '5:00 PM')
+  if (!breakFromSel.options.length) populateSelect(breakFromSel,'12:00 PM')
+  if (!breakToSel.options.length)   populateSelect(breakToSel,  '1:00 PM')
 
   const ov = advOverrides[dateStr]
   let mode = 'default'
   if (ov) {
-    if (!ov.is_available) mode = 'blocked'
-    else if (ov.start_time && ov.end_time) {
+    if (!ov.is_available) {
+      mode = 'blocked'
+    } else if (ov.blocked_from && ov.blocked_to) {
+      mode = 'break'
+      breakFromSel.value = to12h(ov.blocked_from)
+      breakToSel.value   = to12h(ov.blocked_to)
+    } else if (ov.start_time && ov.end_time) {
       mode = 'custom'
       startSel.value = to12h(ov.start_time)
       endSel.value   = to12h(ov.end_time)
@@ -282,6 +292,7 @@ function openAdvEditor(dateStr, dateObj) {
 
   radios.forEach(r => { r.checked = r.value === mode })
   customTimes.classList.toggle('visible', mode === 'custom')
+  breakTimes.classList.toggle('visible',  mode === 'break')
   editor.classList.add('open')
   editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 }
@@ -301,31 +312,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Advanced editor radio toggles
   document.querySelectorAll('input[name="adv-mode"]').forEach(r => {
     r.addEventListener('change', () => {
-      document.getElementById('adv-custom-times')
-        .classList.toggle('visible', r.value === 'custom' && r.checked)
+      document.getElementById('adv-custom-times').classList.toggle('visible', r.value === 'custom' && r.checked)
+      document.getElementById('adv-break-times').classList.toggle('visible',  r.value === 'break'  && r.checked)
     })
   })
 
   // Advanced save
   document.getElementById('adv-save')?.addEventListener('click', async () => {
     if (!advSelectedDate) return
-    const mode = document.querySelector('input[name="adv-mode"]:checked')?.value
-    const startVal = document.getElementById('adv-start')?.value
-    const endVal   = document.getElementById('adv-end')?.value
+    const mode         = document.querySelector('input[name="adv-mode"]:checked')?.value
+    const startVal     = document.getElementById('adv-start')?.value
+    const endVal       = document.getElementById('adv-end')?.value
+    const breakFromVal = document.getElementById('adv-break-from')?.value
+    const breakToVal   = document.getElementById('adv-break-to')?.value
 
     if (mode === 'default') {
-      // Remove override
       const ov = advOverrides[advSelectedDate]
       if (ov?.id) await supabase.from('availability_overrides').delete().eq('id', ov.id)
     } else if (mode === 'blocked') {
       await supabase.from('availability_overrides').upsert({
         client_id: uid, date: advSelectedDate, is_available: false,
-        start_time: null, end_time: null,
+        start_time: null, end_time: null, blocked_from: null, blocked_to: null,
       }, { onConflict: 'client_id,date' })
     } else if (mode === 'custom') {
       await supabase.from('availability_overrides').upsert({
         client_id: uid, date: advSelectedDate, is_available: true,
         start_time: to24h(startVal), end_time: to24h(endVal),
+        blocked_from: null, blocked_to: null,
+      }, { onConflict: 'client_id,date' })
+    } else if (mode === 'break') {
+      await supabase.from('availability_overrides').upsert({
+        client_id: uid, date: advSelectedDate, is_available: true,
+        start_time: null, end_time: null,
+        blocked_from: to24h(breakFromVal), blocked_to: to24h(breakToVal),
       }, { onConflict: 'client_id,date' })
     }
 
