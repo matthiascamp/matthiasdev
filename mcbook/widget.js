@@ -133,26 +133,24 @@
     // Stripe cannot mount inside a shadow root — create light DOM slot containers
     // that are projected into the shadow DOM via named slots.
     // Card inputs are always white regardless of widget theme — standard form UX.
+    const slotStyle = 'width:100% !important; background:#ffffff !important; color:#0a0a0f !important; color-scheme:light !important; display:block !important;';
     const cnDiv = document.createElement('div');
     cnDiv.setAttribute('slot', 'stripe-card-number');
-    cnDiv.style.cssText = 'width:100%; background-color:#ffffff; color-scheme:light;';
+    cnDiv.setAttribute('style', slotStyle);
     const ceDiv = document.createElement('div');
     ceDiv.setAttribute('slot', 'stripe-card-expiry');
-    ceDiv.style.cssText = 'width:100%; background-color:#ffffff; color-scheme:light;';
+    ceDiv.setAttribute('style', slotStyle);
     const ccDiv = document.createElement('div');
     ccDiv.setAttribute('slot', 'stripe-card-cvc');
-    ccDiv.style.cssText = 'width:100%; background-color:#ffffff; color-scheme:light;';
+    ccDiv.setAttribute('style', slotStyle);
     widget._host.appendChild(cnDiv);
     widget._host.appendChild(ceDiv);
     widget._host.appendChild(ccDiv);
 
     const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
-    // appearance API properly controls the iframe background colour even when
-    // the host page is in dark mode — the old style.base.backgroundColor only
-    // applies to the input element, not the iframe body.
     const elements = stripe.elements({
       appearance: {
-        theme: 'flat',
+        theme: 'none',
         variables: {
           colorBackground:        '#ffffff',
           colorText:              '#0a0a0f',
@@ -161,8 +159,14 @@
           fontSizeBase:           '14px',
         },
         rules: {
-          '.Input': { color: '#0a0a0f', backgroundColor: '#ffffff' },
+          '.Input': {
+            color:           '#0a0a0f',
+            backgroundColor: '#ffffff',
+            fontSize:        '14px',
+            fontFamily:      'Inter, system-ui, sans-serif',
+          },
           '.Input--invalid': { color: '#0a0a0f' },
+          '::placeholder':   { color: '#94a3b8' },
         },
       },
     });
