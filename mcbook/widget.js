@@ -150,10 +150,10 @@
     const dark     = isDark(widget.theme.bg);
     const stripeStyle = {
       base: {
-        color:      dark ? '#ffffff' : '#0a0a0f',
+        color:      dark ? '#f0ece4' : '#0a0a0f',
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize:   '14px',
-        '::placeholder': { color: dark ? '#8b8b9e' : '#94a3b8' },
+        '::placeholder': { color: dark ? '#888880' : '#94a3b8' },
       },
     };
     const cardNumber = elements.create('cardNumber', { style: stripeStyle });
@@ -331,11 +331,11 @@
     return new Date(year, month, 1).getDay();
   }
 
-  function isDateAvailable(date) {
+  function isDateAvailable(date, enabledWeekdays) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return false;
-    if (BLOCKED_WEEKDAYS.includes(date.getDay())) return false;
+    if (enabledWeekdays && !enabledWeekdays.has(date.getDay())) return false;
     return true;
   }
 
@@ -347,16 +347,16 @@
 
     // Build a normalised theme object for either mode
     const t = dark ? {
-      bg:       '#0a0a0f',
-      surface:  '#111118',
-      border:   '#1e1e2e',
-      accent:   '#4ade80',
-      accentBg: 'rgba(74,222,128,0.07)',
-      text:     '#ffffff',
-      sub:      '#8b8b9e',
-      btnText:  '#0a0a0f',
-      inputBg:  '#0d0d15',
-      glow:     '0 0 12px rgba(74,222,128,0.15)',
+      bg:       '#0c0c0c',
+      surface:  '#141414',
+      border:   'rgba(201,168,76,0.18)',
+      accent:   '#C9A84C',
+      accentBg: 'rgba(201,168,76,0.07)',
+      text:     '#f0ece4',
+      sub:      '#888880',
+      btnText:  '#0c0c0c',
+      inputBg:  '#111111',
+      glow:     '0 0 12px rgba(201,168,76,0.15)',
     } : {
       bg:       '#ffffff',
       surface:  '#f4f7f4',
@@ -899,14 +899,13 @@
               .eq('active', true)
               .order('created_at', { ascending: true }),
             sb.from('availability_rules')
-              .select('id')
+              .select('day_of_week')
               .eq('client_id', this.businessId)
-              .eq('enabled', true)
-              .limit(1)
-              .maybeSingle(),
+              .eq('enabled', true),
           ]);
           this._services = data || [];
-          this._hasAvailability = !!rules;
+          this._enabledWeekdays = new Set((rules || []).map(r => r.day_of_week));
+          this._hasAvailability = this._enabledWeekdays.size > 0;
           if (this.state.step === 1) this._render();
         })();
         return `
@@ -975,7 +974,7 @@
 
       for (let d = 1; d <= totalDays; d++) {
         const thisDate = new Date(calYear, calMonth, d);
-        const avail    = isDateAvailable(thisDate);
+        const avail    = isDateAvailable(thisDate, this._enabledWeekdays);
         const isToday  = thisDate.getTime() === today.getTime();
         const isSel    = selDate && selDate.getTime() === thisDate.getTime();
 
