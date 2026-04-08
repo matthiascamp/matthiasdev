@@ -810,20 +810,46 @@
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .nav-hamburger { display: block; }
+      /* Reduce section spacing */
+      .hero { padding: 120px 5% 64px; }
+      .how-section, .features-section, .pricing-section { padding: 64px 0; }
+      .payments-section, .embed-section, .booking-page-section, .stats-section { padding: 64px 0; }
+      .cta-section { padding: 64px 5%; }
+      /* Grid collapses */
       .steps-grid { grid-template-columns: 1fr; }
       .steps-grid .step-card::after { display: none; }
       .features-grid { grid-template-columns: 1fr; }
       .feature-card.feature-large { grid-column: span 1; grid-template-columns: 1fr; }
       .payments-grid, .embed-grid, .booking-page-grid { grid-template-columns: 1fr; gap: 40px; }
-      .stats-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
       .pricing-grid .pricing-card:last-child { grid-column: auto; max-width: 100%; }
       .footer-top { grid-template-columns: 1fr; gap: 32px; }
-      .proof-bar { gap: 24px; }
+      .proof-bar { gap: 24px; flex-wrap: wrap; justify-content: flex-start; padding: 20px 5%; }
+      .proof-item { min-width: calc(50% - 12px); }
+      /* Code wrapping on mobile */
+      .code-body { font-size: 0.75rem; overflow-x: auto; }
     }
     @media (max-width: 480px) {
-      .hero h1 { font-size: 2.4rem; }
-      .btn-primary-lg, .btn-secondary-lg { padding: 13px 24px; font-size: 0.93rem; }
+      .hero { padding: 100px 5% 48px; min-height: auto; }
+      .hero h1 { font-size: 2.2rem; }
+      .btn-primary-lg, .btn-secondary-lg { padding: 13px 22px; font-size: 0.9rem; }
+      .hero-cta { gap: 10px; }
+      /* Hide Log in button in nav to save space on small phones */
+      .nav-actions .btn-ghost { display: none; }
+      /* Stats single column */
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-number { font-size: 2.4rem; }
+      .stat-cell { padding: 28px 20px; }
+      /* Proof bar single column */
+      .proof-item { min-width: 100%; }
+      /* Pricing cards */
+      .pricing-card { padding: 24px 20px; }
+      /* Footer */
+      .footer-top { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+      /* Code block */
+      .code-body { font-size: 0.7rem; word-break: break-all; white-space: pre-wrap; }
     }
   </style>
 </head>

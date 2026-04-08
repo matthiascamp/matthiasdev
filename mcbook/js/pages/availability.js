@@ -151,6 +151,141 @@ async function applyStripeGate() {
   }
 }
 
+// ── Advanced availability ─────────────────────────────────────────────────────
+const DAYS_SHOWN = 14
+let advOverrides = {}  // date-string → override row
+let advSelectedDate = null
+
+function fmtAdvDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00')
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`
+}
+
+async function loadAdvancedCalendar() {
+  const today = new Date(); today.setHours(0,0,0,0)
+  const todayISO = today.toISOString().slice(0,10)
+
+  // Fetch existing overrides
+  const { data } = await supabase.from('availability_overrides')
+    .select('*').eq('client_id', uid).gte('date', todayISO)
+  advOverrides = Object.fromEntries((data || []).map(o => [o.date, o]))
+
+  renderAdvancedCalendar()
+}
+
+function renderAdvancedCalendar() {
+  const today = new Date(); today.setHours(0,0,0,0)
+
+  // Find Monday of this week
+  const startDay = new Date(today)
+  const dow = startDay.getDay() // 0=Sun
+  const offset = dow === 0 ? -6 : 1 - dow
+  startDay.setDate(startDay.getDate() + offset)
+
+  const grid = document.getElementById('adv-grid')
+  // Remove old day cells (keep the 7 DOW headers)
+  const headers = Array.from(grid.querySelectorAll('.adv-dow'))
+  grid.innerHTML = ''
+  headers.forEach(h => grid.appendChild(h))
+
+  // Fetch current weekly rules for context
+  const weeklyRows = document.querySelectorAll('.week-row')
+  const DOW_ENABLED = {}
+  weeklyRows.forEach((row, i) => {
+    const cb = row.querySelector('input[type="checkbox"]')
+    const sel = row.querySelectorAll('.time-select')
+    DOW_ENABLED[DOW[i]] = {
+      enabled: cb?.checked,
+      start: sel[0]?.value,
+      end: sel[1]?.value,
+    }
+  })
+
+  for (let i = 0; i < DAYS_SHOWN; i++) {
+    const d = new Date(startDay)
+    d.setDate(d.getDate() + i)
+    const dateStr = d.toISOString().slice(0,10)
+    const isToday = d.getTime() === today.getTime()
+    const isPast  = d < today
+    const dayDow  = d.getDay()
+    const weekly  = DOW_ENABLED[dayDow]
+    const ov      = advOverrides[dateStr]
+
+    let cls = 'adv-day'
+    let label = ''
+
+    if (isPast) {
+      cls += ' adv-closed'
+      label = '—'
+    } else if (ov) {
+      if (!ov.is_available) {
+        cls += ' adv-blocked'
+        label = 'Blocked'
+      } else if (ov.start_time && ov.end_time) {
+        cls += ' adv-custom'
+        label = to12h(ov.start_time).replace(':00','') + '–' + to12h(ov.end_time).replace(':00','')
+      }
+    } else if (!weekly?.enabled) {
+      cls += ' adv-closed'
+      label = 'Closed'
+    } else {
+      label = 'Default'
+    }
+
+    if (isToday) cls += ' adv-today'
+
+    const cell = document.createElement('div')
+    cell.className = cls
+    cell.dataset.date = dateStr
+    const num = document.createElement('div')
+    num.className = 'adv-day-num'
+    num.textContent = d.getDate()
+    const lbl = document.createElement('div')
+    lbl.className = 'adv-day-label'
+    lbl.textContent = label
+    cell.appendChild(num)
+    cell.appendChild(lbl)
+    if (!isPast) cell.addEventListener('click', () => openAdvEditor(dateStr, d))
+    grid.appendChild(cell)
+  }
+}
+
+function openAdvEditor(dateStr, dateObj) {
+  advSelectedDate = dateStr
+  const editor = document.getElementById('adv-editor')
+  const title  = document.getElementById('adv-editor-title')
+  const radios = document.querySelectorAll('input[name="adv-mode"]')
+  const customTimes = document.getElementById('adv-custom-times')
+  const startSel = document.getElementById('adv-start')
+  const endSel   = document.getElementById('adv-end')
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  title.textContent = `${dateObj.toLocaleDateString('en-AU', { weekday: 'long' })} ${fmtAdvDate(dateStr)}`
+
+  // Populate time selects if not already done
+  if (!startSel.options.length) {
+    populateSelect(startSel, '9:00 AM')
+    populateSelect(endSel,   '5:00 PM')
+  }
+
+  const ov = advOverrides[dateStr]
+  let mode = 'default'
+  if (ov) {
+    if (!ov.is_available) mode = 'blocked'
+    else if (ov.start_time && ov.end_time) {
+      mode = 'custom'
+      startSel.value = to12h(ov.start_time)
+      endSel.value   = to12h(ov.end_time)
+    }
+  }
+
+  radios.forEach(r => { r.checked = r.value === mode })
+  customTimes.classList.toggle('visible', mode === 'custom')
+  editor.classList.add('open')
+  editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   const session = await getSession()
@@ -161,6 +296,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await Promise.all([loadWeeklySchedule(), loadBlockedDates(), loadBookingSettings()])
   await applyStripeGate()
+  await loadAdvancedCalendar()
+
+  // Advanced editor radio toggles
+  document.querySelectorAll('input[name="adv-mode"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('adv-custom-times')
+        .classList.toggle('visible', r.value === 'custom' && r.checked)
+    })
+  })
+
+  // Advanced save
+  document.getElementById('adv-save')?.addEventListener('click', async () => {
+    if (!advSelectedDate) return
+    const mode = document.querySelector('input[name="adv-mode"]:checked')?.value
+    const startVal = document.getElementById('adv-start')?.value
+    const endVal   = document.getElementById('adv-end')?.value
+
+    if (mode === 'default') {
+      // Remove override
+      const ov = advOverrides[advSelectedDate]
+      if (ov?.id) await supabase.from('availability_overrides').delete().eq('id', ov.id)
+    } else if (mode === 'blocked') {
+      await supabase.from('availability_overrides').upsert({
+        client_id: uid, date: advSelectedDate, is_available: false,
+        start_time: null, end_time: null,
+      }, { onConflict: 'client_id,date' })
+    } else if (mode === 'custom') {
+      await supabase.from('availability_overrides').upsert({
+        client_id: uid, date: advSelectedDate, is_available: true,
+        start_time: to24h(startVal), end_time: to24h(endVal),
+      }, { onConflict: 'client_id,date' })
+    }
+
+    document.getElementById('adv-editor').classList.remove('open')
+    advSelectedDate = null
+    await loadAdvancedCalendar()
+  })
+
+  // Advanced cancel
+  document.getElementById('adv-cancel')?.addEventListener('click', () => {
+    document.getElementById('adv-editor').classList.remove('open')
+    advSelectedDate = null
+  })
 
   const saveBtns = document.querySelectorAll('.btn-save')
 

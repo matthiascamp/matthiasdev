@@ -183,7 +183,16 @@
 
     await sbReady;
 
-    // a. Availability rule for this day
+    // a. Check override for this specific date
+    const { data: override } = await sb.from('availability_overrides')
+      .select('is_available, start_time, end_time')
+      .eq('client_id', businessId)
+      .eq('date', dateISO)
+      .limit(1)
+      .maybeSingle();
+    if (override && !override.is_available) return [];
+
+    // b. Availability rule for this day (used if no override times)
     const { data: rule } = await sb.from('availability_rules')
       .select('start_time, end_time')
       .eq('client_id', businessId)
@@ -191,9 +200,11 @@
       .eq('enabled', true)
       .limit(1)
       .maybeSingle();
-    if (!rule) return [];
+    // Use override times if provided, otherwise fall back to weekly rule
+    const effectiveRule = (override?.start_time && override?.end_time) ? override : rule;
+    if (!effectiveRule) return [];
 
-    // b. Booking settings (slot size, min notice)
+    // c. Booking settings (slot size, min notice)
     const { data: settings } = await sb.from('booking_settings')
       .select('slot_duration_mins, min_notice_hours')
       .eq('client_id', businessId)
@@ -202,7 +213,7 @@
     const slotMins       = settings ? settings.slot_duration_mins : 30;
     const minNoticeHours = settings ? settings.min_notice_hours   : 2;
 
-    // c. Already-booked times for this date
+    // d. Already-booked times for this date
     const { data: booked } = await sb.from('bookings')
       .select('time')
       .eq('client_id', businessId)
@@ -210,7 +221,7 @@
       .neq('status', 'cancelled');
     const bookedSet = new Set((booked || []).map(b => b.time.slice(0, 5)));
 
-    // d. Blocked date check
+    // e. Blocked date check
     const { data: blocked } = await sb.from('blocked_dates')
       .select('id')
       .eq('client_id', businessId)
@@ -219,12 +230,12 @@
       .maybeSingle();
     if (blocked) return [];
 
-    // e. Generate slots
+    // f. Generate slots
     const slots      = [];
     const now        = new Date();
     const noticeMs   = minNoticeHours * 60 * 60 * 1000;
-    const [startH, startM] = rule.start_time.split(':').map(Number);
-    const [endH,   endM  ] = rule.end_time.split(':').map(Number);
+    const [startH, startM] = effectiveRule.start_time.split(':').map(Number);
+    const [endH,   endM  ] = effectiveRule.end_time.split(':').map(Number);
     let cur = startH * 60 + startM;
     const endTotal = endH * 60 + endM;
 
@@ -319,28 +330,41 @@
     return new Date(year, month, 1).getDay();
   }
 
-  function isDateAvailable(date, enabledWeekdays, availabilityRules, minNoticeHours, slotMins) {
+  function isDateAvailable(date, enabledWeekdays, availabilityRules, minNoticeHours, slotMins, overrides) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return false;
-    if (enabledWeekdays && !enabledWeekdays.has(date.getDay())) return false;
 
-    // For today: check whether any slots remain given the minimum notice period
-    if (date.getTime() === today.getTime() && availabilityRules) {
-      const rule = availabilityRules[date.getDay()];
-      if (rule) {
-        const now = new Date();
-        const nowMins     = now.getHours() * 60 + now.getMinutes();
-        const noticeMins  = (minNoticeHours ?? 2) * 60;
-        const slot        = slotMins ?? 30;
-        const [endH, endM] = rule.end_time.split(':').map(Number);
-        const endMins     = endH * 60 + endM;
-        // No slot is reachable if the earliest bookable time is at or past the last slot start
-        if (nowMins + noticeMins >= endMins - slot) return false;
-      }
+    const dateStr = date.toISOString().slice(0, 10);
+    const ov = overrides?.get(dateStr);
+
+    if (ov) {
+      if (!ov.is_available) return false;
+      // Override marks day available — fall through to notice check using override or weekly times
+    } else {
+      // No override — respect weekly rule
+      if (enabledWeekdays && !enabledWeekdays.has(date.getDay())) return false;
     }
 
-    return true;
+    // Effective time rule: override times take priority over weekly rule
+    const rule = (ov?.end_time) ? ov : availabilityRules?.[date.getDay()];
+    if (!rule) return !!ov; // override says available but no time rule → allow
+
+    // Check whether any slot falls within the notice window
+    const now = new Date();
+    const noticeMins = (minNoticeHours ?? 2) * 60;
+    const slot = slotMins ?? 30;
+    const earliestBookable = new Date(now.getTime() + noticeMins * 60 * 1000);
+    const earliestDate = new Date(earliestBookable);
+    earliestDate.setHours(0, 0, 0, 0);
+
+    if (earliestDate > date) return false; // notice window pushes past this whole day
+    if (earliestDate < date) return true;  // this day is fully after the notice window
+
+    // Same day — check if any slot still fits
+    const earliestMins = earliestBookable.getHours() * 60 + earliestBookable.getMinutes();
+    const [endH, endM] = rule.end_time.split(':').map(Number);
+    return earliestMins <= endH * 60 + endM - slot;
   }
 
   // ─── CSS ───────────────────────────────────────────────────────────────────
@@ -918,7 +942,8 @@
       if (!this._services) {
         (async () => {
           await sbReady;
-          const [{ data }, { data: rules }, { data: settings }] = await Promise.all([
+          const todayISO = new Date().toISOString().slice(0, 10);
+          const [{ data }, { data: rules }, { data: settings }, { data: ovData }] = await Promise.all([
             sb.from('services')
               .select('id, name, duration_mins, price, noshow_fee, payment_mode')
               .eq('client_id', this.businessId)
@@ -933,12 +958,17 @@
               .eq('client_id', this.businessId)
               .limit(1)
               .maybeSingle(),
+            sb.from('availability_overrides')
+              .select('date, is_available, start_time, end_time')
+              .eq('client_id', this.businessId)
+              .gte('date', todayISO),
           ]);
           this._services = data || [];
           this._enabledWeekdays = new Set((rules || []).map(r => r.day_of_week));
           this._availabilityRules = Object.fromEntries((rules || []).map(r => [r.day_of_week, r]));
           this._minNoticeHours = settings?.min_notice_hours ?? 2;
           this._slotMins = settings?.slot_duration_mins ?? 30;
+          this._overrides = new Map((ovData || []).map(o => [o.date, o]));
           this._hasAvailability = this._enabledWeekdays.size > 0;
           if (this.state.step === 1) this._render();
         })();
@@ -1008,7 +1038,7 @@
 
       for (let d = 1; d <= totalDays; d++) {
         const thisDate = new Date(calYear, calMonth, d);
-        const avail    = isDateAvailable(thisDate, this._enabledWeekdays, this._availabilityRules, this._minNoticeHours, this._slotMins);
+        const avail    = isDateAvailable(thisDate, this._enabledWeekdays, this._availabilityRules, this._minNoticeHours, this._slotMins, this._overrides);
         const isToday  = thisDate.getTime() === today.getTime();
         const isSel    = selDate && selDate.getTime() === thisDate.getTime();
 
