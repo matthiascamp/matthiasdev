@@ -168,6 +168,17 @@
     cardExpiry.mount(ceDiv);
     cardCvc.mount(ccDiv);
 
+    // Force Stripe iframes into light color scheme so they never render with a
+    // dark background regardless of the user's system dark mode setting.
+    // color-scheme on the *iframe element* (not its parent) is what actually
+    // propagates into the iframe's internal document.
+    if (!document.getElementById('mcbook-stripe-light')) {
+      const s = document.createElement('style');
+      s.id = 'mcbook-stripe-light';
+      s.textContent = '[data-booking-widget] [slot^="stripe-card"] iframe { color-scheme: light !important; background: #ffffff !important; }';
+      document.head.appendChild(s);
+    }
+
     // Focus/blur → highlight the shadow DOM wrapper so users see which box is active
     const cnWrap = widget.root.querySelector('#stripe-card-number-wrap');
     const ceWrap = widget.root.querySelector('#stripe-card-expiry-wrap');
