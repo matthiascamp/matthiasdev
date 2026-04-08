@@ -879,10 +879,21 @@
 
     // ── Render full widget based on current state ────────────────────────────
     _render() {
+      const hostTop = this._host.getBoundingClientRect().top;
+      const scrollY = window.scrollY;
+
       this.root.innerHTML =
         this._headerHTML() +
         `<div class="bw-body">${this._stepHTML()}</div>` +
         `<div class="bw-footer">Powered by <span class="bw-footer-brand">McBook</span></div>`;
+
+      requestAnimationFrame(() => {
+        const delta = this._host.getBoundingClientRect().top - hostTop;
+        if (Math.abs(delta) > 2) {
+          window.scrollTo({ top: scrollY + delta, behavior: 'instant' });
+        }
+      });
+
       this._bindEvents();
     }
 
@@ -947,7 +958,7 @@
           <div class="bw-step-title">What service do you need?</div>
           <div class="bw-services" style="padding:16px 0;color:inherit;opacity:0.55;font-size:0.84rem;">Loading\u2026</div>
           <div class="bw-btn-row">
-            <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+            <button type="button" class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
           </div>`;
       }
 
@@ -977,7 +988,7 @@
         <div class="bw-step-title">What service do you need?</div>
         <div class="bw-services">${cards}</div>
         <div class="bw-btn-row">
-          <button class="bw-btn bw-btn-primary" id="bw-next"
+          <button type="button" class="bw-btn bw-btn-primary" id="bw-next"
             ${!this.state.service ? 'disabled' : ''}>Next &rarr;</button>
         </div>`;
     }
@@ -989,8 +1000,8 @@
         ${this._calendarHTML()}
         <div class="bw-error" id="bw-date-err">Please select a date to continue.</div>
         <div class="bw-btn-row">
-          <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-          <button class="bw-btn bw-btn-primary" id="bw-next"
+          <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+          <button type="button" class="bw-btn bw-btn-primary" id="bw-next"
             ${!this.state.date ? 'disabled' : ''}>Next &rarr;</button>
         </div>`;
     }
@@ -1025,9 +1036,9 @@
 
       return `
         <div class="bw-cal-header">
-          <button id="bw-cal-prev">&#8249;</button>
+          <button type="button" id="bw-cal-prev">&#8249;</button>
           <span class="bw-cal-month">${MONTHS[calMonth]} ${calYear}</span>
-          <button id="bw-cal-next">&#8250;</button>
+          <button type="button" id="bw-cal-next">&#8250;</button>
         </div>
         <div class="bw-cal-grid">
           ${dowHeaders}
@@ -1051,8 +1062,8 @@
           <div class="bw-step-title">Available times &mdash; ${dateStr}</div>
           <div class="bw-times" style="grid-column:1/-1;padding:16px 0;opacity:0.55;font-size:0.84rem;">Loading times\u2026</div>
           <div class="bw-btn-row">
-            <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-            <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+            <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+            <button type="button" class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
           </div>`;
       }
 
@@ -1061,8 +1072,8 @@
           <div class="bw-step-title">Available times &mdash; ${dateStr}</div>
           <div style="font-size:0.84rem;opacity:0.65;padding:12px 0;">No available times for this date. Please choose another.</div>
           <div class="bw-btn-row">
-            <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-            <button class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
+            <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+            <button type="button" class="bw-btn bw-btn-primary" id="bw-next" disabled>Next &rarr;</button>
           </div>`;
       }
 
@@ -1075,8 +1086,8 @@
         <div class="bw-step-title">Available times &mdash; ${dateStr}</div>
         <div class="bw-times">${slotsHTML}</div>
         <div class="bw-btn-row">
-          <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-          <button class="bw-btn bw-btn-primary" id="bw-next"
+          <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+          <button type="button" class="bw-btn bw-btn-primary" id="bw-next"
             ${!this.state.time ? 'disabled' : ''}>Next &rarr;</button>
         </div>`;
     }
@@ -1105,8 +1116,8 @@
         </div>
         <div class="bw-error" id="bw-contact-err">Please fill in all fields.</div>
         <div class="bw-btn-row">
-          <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-          <button class="bw-btn bw-btn-primary" id="bw-next">Next &rarr;</button>
+          <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+          <button type="button" class="bw-btn bw-btn-primary" id="bw-next">Next &rarr;</button>
         </div>`;
     }
 
@@ -1141,8 +1152,8 @@
           <div style="font-size:0.77rem;opacity:0.65;margin-bottom:4px;">Payment is not collected online — please arrange payment directly with the business.</div>
           <div class="bw-error" id="bw-confirm-err"></div>
           <div class="bw-btn-row">
-            <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-            <button class="bw-btn bw-btn-primary" id="bw-next">Confirm Booking</button>
+            <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+            <button type="button" class="bw-btn bw-btn-primary" id="bw-next">Confirm Booking</button>
           </div>`;
       }
 
@@ -1183,8 +1194,8 @@
         </div>
         <div class="bw-error" id="bw-confirm-err"></div>
         <div class="bw-btn-row">
-          <button class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-          <button class="bw-btn bw-btn-primary" id="bw-next">${confirmLabel}</button>
+          <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
+          <button type="button" class="bw-btn bw-btn-primary" id="bw-next">${confirmLabel}</button>
         </div>`;
     }
 
