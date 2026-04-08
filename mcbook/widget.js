@@ -132,18 +132,16 @@
 
     // Stripe cannot mount inside a shadow root — create light DOM slot containers
     // that are projected into the shadow DOM via named slots.
-    const dark    = isDark(widget.theme.bg);
-    const inputBg = dark ? '#111111' : '#eef2ee';
-
+    // Card inputs are always white regardless of widget theme — standard form UX.
     const cnDiv = document.createElement('div');
     cnDiv.setAttribute('slot', 'stripe-card-number');
-    cnDiv.style.cssText = `width:100%; background-color:${inputBg};`;
+    cnDiv.style.cssText = 'width:100%; background-color:#ffffff;';
     const ceDiv = document.createElement('div');
     ceDiv.setAttribute('slot', 'stripe-card-expiry');
-    ceDiv.style.cssText = `width:100%; background-color:${inputBg};`;
+    ceDiv.style.cssText = 'width:100%; background-color:#ffffff;';
     const ccDiv = document.createElement('div');
     ccDiv.setAttribute('slot', 'stripe-card-cvc');
-    ccDiv.style.cssText = `width:100%; background-color:${inputBg};`;
+    ccDiv.style.cssText = 'width:100%; background-color:#ffffff;';
     widget._host.appendChild(cnDiv);
     widget._host.appendChild(ceDiv);
     widget._host.appendChild(ccDiv);
@@ -152,11 +150,15 @@
     const elements = stripe.elements();
     const stripeStyle = {
       base: {
-        color:           dark ? '#f0ece4' : '#0a0a0f',
-        backgroundColor: inputBg,
+        color:           '#0a0a0f',
+        backgroundColor: '#ffffff',
         fontFamily:      'Inter, system-ui, sans-serif',
         fontSize:        '14px',
-        '::placeholder': { color: dark ? '#888880' : '#94a3b8' },
+        '::placeholder': { color: '#94a3b8' },
+      },
+      // Don't turn text red while the user is mid-entry — only show errors on submit
+      invalid: {
+        color: '#0a0a0f',
       },
     };
     const cardNumber = elements.create('cardNumber', { style: stripeStyle });
@@ -614,9 +616,9 @@
         border: 1px solid ${t.border};
         border-radius: 8px;
         padding: 10px 13px;
-        background: ${t.inputBg};
+        background: #ffffff;
         font-size: 0.84rem;
-        color: ${t.sub};
+        color: #64748b;
         display: flex;
         align-items: center;
         gap: 8px;
