@@ -214,10 +214,13 @@
       padding: 2px 9px; border-radius: 20px;
       white-space: nowrap; border: 1px solid transparent;
     }
-    .status-pill.scheduled { background: var(--accent-bg);         color: var(--accent);  border-color: rgba(74,222,128,0.2); }
-    .status-pill.completed { background: rgba(139,139,158,0.08);   color: var(--text-2);  border-color: rgba(139,139,158,0.15); }
-    .status-pill.noshow    { background: rgba(245,158,11,0.08);    color: var(--warning); border-color: rgba(245,158,11,0.2); }
-    .status-pill.cancelled { background: rgba(239,68,68,0.08);     color: var(--danger);  border-color: rgba(239,68,68,0.2); }
+    .status-pill.scheduled         { background: var(--accent-bg);         color: var(--accent);  border-color: rgba(74,222,128,0.2); }
+    .status-pill.completed         { background: rgba(139,139,158,0.08);   color: var(--text-2);  border-color: rgba(139,139,158,0.15); }
+    .status-pill.noshow,
+    .status-pill.no_show           { background: rgba(245,158,11,0.08);    color: var(--warning); border-color: rgba(245,158,11,0.2); }
+    .status-pill.cancelled         { background: rgba(239,68,68,0.08);     color: var(--danger);  border-color: rgba(239,68,68,0.2); }
+    .status-pill.pending_payment   { background: var(--accent-bg);         color: var(--accent);  border-color: rgba(74,222,128,0.2); }
+    .pay-tag { font-size:0.68rem; color: var(--text-3); margin-top:2px; }
 
     /* Row action buttons */
     .row-actions { display: flex; gap: 6px; }

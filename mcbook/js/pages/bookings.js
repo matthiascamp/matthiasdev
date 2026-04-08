@@ -57,8 +57,15 @@ async function loadBookings() {
   tbody.innerHTML = ''
   for (const b of data ?? []) {
     const name = b.customers?.name ?? ''
-    const isScheduled = b.status === 'scheduled'
+    const isScheduled = b.status === 'scheduled' || b.status === 'pending_payment'
     const isChargeable = b.services?.payment_mode === 'noshow_only' || b.services?.payment_mode === 'after'
+    const statusLabel = b.status === 'pending_payment' ? 'Scheduled' : capitalize(b.status.replace('_', ' '))
+    const statusCls   = b.status === 'pending_payment' ? 'scheduled' : b.status
+    const payTag = b.services?.payment_mode === 'free'
+      ? '<div class="pay-tag">Pay externally</div>'
+      : b.services?.payment_mode
+        ? '<div class="pay-tag">Card on file</div>'
+        : ''
     const tr = document.createElement('tr')
     tr.dataset.bookingId = b.id
     tr.innerHTML = `
@@ -71,10 +78,10 @@ async function loadBookings() {
           </div>
         </div>
       </td>
-      <td>${b.services?.name ?? ''}</td>
+      <td>${b.services?.name ?? ''}${payTag}</td>
       <td>${fmtDate(b.date)}</td>
       <td>${fmtTime(b.time)}</td>
-      <td><span class="status-pill ${b.status}">${capitalize(b.status)}</span></td>
+      <td><span class="status-pill ${statusCls}">${statusLabel}</span></td>
       <td>
         <div class="row-actions">
           ${isChargeable ? `<button class="btn-noshow" ${isScheduled ? '' : 'disabled'}>No-show + Charge</button>` : ''}
