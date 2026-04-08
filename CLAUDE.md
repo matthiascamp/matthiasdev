@@ -54,16 +54,78 @@ All widget classes are prefixed `bw-` (booking widget) to avoid collisions. Key 
 
 The goal is to make the widget blend into the client's existing website without looking like a foreign embed. The "Powered by McBook" footer must always remain visible.
 
-**The correct workflow:**
-1. Edit the palette object(s) inside `buildCSS()` in `mcbook/widget.js`
-2. For dark host sites: edit the `dark ? { ... }` branch
-3. For light host sites: edit the `: { ... }` branch
-4. For Stripe input colours: edit `stripeStyle` in `mountStripeElements()`
-5. The `widget_custom_styling` flag on the client record in Supabase controls whether custom styling applies at all — toggle it via the admin dashboard (`admin.html` → client row → Details → Widget Settings)
+### How the styling actually works (proven workflow)
+
+`detectHostStyles()` reads the host page's `background-color`, `color`, and scans buttons for an accent. It returns a raw `theme` object. That is passed into `buildCSS(theme)`, which calls `isDark(theme.bg)` — a luminance check — to decide which palette branch to use.
+
+**For dark host sites** (luminance < 128) → the `dark ? { ... }` palette branch is used.
+**For light host sites** → the `: { ... }` palette branch is used.
+
+The palette object (`t`) is a plain JS object with these keys — **this is what you edit:**
+
+```js
+const t = dark ? {
+  bg:       '#0a0a0f',   // widget background
+  surface:  '#111118',   // card/header backgrounds
+  border:   '#1e1e2e',   // borders and dividers
+  accent:   '#4ade80',   // buttons, selections, highlights, active states
+  accentBg: 'rgba(74,222,128,0.07)', // accent tint for hover backgrounds
+  text:     '#ffffff',   // primary text
+  sub:      '#8b8b9e',   // secondary/muted text
+  btnText:  '#0a0a0f',   // text ON accent-coloured buttons
+  inputBg:  '#0d0d15',   // input field backgrounds
+  glow:     '0 0 12px rgba(74,222,128,0.15)', // box-shadow glow effect
+} : { /* light palette — edit if client has a light site */ }
+```
+
+Every colour in the CSS comes from this object. Replacing these values is how you theme the widget.
+
+### Real example — CBlends (dark site, gold accent)
+
+CBlends has a near-black site (`#0c0c0c` background) with a gold accent (`#C9A84C`). Since the background resolves as dark, only the dark branch needed editing:
+
+```js
+const t = dark ? {
+  bg:       '#0c0c0c',
+  surface:  '#141414',
+  border:   'rgba(201,168,76,0.18)',
+  accent:   '#C9A84C',
+  accentBg: 'rgba(201,168,76,0.08)',
+  text:     '#f0ece4',
+  sub:      '#888880',
+  btnText:  '#0c0c0c',
+  inputBg:  '#0c0c0c',
+  glow:     '0 0 12px rgba(201,168,76,0.2)',
+}
+```
+
+The Stripe card inputs (which live outside the Shadow DOM) were matched separately via `stripeStyle` in `mountStripeElements()`:
+
+```js
+const stripeStyle = {
+  base: {
+    color: '#f0ece4',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    fontSize: '14px',
+    '::placeholder': { color: '#888880' },
+  },
+};
+```
+
+The light palette was left untouched — CBlends will always resolve as dark.
+
+### Step-by-step process for a new client site
+
+1. **Enable custom styling** in the admin dashboard (`admin.html` → client row → Details → Widget Settings toggle ON). This makes the widget call `detectHostStyles()` on load.
+2. **Inspect the client's site** — find their exact background colour, text colour, and accent/button colour from their CSS variables or DevTools.
+3. **Edit the appropriate palette branch** in `buildCSS()` in `mcbook/widget.js` — dark branch for dark sites, light branch for light sites.
+4. **Update `stripeStyle`** in `mountStripeElements()` to match — `color` = their text colour, `::placeholder color` = their muted text colour.
+5. **Test** with the client's `data-business-id` on their actual site or `widget-demo.html`.
+6. **Push and deploy** — `widget.js` is served statically, changes go live immediately on push.
 
 **Do NOT:**
 - Add `<link>` or `<style>` tags outside the shadow root expecting them to affect the widget
-- Try to override widget styles from the host page's CSS (Shadow DOM blocks this)
+- Try to override widget styles from the host page's CSS (Shadow DOM blocks this entirely)
 - Remove or hide the `.bw-footer` "Powered by McBook" branding
 
 ---
