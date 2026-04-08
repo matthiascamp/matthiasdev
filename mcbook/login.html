@@ -148,45 +148,6 @@
     /* ── Card body ── */
     .login-body { padding: 28px 36px; }
 
-    /* ── What is MCBook blurb (sign-up only) ── */
-    .mcbook-blurb {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 14px 16px;
-      margin-bottom: 22px;
-      display: none;
-    }
-    .mcbook-blurb.visible { display: block; }
-    .blurb-title {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 8px;
-      letter-spacing: -0.01em;
-    }
-    .blurb-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .blurb-list li {
-      font-size: 0.75rem;
-      color: var(--text-2);
-      display: flex;
-      align-items: flex-start;
-      gap: 7px;
-    }
-    .blurb-list li::before {
-      content: '✓';
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 0.7rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
     .login-title {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.25rem;
@@ -428,17 +389,6 @@
     <!-- Body -->
     <div class="login-body">
 
-      <!-- What is MCBook (shown on sign-up tab) -->
-      <div class="mcbook-blurb" id="mcbook-blurb">
-        <div class="blurb-title">What is MCBook?</div>
-        <ul class="blurb-list">
-          <li>Let clients book appointments online 24/7 — no back-and-forth</li>
-          <li>Manage your services, availability, and schedule in one dashboard</li>
-          <li>Embed a booking widget on any website in minutes</li>
-          <li>Track customers and bookings with a clean, simple interface</li>
-        </ul>
-      </div>
-
       <!-- Sign In form -->
       <div id="form-signin">
         <h1 class="login-title">Welcome back</h1>
@@ -547,7 +497,6 @@
     const formSignIn = document.getElementById('form-signin')
     const formSignUp = document.getElementById('form-signup')
     const formReset  = document.getElementById('form-reset')
-    const blurb      = document.getElementById('mcbook-blurb')
 
     function showTab(active) {
       tabSignIn.classList.toggle('active', active === 'signin')
@@ -556,7 +505,6 @@
       formSignIn.style.display = active === 'signin' ? '' : 'none'
       formSignUp.style.display = active === 'signup' ? '' : 'none'
       formReset.style.display  = active === 'reset'  ? '' : 'none'
-      blurb.classList.toggle('visible', active === 'signup')
     }
 
     tabSignIn.addEventListener('click', () => showTab('signin'))
