@@ -161,7 +161,7 @@
           fontSizeBase:           '14px',
         },
         rules: {
-          // Don't turn text red while the user is mid-entry — only on submit
+          '.Input': { color: '#0a0a0f', backgroundColor: '#ffffff' },
           '.Input--invalid': { color: '#0a0a0f' },
         },
       },
