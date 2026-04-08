@@ -484,9 +484,62 @@
       .feature-grid { grid-template-columns: 1fr; }
     }
 
+    /* ── Top nav ── */
+    .login-nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      height: 60px;
+      background: rgba(10,10,15,0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .login-nav-logo {
+      display: flex; align-items: center; gap: 9px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 800;
+      letter-spacing: -0.04em; text-decoration: none;
+    }
+    .login-nav-icon {
+      width: 30px; height: 30px;
+      background: rgba(74,222,128,0.07);
+      border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .login-nav-brand {
+      background: linear-gradient(135deg, #4ade80, #86efac);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .login-nav-back {
+      font-size: 0.82rem; font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .login-nav-back:hover { color: rgba(255,255,255,0.75); }
+
+    /* ── Grid bg ── */
+    .login-grid-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+    }
+
+    /* Push content below nav */
+    body { padding-top: 84px; }
+
     /* ── Responsive ── */
     @media (max-width: 480px) {
-      body { padding: 16px; }
+      body { padding: 84px 16px 16px; }
       .login-body, .login-header, .login-footer { padding-left: 22px; padding-right: 22px; }
       .login-title { font-size: 1.1rem; }
     }
@@ -494,6 +547,17 @@
 </head>
 <body>
 
+  <div class="login-grid-bg"></div>
+
+  <nav class="login-nav">
+    <a href="index.html" class="login-nav-logo">
+      <div class="login-nav-icon">&#128197;</div>
+      <span class="login-nav-brand">MCBook</span>
+    </a>
+    <a href="index.html" class="login-nav-back">&#8592; Back to site</a>
+  </nav>
+
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;padding:0 24px;">
   <div class="login-badge">
     <span class="badge-dot"></span>
     Booking management for independent businesses
@@ -674,6 +738,7 @@
       </div>
     </div>
   </div>
+  </div>
 
   <script type="module">
     import { signIn, signUp, resetPassword, ensureClientProfile } from './js/auth.js'
@@ -711,6 +776,10 @@
     tabSignIn.addEventListener('click', () => showTab('signin'))
     tabSignUp.addEventListener('click', () => showTab('signup'))
     tabReset.addEventListener('click',  () => showTab('reset'))
+
+    // Hash-based initial tab
+    if (location.hash === '#signup') showTab('signup')
+    else if (location.hash === '#reset') showTab('reset')
 
     /* ── Sign In ── */
     document.getElementById('signinForm').addEventListener('submit', async (e) => {
