@@ -362,16 +362,16 @@
 
     // Build a normalised theme object for either mode
     const t = dark ? {
-      bg:       '#0c0c0c',
-      surface:  '#141414',
-      border:   'rgba(201,168,76,0.18)',
-      accent:   '#C9A84C',
-      accentBg: 'rgba(201,168,76,0.07)',
-      text:     '#f0ece4',
-      sub:      '#888880',
-      btnText:  '#0c0c0c',
-      inputBg:  '#111111',
-      glow:     '0 0 12px rgba(201,168,76,0.15)',
+      bg:       '#0a0a0f',
+      surface:  '#111118',
+      border:   '#1e1e2e',
+      accent:   '#4ade80',
+      accentBg: 'rgba(74,222,128,0.07)',
+      text:     '#ffffff',
+      sub:      '#8b8b9e',
+      btnText:  '#0a0a0f',
+      inputBg:  '#0d0d15',
+      glow:     '0 0 12px rgba(74,222,128,0.15)',
     } : {
       bg:       '#ffffff',
       surface:  '#f4f7f4',
