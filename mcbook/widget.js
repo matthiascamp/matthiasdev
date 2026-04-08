@@ -145,11 +145,20 @@
     widget._host.appendChild(ceDiv);
     widget._host.appendChild(ccDiv);
 
-    const stripe     = window.Stripe(STRIPE_PUBLISHABLE_KEY);
-    const elements   = stripe.elements();
-    const cardNumber = elements.create('cardNumber');
-    const cardExpiry = elements.create('cardExpiry');
-    const cardCvc    = elements.create('cardCvc');
+    const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
+    const elements = stripe.elements();
+    const dark     = isDark(widget.theme.bg);
+    const stripeStyle = {
+      base: {
+        color:      dark ? '#ffffff' : '#0a0a0f',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize:   '14px',
+        '::placeholder': { color: dark ? '#8b8b9e' : '#94a3b8' },
+      },
+    };
+    const cardNumber = elements.create('cardNumber', { style: stripeStyle });
+    const cardExpiry = elements.create('cardExpiry', { style: stripeStyle });
+    const cardCvc    = elements.create('cardCvc',    { style: stripeStyle });
     cardNumber.mount(cnDiv);
     cardExpiry.mount(ceDiv);
     cardCvc.mount(ccDiv);
@@ -766,7 +775,8 @@
   class BookingWidget {
     constructor(scriptEl) {
       this.businessId = scriptEl.getAttribute('data-business-id') || '0';
-      this.theme      = detectHostStyles();
+      // Default to MCBook dark theme until client settings are loaded
+      this.theme = { bg: 'rgb(10,10,15)', text: 'rgb(255,255,255)', accent: 'rgb(74,222,128)', font: "'Inter', sans-serif" };
 
       // Booking state
       this.state = {
@@ -799,6 +809,7 @@
       const styleEl = document.createElement('style');
       styleEl.textContent = buildCSS(this.theme);
       shadow.appendChild(styleEl);
+      this._styleEl = styleEl;
 
       // Root wrapper
       this.root = document.createElement('div');
@@ -809,6 +820,26 @@
       this._host = host;
 
       this._render();
+      this._loadClientSettings();
+    }
+
+    // ── Load widget_custom_styling from DB, update theme if enabled ───────────
+    async _loadClientSettings() {
+      try {
+        await sbReady;
+        const { data } = await sb
+          .from('clients')
+          .select('widget_custom_styling')
+          .eq('id', this.businessId)
+          .single();
+        if (data?.widget_custom_styling) {
+          this.theme = detectHostStyles();
+          this._styleEl.textContent = buildCSS(this.theme);
+          this._render();
+        }
+      } catch (_) {
+        // Non-fatal — keep default theme
+      }
     }
 
     // ── Render full widget based on current state ────────────────────────────
