@@ -75,6 +75,7 @@ async function loadBookings() {
       <td>
         <div class="row-actions">
           <button class="btn-noshow" ${isScheduled ? '' : 'disabled'}>Mark No-show</button>
+          <button class="btn-cancel" ${isScheduled ? '' : 'disabled'}>Cancel</button>
           <button class="btn-view">View</button>
         </div>
       </td>
@@ -123,6 +124,30 @@ function renderPagination(total) {
   next.innerHTML = '&#8250;'
   next.addEventListener('click', () => { if (currentPage < pageCount) { currentPage++; loadBookings() } })
   btnContainer.appendChild(next)
+}
+
+async function cancelBooking(bookingId, buttonEl) {
+  if (!confirm('Cancel this booking? This cannot be undone.')) return
+  buttonEl.disabled    = true
+  buttonEl.textContent = 'Cancelling\u2026'
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'cancelled' })
+    .eq('id', bookingId)
+
+  if (error) {
+    buttonEl.disabled    = false
+    buttonEl.textContent = 'Cancel'
+    alert('Failed to cancel booking: ' + error.message)
+    return
+  }
+
+  const tr   = buttonEl.closest('tr')
+  const pill = tr?.querySelector('.status-pill')
+  if (pill) { pill.className = 'status-pill cancelled'; pill.textContent = 'Cancelled' }
+  buttonEl.textContent = 'Cancelled'
+  tr?.querySelector('.btn-noshow')?.setAttribute('disabled', '')
 }
 
 async function markNoshow(bookingId, buttonEl) {
@@ -181,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 
   // Status filter
-  const STATUS_MAP = { 'Scheduled': 'scheduled', 'Completed': 'completed', 'No-show': 'noshow' }
+  const STATUS_MAP = { 'Scheduled': 'scheduled', 'Completed': 'completed', 'No-show': 'noshow', 'Cancelled': 'cancelled' }
   statusSelect?.addEventListener('change', () => {
     statusFilter = STATUS_MAP[statusSelect.value] ?? ''
     currentPage = 1; loadBookings()
@@ -194,11 +219,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentPage = 1; loadBookings()
   })
 
-  // Mark no-show (delegated on tbody)
+  // Mark no-show / cancel (delegated on tbody)
   document.querySelector('.data-table tbody')?.addEventListener('click', e => {
-    const btn = e.target.closest('.btn-noshow')
-    if (!btn || btn.disabled) return
-    const id = btn.closest('tr')?.dataset.bookingId
-    if (id) markNoshow(id, btn)
+    const noShowBtn = e.target.closest('.btn-noshow')
+    if (noShowBtn && !noShowBtn.disabled) {
+      const id = noShowBtn.closest('tr')?.dataset.bookingId
+      if (id) markNoshow(id, noShowBtn)
+      return
+    }
+    const cancelBtn = e.target.closest('.btn-cancel')
+    if (cancelBtn && !cancelBtn.disabled) {
+      const id = cancelBtn.closest('tr')?.dataset.bookingId
+      if (id) cancelBooking(id, cancelBtn)
+    }
   })
 })

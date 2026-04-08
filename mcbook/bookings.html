@@ -233,6 +233,18 @@
       opacity: 0.3; cursor: not-allowed;
       border-color: var(--border); color: var(--text-2);
     }
+    .btn-cancel {
+      padding: 4px 10px;
+      background: transparent; border: 1px solid rgba(239,68,68,0.4); color: var(--danger);
+      border-radius: 6px; font-size: 0.74rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; white-space: nowrap;
+      transition: background var(--ease), color var(--ease);
+    }
+    .btn-cancel:hover { background: rgba(239,68,68,0.12); }
+    .btn-cancel:disabled {
+      opacity: 0.3; cursor: not-allowed;
+      border-color: var(--border); color: var(--text-2);
+    }
     .btn-view {
       padding: 4px 10px;
       background: transparent; border: 1px solid var(--border); color: var(--text-2);
@@ -346,6 +358,7 @@
           <option>Scheduled</option>
           <option>Completed</option>
           <option>No-show</option>
+          <option>Cancelled</option>
         </select>
         <select class="filter-select">
           <option>All Time</option>
