@@ -233,6 +233,18 @@
       opacity: 0.3; cursor: not-allowed;
       border-color: var(--border); color: var(--text-2);
     }
+    .btn-waive {
+      padding: 4px 10px;
+      background: transparent; border: 1px solid rgba(245,158,11,0.6); color: var(--warning);
+      border-radius: 6px; font-size: 0.74rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; white-space: nowrap;
+      transition: background var(--ease), color var(--ease);
+    }
+    .btn-waive:hover { background: rgba(245,158,11,0.12); }
+    .btn-waive:disabled {
+      opacity: 0.3; cursor: not-allowed;
+      border-color: var(--border); color: var(--text-2);
+    }
     .btn-cancel {
       padding: 4px 10px;
       background: transparent; border: 1px solid rgba(239,68,68,0.4); color: var(--danger);
@@ -358,7 +370,6 @@
           <option>Scheduled</option>
           <option>Completed</option>
           <option>No-show</option>
-          <option>Cancelled</option>
         </select>
         <select class="filter-select">
           <option>All Time</option>
@@ -369,10 +380,10 @@
         <button class="btn-primary">+ New Booking</button>
       </div>
 
-      <!-- Bookings table -->
+      <!-- Active bookings table -->
       <div class="table-card">
         <div class="table-card-header">
-          <span class="table-card-title">All Bookings</span>
+          <span class="table-card-title">Active Bookings</span>
           <span class="table-count"></span>
         </div>
 
@@ -396,9 +407,36 @@
           <span></span>
           <div class="page-btns"></div>
         </div>
-
       </div>
-      <!-- /table-card -->
+
+      <!-- Cancelled bookings section -->
+      <div class="table-card cancelled-card" id="cancelled-card" style="margin-top:16px;">
+        <div class="table-card-header cancelled-toggle" id="cancelled-toggle" style="cursor:pointer;user-select:none;">
+          <span class="table-card-title" style="opacity:0.7;">Cancelled Bookings</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span class="table-count" id="cancelled-count"></span>
+            <span id="cancelled-chevron" style="font-size:0.8rem;opacity:0.5;transition:transform 0.2s;">&#9660;</span>
+          </span>
+        </div>
+        <div id="cancelled-body" style="display:none;">
+          <div class="table-scroll"><table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Service</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cancelled-tbody"></tbody>
+          </table></div>
+          <div class="pagination">
+            <span></span>
+            <div class="page-btns" id="cancelled-page-btns"></div>
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>

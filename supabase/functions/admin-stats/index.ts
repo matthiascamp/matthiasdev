@@ -72,24 +72,22 @@ Deno.serve(async (req: Request) => {
         .lt('created_at', monthEnd),
     ])
 
-    if (clientsErr)  throw new Error(`clients query: ${clientsErr.message}`)
-    if (paymentsErr) throw new Error(`payments query: ${paymentsErr.message}`)
+    if (clientsErr) throw new Error(`clients query: ${clientsErr.message}`)
+    if (paymentsErr) console.warn('payments query failed (table may not exist yet):', paymentsErr.message)
 
-    // ── Aggregate payments ────────────────────────────────────────────────────
-    const totalRevenue: number = (allPayments ?? []).reduce(
-      (sum: number, p: { amount: unknown; client_id: string; booking_id: string | null }) => sum + Number(p.amount ?? 0), 0
-    )
+    // ── Aggregate payments (amounts stored in cents — divide by 100 for dollars) ──
     const earningsByClient: Record<string, number> = {}
     const amountByBooking: Record<string, number> = {}
 
     for (const p of allPayments ?? []) {
-      const amt = Number(p.amount ?? 0)
+      const amt = Number(p.amount ?? 0) / 100  // cents → dollars
       earningsByClient[p.client_id] = (earningsByClient[p.client_id] ?? 0) + amt
       if (p.booking_id) {
-        // A booking can have multiple payment rows (e.g. deposit + remainder); sum them.
         amountByBooking[p.booking_id] = (amountByBooking[p.booking_id] ?? 0) + amt
       }
     }
+
+    const totalRevenue: number = Object.values(earningsByClient).reduce((s, v) => s + v, 0)
 
     const totalClients         = (clients ?? []).length
     const activeStripeAccounts = (clients ?? []).filter((c: { stripe_charges_enabled: boolean }) => c.stripe_charges_enabled).length

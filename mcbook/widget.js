@@ -35,7 +35,6 @@
   // ─── Stripe constants ─────────────────────────────────────────────────────
   const STRIPE_PUBLISHABLE_KEY  = 'pk_live_51TIM7W3KdzLQ6RvXRpuNTwZtQjLGq9s18uWusHKHo3aaoL2KmYccr2so1Zy0o1IkuzG0pi1WEzh82MiQPtoMrC6W00iOR1stqs';
   const CREATE_SETUP_INTENT_URL   = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/create-setup-intent';
-  const CREATE_PAYMENT_INTENT_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/create-payment-intent';
 
   // ─── Mount real Stripe Elements (handles setup and payment intents) ──────────
   async function mountStripeElements(widget) {
@@ -77,58 +76,23 @@
     }
     widget._customerId = customerId;
 
-    let clientSecret;
-
-    if (mode === 'upfront') {
-      // Create a pending booking first, then get a PaymentIntent for it
-      const dateISO  = date.toISOString().slice(0, 10);
-      const timeHHMM = timeToHHMM(widget.state.time);
-      const { data: booking, error: bookErr } = await sb.from('bookings')
-        .insert({
-          client_id:   widget.businessId,
-          customer_id: customerId,
-          service_id:  service.id,
-          date:        dateISO,
-          time:        timeHHMM,
-          status:      'pending_payment',
-        })
-        .select('id')
-        .single();
-      if (bookErr) throw bookErr;
-      widget.state.bookingId = booking.id;
-
-      const piRes  = await fetch(CREATE_PAYMENT_INTENT_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          bookingId:     booking.id,
+    // SetupIntent — save card for noshow_only or after
+    const siRes  = await fetch(CREATE_SETUP_INTENT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        bookingData: {
+          customerId,
+          serviceId:     service.id,
           clientId:      widget.businessId,
-          amountCents:   Math.round(parseFloat(service.price) * 100),
           customerEmail: contact.email,
-        }),
-      });
-      const piJson = await piRes.json();
-      if (piJson.error) throw new Error(piJson.error);
-      clientSecret = piJson.clientSecret;
-    } else {
-      // SetupIntent — save card for noshow_only or after
-      const siRes  = await fetch(CREATE_SETUP_INTENT_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          bookingData: {
-            customerId,
-            serviceId:     service.id,
-            clientId:      widget.businessId,
-            customerEmail: contact.email,
-            customerName:  contact.name,
-          },
-        }),
-      });
-      const siJson = await siRes.json();
-      if (siJson.error) throw new Error(siJson.error);
-      clientSecret = siJson.clientSecret;
-    }
+          customerName:  contact.name,
+        },
+      }),
+    });
+    const siJson = await siRes.json();
+    if (siJson.error) throw new Error(siJson.error);
+    const clientSecret = siJson.clientSecret;
 
     // Stripe cannot mount inside a shadow root — create light DOM slot containers
     // that are projected into the shadow DOM via named slots.
@@ -355,11 +319,27 @@
     return new Date(year, month, 1).getDay();
   }
 
-  function isDateAvailable(date, enabledWeekdays) {
+  function isDateAvailable(date, enabledWeekdays, availabilityRules, minNoticeHours, slotMins) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return false;
     if (enabledWeekdays && !enabledWeekdays.has(date.getDay())) return false;
+
+    // For today: check whether any slots remain given the minimum notice period
+    if (date.getTime() === today.getTime() && availabilityRules) {
+      const rule = availabilityRules[date.getDay()];
+      if (rule) {
+        const now = new Date();
+        const nowMins     = now.getHours() * 60 + now.getMinutes();
+        const noticeMins  = (minNoticeHours ?? 2) * 60;
+        const slot        = slotMins ?? 30;
+        const [endH, endM] = rule.end_time.split(':').map(Number);
+        const endMins     = endH * 60 + endM;
+        // No slot is reachable if the earliest bookable time is at or past the last slot start
+        if (nowMins + noticeMins >= endMins - slot) return false;
+      }
+    }
+
     return true;
   }
 
@@ -938,19 +918,27 @@
       if (!this._services) {
         (async () => {
           await sbReady;
-          const [{ data }, { data: rules }] = await Promise.all([
+          const [{ data }, { data: rules }, { data: settings }] = await Promise.all([
             sb.from('services')
               .select('id, name, duration_mins, price, noshow_fee, payment_mode')
               .eq('client_id', this.businessId)
               .eq('active', true)
               .order('created_at', { ascending: true }),
             sb.from('availability_rules')
-              .select('day_of_week')
+              .select('day_of_week, start_time, end_time')
               .eq('client_id', this.businessId)
               .eq('enabled', true),
+            sb.from('booking_settings')
+              .select('slot_duration_mins, min_notice_hours')
+              .eq('client_id', this.businessId)
+              .limit(1)
+              .maybeSingle(),
           ]);
           this._services = data || [];
           this._enabledWeekdays = new Set((rules || []).map(r => r.day_of_week));
+          this._availabilityRules = Object.fromEntries((rules || []).map(r => [r.day_of_week, r]));
+          this._minNoticeHours = settings?.min_notice_hours ?? 2;
+          this._slotMins = settings?.slot_duration_mins ?? 30;
           this._hasAvailability = this._enabledWeekdays.size > 0;
           if (this.state.step === 1) this._render();
         })();
@@ -1020,7 +1008,7 @@
 
       for (let d = 1; d <= totalDays; d++) {
         const thisDate = new Date(calYear, calMonth, d);
-        const avail    = isDateAvailable(thisDate, this._enabledWeekdays);
+        const avail    = isDateAvailable(thisDate, this._enabledWeekdays, this._availabilityRules, this._minNoticeHours, this._slotMins);
         const isToday  = thisDate.getTime() === today.getTime();
         const isSel    = selDate && selDate.getTime() === thisDate.getTime();
 
@@ -1153,23 +1141,19 @@
           <div class="bw-error" id="bw-confirm-err"></div>
           <div class="bw-btn-row">
             <button type="button" class="bw-btn bw-btn-secondary" id="bw-back">&larr; Back</button>
-            <button type="button" class="bw-btn bw-btn-primary" id="bw-next">Confirm Booking</button>
+            <button type="button" class="bw-btn bw-btn-primary" id="bw-next">Book</button>
           </div>`;
       }
 
-      // Card-required modes (noshow_only, after, upfront)
-      const chargeRow = mode === 'upfront'
-        ? `<div class="bw-summary-row"><span class="bw-summary-label">Charge today</span><span class="bw-summary-val">$${service.price}</span></div>`
-        : `<div class="bw-summary-row"><span class="bw-summary-label">Due after appointment</span><span class="bw-summary-val">$${service.price}</span></div>`;
+      // Card-required modes (noshow_only, after)
+      const chargeRow = `<div class="bw-summary-row"><span class="bw-summary-label">Due after appointment</span><span class="bw-summary-val">$${service.price}</span></div>`;
 
-      const modeNote = mode === 'upfront'
-        ? 'Pay now to secure your booking.'
-        : 'Your card will be saved and charged after your appointment.';
+      const modeNote = 'Your card will be saved and charged after your appointment.';
 
-      const confirmLabel = mode === 'upfront' ? 'Pay &amp; Book' : 'Save Card &amp; Book';
+      const confirmLabel = 'Book';
 
       return `
-        <div class="bw-step-title">Review &amp; ${mode === 'upfront' ? 'Pay' : 'Card Details'}</div>
+        <div class="bw-step-title">Review &amp; Card Details</div>
         ${summaryRows}
         <div class="bw-summary" style="margin-top:-8px;">${chargeRow}</div>
         <div class="bw-form">
@@ -1385,26 +1369,6 @@
             return;
           }
 
-          if (mode === 'upfront') {
-            // Booking already created (pending_payment) during mountStripeElements — confirm payment
-            const { stripe, cardNumber, clientSecret } = this._stripeElements;
-            const { paymentIntent, error: stripeErr } = await stripe.confirmCardPayment(clientSecret, {
-              payment_method: {
-                card:            cardNumber,
-                billing_details: { name: contact.name, email: contact.email },
-              },
-            });
-            if (stripeErr) throw new Error(stripeErr.message);
-            await sb.from('bookings')
-              .update({ status: 'scheduled', payment_method_id: paymentIntent.payment_method })
-              .eq('id', this.state.bookingId);
-            this.state.ref = 'BK-' + this.state.bookingId.slice(0, 6).toUpperCase();
-            destroyStripeSlots(this);
-            this.state.step++;
-            this._render();
-            return;
-          }
-
           // noshow_only or after — confirm card setup then insert booking
           const { stripe, cardNumber, clientSecret } = this._stripeElements;
           const { setupIntent, error: stripeErr } = await stripe.confirmCardSetup(clientSecret, {
@@ -1437,7 +1401,7 @@
           const nextBtn2 = this.root.querySelector('#bw-next');
           const errEl2   = this.root.querySelector('#bw-confirm-err');
           const mode     = this.state.service?.payment_mode || 'free';
-          const label    = mode === 'upfront' ? 'Pay & Book' : mode === 'free' ? 'Confirm Booking' : 'Save Card & Book';
+          const label    = 'Book';
           if (nextBtn2) { nextBtn2.disabled = false; nextBtn2.textContent = label; }
           if (errEl2)   { errEl2.textContent = err.message || 'Something went wrong. Please try again.'; errEl2.classList.add('visible'); }
         }
@@ -1453,11 +1417,6 @@
       if (this.state.step === 5 && mode !== 'free') {
         destroyStripeSlots(this);
         this._customerId = null;
-        // Cancel the pending_payment booking created for upfront mode
-        if (mode === 'upfront' && this.state.bookingId) {
-          sbReady.then(() => sb.from('bookings').update({ status: 'cancelled' }).eq('id', this.state.bookingId));
-          this.state.bookingId = null;
-        }
       }
       this.state.step--;
       this._render();

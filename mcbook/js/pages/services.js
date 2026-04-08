@@ -5,10 +5,9 @@ import { setTopbarDate, loadSidebarUser } from '../ui.js'
 const DOTS = ['dot-blue', 'dot-purple', 'dot-amber', 'dot-green']
 
 const PMODE_LABELS = {
-  free:        'Pay in person',
-  noshow_only: 'Pay in person',  // legacy — treat same as free
-  after:       'Charge after',
-  upfront:     'Charge upfront',
+  free:        'Not collected through website',
+  noshow_only: 'Not collected through website',
+  after:       'Charge after appointment',
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -34,6 +33,7 @@ function durationSelectValue(mins) {
 // ── State ─────────────────────────────────────────────────────────────────────
 let uid = ''
 let editId = null
+let stripeEnabled = false
 
 // ── Render ────────────────────────────────────────────────────────────────────
 async function loadServices() {
@@ -87,6 +87,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setTopbarDate()
   loadSidebarUser(uid)
 
+  const { data: clientData } = await supabase.from('clients')
+    .select('stripe_charges_enabled').eq('id', uid).single()
+  stripeEnabled = clientData?.stripe_charges_enabled ?? false
+
   await loadServices()
 
   const list   = document.querySelector('.services-list')
@@ -110,13 +114,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (locked) { priceInput.value = ''; noshowInput.value = '' }
   }
 
-  pmodeSelect.addEventListener('change', syncPriceFields)
+  pmodeSelect.addEventListener('change', () => {
+    if (pmodeSelect.value !== 'free' && !stripeEnabled) {
+      pmodeSelect.value = 'free'
+      alert('You need to connect Stripe before enabling online payments.\nGo to Payouts in the sidebar to set it up.')
+    }
+    syncPriceFields()
+  })
   syncPriceFields()
 
   function clearForm() {
     nameInput.value = ''; descInput.value = ''
     priceInput.value = ''; noshowInput.value = ''
-    durSelect.value = '30 min'; pmodeSelect.value = 'after'; editId = null
+    durSelect.value = '30 min'; pmodeSelect.value = 'free'; editId = null
     syncPriceFields()
   }
 
@@ -167,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       duration_mins: durationToMins(durSelect.value),
       price: parseFloat(priceInput.value) || 0,
       noshow_fee: parseFloat(noshowInput.value) || 0,
-      payment_mode: pmodeSelect.value || 'after',
+      payment_mode: pmodeSelect.value || 'free',
     }
     if (!payload.name) return
 

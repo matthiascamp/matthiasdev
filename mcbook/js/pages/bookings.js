@@ -5,6 +5,7 @@ import { setTopbarDate, loadSidebarUser } from '../ui.js'
 const CHARGE_NOSHOW_URL = 'https://uijudgnqawtvjyjuyuwo.supabase.co/functions/v1/charge-noshow'
 const PAGE_SIZE = 10
 let currentPage = 1
+let cancelledPage = 1
 let statusFilter = ''
 let dateFilter = ''
 let clientId = ''
@@ -37,8 +38,9 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
 async function loadBookings() {
   const today = todayISO()
   let q = supabase.from('bookings')
-    .select('id, date, time, status, customers(name, email), services(name)', { count: 'exact' })
+    .select('id, date, time, status, customers(name, email), services(name, payment_mode)', { count: 'exact' })
     .eq('client_id', clientId)
+    .neq('status', 'cancelled')
     .order('date', { ascending: false })
     .order('time', { ascending: false })
 
@@ -56,6 +58,7 @@ async function loadBookings() {
   for (const b of data ?? []) {
     const name = b.customers?.name ?? ''
     const isScheduled = b.status === 'scheduled'
+    const isChargeable = b.services?.payment_mode === 'noshow_only' || b.services?.payment_mode === 'after'
     const tr = document.createElement('tr')
     tr.dataset.bookingId = b.id
     tr.innerHTML = `
@@ -74,7 +77,8 @@ async function loadBookings() {
       <td><span class="status-pill ${b.status}">${capitalize(b.status)}</span></td>
       <td>
         <div class="row-actions">
-          <button class="btn-noshow" ${isScheduled ? '' : 'disabled'}>Mark No-show</button>
+          ${isChargeable ? `<button class="btn-noshow" ${isScheduled ? '' : 'disabled'}>No-show + Charge</button>` : ''}
+          <button class="btn-waive" ${isScheduled ? '' : 'disabled'}>Waive No-show</button>
           <button class="btn-cancel" ${isScheduled ? '' : 'disabled'}>Cancel</button>
           <button class="btn-view">View</button>
         </div>
@@ -126,6 +130,67 @@ function renderPagination(total) {
   btnContainer.appendChild(next)
 }
 
+async function loadCancelled() {
+  const from = (cancelledPage - 1) * PAGE_SIZE
+  const { data, count, error } = await supabase.from('bookings')
+    .select('id, date, time, customers(name, email), services(name)', { count: 'exact' })
+    .eq('client_id', clientId)
+    .eq('status', 'cancelled')
+    .order('date', { ascending: false })
+    .order('time', { ascending: false })
+    .range(from, from + PAGE_SIZE - 1)
+
+  if (error) { console.error(error); return }
+
+  const tbody = document.getElementById('cancelled-tbody')
+  tbody.innerHTML = ''
+  for (const b of data ?? []) {
+    const name = b.customers?.name ?? ''
+    const tr = document.createElement('tr')
+    tr.style.opacity = '0.6'
+    tr.innerHTML = `
+      <td>
+        <div class="customer-cell">
+          <div class="cust-avatar">${initials(name)}</div>
+          <div>
+            <div class="cust-name">${name}</div>
+            <div class="cust-email">${b.customers?.email ?? ''}</div>
+          </div>
+        </div>
+      </td>
+      <td>${b.services?.name ?? ''}</td>
+      <td>${fmtDate(b.date)}</td>
+      <td>${fmtTime(b.time)}</td>
+      <td><div class="row-actions"><button class="btn-view">View</button></div></td>
+    `
+    tbody.appendChild(tr)
+  }
+
+  const total = count ?? 0
+  document.getElementById('cancelled-count').textContent = `${total} cancelled`
+
+  const pageCount = Math.ceil(total / PAGE_SIZE)
+  const btnContainer = document.getElementById('cancelled-page-btns')
+  btnContainer.innerHTML = ''
+  if (pageCount > 1) {
+    const prev = document.createElement('button')
+    prev.className = 'page-btn'; prev.innerHTML = '&#8249;'
+    prev.addEventListener('click', () => { if (cancelledPage > 1) { cancelledPage--; loadCancelled() } })
+    btnContainer.appendChild(prev)
+    for (let i = 1; i <= Math.min(pageCount, 7); i++) {
+      const btn = document.createElement('button')
+      btn.className = 'page-btn' + (i === cancelledPage ? ' current' : '')
+      btn.textContent = i
+      btn.addEventListener('click', () => { cancelledPage = i; loadCancelled() })
+      btnContainer.appendChild(btn)
+    }
+    const next = document.createElement('button')
+    next.className = 'page-btn'; next.innerHTML = '&#8250;'
+    next.addEventListener('click', () => { if (cancelledPage < pageCount) { cancelledPage++; loadCancelled() } })
+    btnContainer.appendChild(next)
+  }
+}
+
 async function cancelBooking(bookingId, buttonEl) {
   if (!confirm('Cancel this booking? This cannot be undone.')) return
   buttonEl.disabled    = true
@@ -148,6 +213,30 @@ async function cancelBooking(bookingId, buttonEl) {
   if (pill) { pill.className = 'status-pill cancelled'; pill.textContent = 'Cancelled' }
   buttonEl.textContent = 'Cancelled'
   tr?.querySelector('.btn-noshow')?.setAttribute('disabled', '')
+}
+
+async function waiveBooking(bookingId, buttonEl) {
+  if (!confirm('Mark as no-show without charging a fee?')) return
+  buttonEl.disabled    = true
+  buttonEl.textContent = 'Waiving\u2026'
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'no_show' })
+    .eq('id', bookingId)
+
+  if (error) {
+    buttonEl.disabled    = false
+    buttonEl.textContent = 'Waive No-show'
+    alert('Failed: ' + error.message)
+    return
+  }
+
+  const tr   = buttonEl.closest('tr')
+  const pill = tr?.querySelector('.status-pill')
+  if (pill) { pill.className = 'status-pill noshow'; pill.textContent = 'No-show' }
+  buttonEl.textContent = 'Waived'
+  tr?.querySelectorAll('.btn-noshow, .btn-cancel, .btn-waive').forEach(b => b.setAttribute('disabled', ''))
 }
 
 async function markNoshow(bookingId, buttonEl) {
@@ -206,7 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 
   // Status filter
-  const STATUS_MAP = { 'Scheduled': 'scheduled', 'Completed': 'completed', 'No-show': 'noshow', 'Cancelled': 'cancelled' }
+  const STATUS_MAP = { 'Scheduled': 'scheduled', 'Completed': 'completed', 'No-show': 'noshow' }
   statusSelect?.addEventListener('change', () => {
     statusFilter = STATUS_MAP[statusSelect.value] ?? ''
     currentPage = 1; loadBookings()
@@ -219,7 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentPage = 1; loadBookings()
   })
 
-  // Mark no-show / cancel (delegated on tbody)
+  // Mark no-show / waive / cancel (delegated on tbody)
   document.querySelector('.data-table tbody')?.addEventListener('click', e => {
     const noShowBtn = e.target.closest('.btn-noshow')
     if (noShowBtn && !noShowBtn.disabled) {
@@ -227,10 +316,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (id) markNoshow(id, noShowBtn)
       return
     }
+    const waiveBtn = e.target.closest('.btn-waive')
+    if (waiveBtn && !waiveBtn.disabled) {
+      const id = waiveBtn.closest('tr')?.dataset.bookingId
+      if (id) waiveBooking(id, waiveBtn)
+      return
+    }
     const cancelBtn = e.target.closest('.btn-cancel')
     if (cancelBtn && !cancelBtn.disabled) {
       const id = cancelBtn.closest('tr')?.dataset.bookingId
       if (id) cancelBooking(id, cancelBtn)
     }
+  })
+
+  // Cancelled section — fetch count eagerly, load rows lazily on expand
+  loadCancelled()
+  document.getElementById('cancelled-toggle')?.addEventListener('click', () => {
+    const body = document.getElementById('cancelled-body')
+    const chevron = document.getElementById('cancelled-chevron')
+    const open = body.style.display !== 'none'
+    body.style.display = open ? 'none' : ''
+    chevron.style.transform = open ? '' : 'rotate(180deg)'
   })
 })
