@@ -135,13 +135,13 @@
     // Card inputs are always white regardless of widget theme — standard form UX.
     const cnDiv = document.createElement('div');
     cnDiv.setAttribute('slot', 'stripe-card-number');
-    cnDiv.style.cssText = 'width:100%; background-color:#ffffff;';
+    cnDiv.style.cssText = 'width:100%; background-color:#ffffff; color-scheme:light;';
     const ceDiv = document.createElement('div');
     ceDiv.setAttribute('slot', 'stripe-card-expiry');
-    ceDiv.style.cssText = 'width:100%; background-color:#ffffff;';
+    ceDiv.style.cssText = 'width:100%; background-color:#ffffff; color-scheme:light;';
     const ccDiv = document.createElement('div');
     ccDiv.setAttribute('slot', 'stripe-card-cvc');
-    ccDiv.style.cssText = 'width:100%; background-color:#ffffff;';
+    ccDiv.style.cssText = 'width:100%; background-color:#ffffff; color-scheme:light;';
     widget._host.appendChild(cnDiv);
     widget._host.appendChild(ceDiv);
     widget._host.appendChild(ccDiv);
@@ -617,11 +617,13 @@
         border-radius: 8px;
         padding: 10px 13px;
         background: #ffffff;
+        color-scheme: light;
         font-size: 0.84rem;
-        color: #64748b;
+        color: #0a0a0f;
         display: flex;
         align-items: center;
         gap: 8px;
+        outline: none;
       }
       .bw-stripe-box.focused {
         border-color: ${t.accent};
