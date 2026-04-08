@@ -132,27 +132,30 @@
 
     // Stripe cannot mount inside a shadow root — create light DOM slot containers
     // that are projected into the shadow DOM via named slots.
+    const dark    = isDark(widget.theme.bg);
+    const inputBg = dark ? '#111111' : '#eef2ee';
+
     const cnDiv = document.createElement('div');
     cnDiv.setAttribute('slot', 'stripe-card-number');
-    cnDiv.style.cssText = 'width:100%;';
+    cnDiv.style.cssText = `width:100%; background-color:${inputBg};`;
     const ceDiv = document.createElement('div');
     ceDiv.setAttribute('slot', 'stripe-card-expiry');
-    ceDiv.style.cssText = 'width:100%;';
+    ceDiv.style.cssText = `width:100%; background-color:${inputBg};`;
     const ccDiv = document.createElement('div');
     ccDiv.setAttribute('slot', 'stripe-card-cvc');
-    ccDiv.style.cssText = 'width:100%;';
+    ccDiv.style.cssText = `width:100%; background-color:${inputBg};`;
     widget._host.appendChild(cnDiv);
     widget._host.appendChild(ceDiv);
     widget._host.appendChild(ccDiv);
 
     const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
     const elements = stripe.elements();
-    const dark     = isDark(widget.theme.bg);
     const stripeStyle = {
       base: {
-        color:      dark ? '#f0ece4' : '#0a0a0f',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize:   '14px',
+        color:           dark ? '#f0ece4' : '#0a0a0f',
+        backgroundColor: inputBg,
+        fontFamily:      'Inter, system-ui, sans-serif',
+        fontSize:        '14px',
         '::placeholder': { color: dark ? '#888880' : '#94a3b8' },
       },
     };
@@ -162,6 +165,16 @@
     cardNumber.mount(cnDiv);
     cardExpiry.mount(ceDiv);
     cardCvc.mount(ccDiv);
+
+    // Focus/blur → highlight the shadow DOM wrapper so users see which box is active
+    const cnWrap = widget.root.querySelector('#stripe-card-number-wrap');
+    const ceWrap = widget.root.querySelector('#stripe-card-expiry-wrap');
+    const ccWrap = widget.root.querySelector('#stripe-card-cvc-wrap');
+    [[cardNumber, cnWrap], [cardExpiry, ceWrap], [cardCvc, ccWrap]].forEach(([el, wrap]) => {
+      if (!wrap) return;
+      el.on('focus', () => wrap.classList.add('focused'));
+      el.on('blur',  () => wrap.classList.remove('focused'));
+    });
 
     widget._stripeElements = { stripe, cardNumber, clientSecret, mode, _slotDivs: [cnDiv, ceDiv, ccDiv] };
   }
@@ -607,6 +620,15 @@
         display: flex;
         align-items: center;
         gap: 8px;
+      }
+      .bw-stripe-box.focused {
+        border-color: ${t.accent};
+        box-shadow: 0 0 0 2px ${t.accentBg};
+      }
+      .bw-stripe-loading {
+        font-size: 0.78rem;
+        color: ${t.sub};
+        font-style: italic;
       }
       .bw-stripe-icon { font-size: 1rem; }
       .bw-stripe-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -1131,17 +1153,17 @@
           <div class="bw-field">
             <label>Card Number</label>
             <div class="bw-stripe-box" id="stripe-card-number-wrap">
-              <slot name="stripe-card-number"><span class="bw-stripe-icon">&#x1F4B3;</span><span>•••• •••• •••• ••••</span></slot>
+              <slot name="stripe-card-number"><span class="bw-stripe-loading">Initializing secure payment form…</span></slot>
             </div>
           </div>
           <div class="bw-stripe-row">
             <div class="bw-field">
               <label>Expiry</label>
-              <div class="bw-stripe-box" id="stripe-card-expiry-wrap"><slot name="stripe-card-expiry">MM / YY</slot></div>
+              <div class="bw-stripe-box" id="stripe-card-expiry-wrap"><slot name="stripe-card-expiry"><span class="bw-stripe-loading">Loading…</span></slot></div>
             </div>
             <div class="bw-field">
               <label>CVC</label>
-              <div class="bw-stripe-box" id="stripe-card-cvc-wrap"><slot name="stripe-card-cvc">•••</slot></div>
+              <div class="bw-stripe-box" id="stripe-card-cvc-wrap"><slot name="stripe-card-cvc"><span class="bw-stripe-loading">Loading…</span></slot></div>
             </div>
           </div>
           <div class="bw-secure-note">&#128274; Payments are encrypted and secured by Stripe.</div>
@@ -1210,7 +1232,12 @@
         case 5: {
           const mode = this.state.service?.payment_mode || 'free';
           if (mode !== 'free' && !this._stripeElements) {
-            mountStripeElements(this).catch(err => {
+            const nextBtn = this.root.querySelector('#bw-next');
+            if (nextBtn) nextBtn.disabled = true;
+            mountStripeElements(this).then(() => {
+              const btn = this.root.querySelector('#bw-next');
+              if (btn) btn.disabled = false;
+            }).catch(err => {
               const errEl = this.root.querySelector('#bw-confirm-err');
               if (errEl) { errEl.textContent = err.message; errEl.classList.add('visible'); }
             });
