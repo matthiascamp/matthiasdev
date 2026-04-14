@@ -1262,7 +1262,7 @@ footer {
 ───────────────────────── */
 .work-reviews-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
 }
 
@@ -1519,16 +1519,16 @@ footer {
 }
 
 .work-review-card .project-embed-visual {
-  height: 220px;
-  min-height: 220px;
-  max-height: 220px;
+  height: 300px;
+  min-height: 300px;
+  max-height: 300px;
   padding: 0;
   background: transparent;
 }
 
 .work-review-card .project-browser {
-  height: 220px;
-  min-height: 220px;
+  height: 300px;
+  min-height: 300px;
 }
 
 .work-review-card .project-iframe-wrap {
