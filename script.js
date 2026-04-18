@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   MATTHIAS CAMPBELL — Portfolio JS
+   MC DEVELOPMENT — Studio JS
    ═══════════════════════════════════════════════ */
 
 'use strict';
@@ -80,11 +80,13 @@ document.querySelectorAll('#hero .reveal-up').forEach((el, i) => {
 });
 
 /* ── Typewriter effect ── */
-const words   = ['websites', 'web apps', 'AI tools', 'experiences', 'solutions'];
+const words   = ['websites', 'web apps', 'AI tools', 'booking systems', 'digital experiences'];
 const el      = document.getElementById('typewriter');
+if (!el) { /* typewriter removed from current layout */ }
 let wordIdx   = 0, charIdx = 0, deleting = false;
 
 function type() {
+  if (!el) return;
   const word    = words[wordIdx];
   const current = deleting
     ? word.substring(0, charIdx--)
@@ -105,7 +107,7 @@ function type() {
   }
   setTimeout(type, deleting ? 65 : 90);
 }
-setTimeout(type, 1200);
+if (el) setTimeout(type, 1200);
 
 /* ── Stat counter animation ── */
 function animateCounter(el, target, duration = 1800) {
@@ -151,7 +153,7 @@ class Particle {
     this.vy   = (Math.random() - 0.5) * 0.25;
     this.life = Math.random();
     this.dLife= 0.002 + Math.random() * 0.003;
-    this.color= Math.random() > 0.5 ? '124,92,252' : '192,132,252';
+    this.color= Math.random() > 0.5 ? '74,222,128' : '134,239,172';
   }
   update() {
     this.x    += this.vx;
@@ -250,7 +252,7 @@ function scaleIframePreviews() {
   document.querySelectorAll('.project-iframe-wrap').forEach(wrap => {
     const iframe = wrap.querySelector('iframe');
     if (!iframe) return;
-    const scale = wrap.offsetWidth / 1200;
+    const scale = wrap.offsetWidth / 1440;
     iframe.style.transform = `scale(${scale})`;
     const wrapH = wrap.offsetHeight;
     if (wrapH > 0) iframe.style.height = Math.ceil(wrapH / scale) + 'px';
@@ -258,6 +260,52 @@ function scaleIframePreviews() {
 }
 scaleIframePreviews();
 window.addEventListener('resize', scaleIframePreviews, { passive: true });
+
+/* ── MCBook heading word cycler ── */
+(function () {
+  const el = document.getElementById('mcbookCycler');
+  if (!el) return;
+
+  const words = ['booking', 'payment', 'SMS', 'scheduling', 'automation'];
+  let idx = 0, phase = 'fast', count = 0;
+
+  function next() {
+    const hold = phase === 'fast' ? 300 : 2800;
+
+    /* reset any running animation, then play out */
+    el.style.animation = 'none';
+    void el.offsetWidth; /* reflow to restart */
+    el.style.animation = 'mcbookOut 0.22s ease forwards';
+
+    el.addEventListener('animationend', function onOut(e) {
+      if (e.animationName !== 'mcbookOut') return;
+      el.removeEventListener('animationend', onOut);
+
+      idx = (idx + 1) % words.length;
+      el.textContent = words[idx];
+      count++;
+      if (phase === 'fast' && count >= words.length) phase = 'slow';
+
+      void el.offsetWidth;
+      el.style.animation = 'mcbookIn 0.22s ease forwards';
+
+      el.addEventListener('animationend', function onIn(e) {
+        if (e.animationName !== 'mcbookIn') return;
+        el.removeEventListener('animationend', onIn);
+        el.style.animation = 'none';
+        setTimeout(next, hold);
+      });
+    });
+  }
+
+  const sec = document.getElementById('mcbook');
+  const obs = new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect();
+    setTimeout(next, 1000);
+  }, { threshold: 0.25 });
+  if (sec) obs.observe(sec);
+}());
 
 /* ── Pricing tabs ── */
 const pricingTabs   = document.querySelectorAll('.pricing-tab');

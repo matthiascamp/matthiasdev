@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Matthias Campbell — Web Developer</title>
-  <meta name="description" content="Matthias Campbell — Web Developer based in Brisbane. I build fast, beautiful, modern websites and web apps." />
+  <title>MC Development — Website + MCBook Bundle</title>
+  <meta name="description" content="MC Development builds custom websites with MCBook embedded — bookings, Stripe payments, and SMS reminders for small businesses and restaurants. $250 upfront, $50/month." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -12,23 +12,21 @@
 </head>
 <body>
 
-  <!-- Custom cursor -->
   <div class="cursor" id="cursor"></div>
   <div class="cursor-follower" id="cursorFollower"></div>
-
-  <!-- Noise overlay -->
   <div class="noise"></div>
+  <div class="bg-glow bg-glow-a" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-b" aria-hidden="true"></div>
 
-  <!-- ─── NAV ─── -->
+  <!-- NAV -->
   <nav id="nav">
     <div class="nav-inner">
       <a href="#hero" class="logo">MC<span class="dot">.</span></a>
       <ul class="nav-links">
-        <li><a href="#about">About</a></li>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#projects">Work</a></li>
-        <li><a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener">MCBook</a></li>
-        <li><a href="#contact" class="nav-cta">Let's talk</a></li>
+        <li><a href="#mcbook">MCBook</a></li>
+        <li><a href="#projects">Case Study</a></li>
+        <li><a href="#other-work">Other Work</a></li>
+        <li><a href="#contact" class="nav-cta">Free consult</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -36,442 +34,215 @@
     </div>
   </nav>
 
-  <!-- Mobile menu -->
   <div class="mobile-menu" id="mobileMenu">
     <ul>
-      <li><a href="#about" class="mobile-link">About</a></li>
-      <li><a href="#services" class="mobile-link">Services</a></li>
-      <li><a href="#projects" class="mobile-link">Work</a></li>
-      <li><a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener" class="mobile-link">MCBook</a></li>
-      <li><a href="#contact" class="mobile-link">Contact</a></li>
+      <li><a href="#mcbook" class="mobile-link">MCBook</a></li>
+      <li><a href="#projects" class="mobile-link">Case Study</a></li>
+      <li><a href="#other-work" class="mobile-link">Other Work</a></li>
+      <li><a href="#contact" class="mobile-link">Free Consult</a></li>
     </ul>
   </div>
 
-  <!-- ─── HERO ─── -->
+  <!-- HERO -->
   <section id="hero">
     <div class="hero-bg">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
       <canvas id="particles"></canvas>
     </div>
     <div class="hero-content">
       <div class="hero-badge reveal-up">
         <span class="badge-dot"></span>
-        Available for new projects
+        MC Development · Brisbane
       </div>
       <h1 class="hero-title reveal-up">
-        <span class="line">Hi, I'm</span>
-        <span class="line gradient-text">Matthias</span>
-        <span class="line gradient-text">Campbell.</span>
+        <span class="line">We are</span>
+        <span class="line gradient-text">MC Development.</span>
       </h1>
-      <p class="hero-sub reveal-up">
-        I build <span class="typewriter" id="typewriter"></span><span class="type-cursor">|</span>
-        <br />that combine beautiful design with top-tier performance.
-      </p>
+      <p class="hero-tagline reveal-up">and we can build anything.</p>
       <div class="hero-actions reveal-up">
-        <a href="#projects" class="btn btn-primary">View my work</a>
-        <a href="#services" class="btn btn-ghost">Services</a>
-        <a href="#contact" class="btn btn-ghost">Get in touch</a>
+        <a href="#mcbook" class="btn btn-primary">See the bundle</a>
+        <a href="#contact" class="btn btn-ghost">Free consult</a>
       </div>
     </div>
   </section>
 
-  <!-- ─── SERVICES ─── -->
-  <section id="services">
+  <!-- MCBOOK + PRICING -->
+  <section id="mcbook">
+    <div class="grid-bg"></div>
+    <div class="container">
+
+      <div class="section-header reveal-up">
+        <p class="mcbook-section-tag">Our flagship product: MCBook</p>
+        <h2 class="section-title">Website + <span id="mcbookCycler">booking</span> integration</h2>
+        <p class="mcbook-intro-sub">We build your website and set up an online booking and payments system — delivered together as one package. Clients book your services and pay online. You manage your calendar from your phone. <a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener" class="mcbook-link">See MCBook →</a></p>
+        <ul class="bundle-features-list">
+          <li>Online bookings — clients pick a service, date &amp; time</li>
+          <li>Stripe payments at booking — deposits or full upfront</li>
+          <li>Automatic SMS reminders the day before — no effort from you</li>
+        </ul>
+      </div>
+
+      <!-- Pricing -->
+      <div class="bundle-row reveal-up">
+        <div class="bundle-box bundle-box--green">
+          <p class="bundle-box-amount">$250</p>
+          <p class="bundle-box-freq">once</p>
+          <p class="bundle-box-what">Website + full MCBook setup</p>
+        </div>
+        <div class="bundle-sep">+</div>
+        <div class="bundle-box bundle-box--green">
+          <p class="bundle-box-amount">$50</p>
+          <p class="bundle-box-freq">/month</p>
+          <p class="bundle-box-what">MCBook — bookings, SMS &amp; payments</p>
+        </div>
+      </div>
+      <p class="bundle-stripe-note reveal-up">Cancel anytime.</p>
+
+      <div class="mcbook-bottom-cta reveal-up">
+        <a href="#contact" class="btn btn-mcbook-primary">Book a free consult →</a>
+        <a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener" class="btn btn-ghost">Learn more ↗</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CASE STUDY -->
+  <section id="projects">
+    <div class="grid-bg"></div>
+    <div class="container">
+
+      <div class="section-header reveal-up">
+        <p class="mcbook-section-tag">Case study</p>
+        <h2 class="section-title">How CBlends went from<br /><em>texts to online bookings</em></h2>
+        <p class="mcbook-intro-sub">A Brisbane barber with no website and no way to stop no-shows. We built their site and set up MCBook in days.</p>
+      </div>
+
+      <div class="case-study-preview reveal-up">
+        <div class="project-browser">
+          <div class="mock-bar">
+            <span></span><span></span><span></span>
+            <div class="mock-url">cblends.github.io</div>
+            <a href="https://cblends.github.io" target="_blank" rel="noopener" class="mock-visit">↗</a>
+          </div>
+          <div class="project-iframe-wrap">
+            <iframe src="https://cblends.github.io" title="CBlends" loading="lazy" frameborder="0"></iframe>
+            <a href="https://cblends.github.io" target="_blank" rel="noopener" class="iframe-overlay"></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-quick">
+        <div class="case-points">
+          <div class="case-point reveal-up">
+            <span class="case-point-label">Before</span>
+            <p>No website. Bookings by text. No-shows with no way to charge.</p>
+          </div>
+          <div class="case-point reveal-up">
+            <span class="case-point-label">Built with MCBook</span>
+            <p>Custom site with MCBook embedded. Online bookings, Stripe payments, SMS reminders — set up in days.</p>
+          </div>
+          <div class="case-point case-point--result reveal-up">
+            <span class="case-point-label">Result</span>
+            <p>Clients book and pay online. Calendar runs itself. Managed from his phone.</p>
+          </div>
+        </div>
+        <div class="case-testimonial-card reveal-up">
+          <div class="stars">★★★★★</div>
+          <p>"The website made everything easier. Clients can book without messaging me and it keeps my calendar organised. Clean, simple, and works perfectly."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">CL</div>
+            <div>
+              <strong>Caleb L.</strong>
+              <span>Owner, CBlends — Brisbane</span>
+            </div>
+          </div>
+          <a href="https://cblends.github.io" target="_blank" rel="noopener" class="btn btn-ghost case-visit-btn">Visit CBlends →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- OTHER WORK -->
+  <section id="other-work">
+    <div class="grid-bg"></div>
     <div class="container">
       <div class="section-header reveal-up">
-        <p class="section-eyebrow">What I do</p>
-        <h2 class="section-title">Services built for<br /><em>real results</em></h2>
+        <h2 class="section-title other-work-title">We can build <em>anything.</em></h2>
+        <p class="mcbook-intro-sub">The bundle is our focus right now — but we take on all kinds of projects. Drop us a message.</p>
       </div>
       <div class="services-grid">
-
-        <div class="service-card reveal-up" data-delay="0">
+        <a href="#contact" class="service-card reveal-up" data-delay="0">
           <div class="service-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
           </div>
-          <h3>Web Design & Development</h3>
-          <p>Pixel-perfect, responsive websites built with modern frameworks. Fast, accessible, and built to convert visitors into clients.</p>
-          <ul class="service-list">
-            <li>Landing pages &amp; marketing sites</li>
-            <li>E-commerce stores</li>
-            <li>Portfolio &amp; personal brands</li>
-          </ul>
+          <h3>Custom Web Development</h3>
+          <p>Full custom websites, web apps, and e-commerce — built from scratch to spec.</p>
           <div class="service-arrow">→</div>
-        </div>
-
-        <div class="service-card reveal-up" data-delay="100">
+        </a>
+        <a href="#contact" class="service-card reveal-up" data-delay="100">
           <div class="service-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
           </div>
           <h3>AI Integration</h3>
-          <p>Supercharge your product with AI — from chatbots and recommendation engines to intelligent automation and data insights.</p>
-          <ul class="service-list">
-            <li>LLM-powered features</li>
-            <li>Intelligent automation</li>
-            <li>Data pipelines &amp; dashboards</li>
-          </ul>
+          <p>Chatbots, automation, and data pipelines built into your product.</p>
           <div class="service-arrow">→</div>
-        </div>
-
-        <div class="service-card reveal-up" data-delay="300">
+        </a>
+        <a href="#contact" class="service-card reveal-up" data-delay="200">
           <div class="service-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
           </div>
-          <h3>Performance & SEO</h3>
-          <p>Speed matters. I audit and optimise existing sites for Core Web Vitals, SEO, and accessibility — helping you rank and retain visitors.</p>
-          <ul class="service-list">
-            <li>Site audits</li>
-            <li>Core Web Vitals optimisation</li>
-            <li>Technical SEO</li>
-          </ul>
+          <h3>Performance &amp; SEO</h3>
+          <p>Audits, Core Web Vitals, and technical SEO to make your site rank and load faster.</p>
           <div class="service-arrow">→</div>
-        </div>
-
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- ─── PRICING ─── -->
-  <section id="pricing">
-    <div class="container">
-      <div class="section-header reveal-up">
-        <p class="section-eyebrow">Services</p>
-        <h2 class="section-title">Plans built for every<br /><em>stage of growth</em></h2>
-      </div>
-
-      <!-- Tab nav -->
-      <div class="pricing-tabs reveal-up" role="tablist">
-        <button class="pricing-tab active" data-tab="web" role="tab" aria-selected="true" aria-controls="panel-web">Web Development</button>
-        <button class="pricing-tab" data-tab="seo" role="tab" aria-selected="false" aria-controls="panel-seo">SEO Optimisation</button>
-        <button class="pricing-tab" data-tab="ai" role="tab" aria-selected="false" aria-controls="panel-ai">AI Integration</button>
-        <button class="pricing-tab" data-tab="other" role="tab" aria-selected="false" aria-controls="panel-other">Something Else?</button>
-      </div>
-
-      <!-- Panels -->
-      <div class="pricing-panels">
-
-        <!-- Web Development -->
-        <div class="pricing-panel pricing-panel--single active" id="panel-web" role="tabpanel">
-          <div class="pricing-card pricing-card--popular">
-            <div class="pricing-badge">Custom Pricing</div>
-            <div class="pricing-tier">Web Development</div>
-            <div class="pricing-quote-block">
-              <span class="quote-cta">Get a Quote</span>
-            </div>
-            <p class="pricing-desc">Every website is unique. Tell me about your project and I'll provide a personalised quote tailored to your needs and budget.</p>
-            <ul class="pricing-features">
-              <li>Landing pages &amp; marketing sites</li>
-              <li>Business &amp; portfolio websites</li>
-              <li>Custom web applications</li>
-              <li>E-commerce stores</li>
-              <li>Mobile responsive</li>
-              <li>SEO ready</li>
-              <li>Unlimited revisions</li>
-            </ul>
-            <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
-          </div>
-        </div>
-
-        <!-- SEO Optimisation -->
-        <div class="pricing-panel" id="panel-seo" role="tabpanel">
-          <div class="pricing-card">
-            <div class="pricing-tier">Basic</div>
-            <div class="pricing-price">
-              <span class="price-currency">$</span>
-              <span class="price-amount">149</span>
-            </div>
-            <p class="pricing-desc">Everything you need to start ranking on Google.</p>
-            <ul class="pricing-features">
-              <li>Keyword research</li>
-              <li>Meta tags optimisation</li>
-              <li>On-page audit</li>
-              <li>Monthly report</li>
-            </ul>
-            <a href="#contact" class="btn btn-ghost pricing-btn">Get Started</a>
-          </div>
-
-          <div class="pricing-card pricing-card--popular">
-            <div class="pricing-badge">Most Popular</div>
-            <div class="pricing-tier">Pro</div>
-            <div class="pricing-price">
-              <span class="price-currency">$</span>
-              <span class="price-amount">299</span>
-            </div>
-            <p class="pricing-desc">Grow your authority with off-page and technical SEO.</p>
-            <ul class="pricing-features">
-              <li>Everything in Basic</li>
-              <li>Backlink building</li>
-              <li>Competitor analysis</li>
-              <li>Google Search Console setup</li>
-            </ul>
-            <a href="#contact" class="btn btn-primary pricing-btn">Get Started</a>
-          </div>
-
-          <div class="pricing-card">
-            <div class="pricing-tier">Premium</div>
-            <div class="pricing-price">
-              <span class="price-currency">$</span>
-              <span class="price-amount">599</span>
-            </div>
-            <p class="pricing-desc">Full-service SEO with content strategy and priority support.</p>
-            <ul class="pricing-features">
-              <li>Everything in Pro</li>
-              <li>Weekly reports</li>
-              <li>Content strategy</li>
-              <li>Schema markup</li>
-              <li>Priority support</li>
-            </ul>
-            <a href="#contact" class="btn btn-ghost pricing-btn">Get Started</a>
-          </div>
-        </div>
-
-        <!-- AI Integration -->
-        <div class="pricing-panel pricing-panel--single" id="panel-ai" role="tabpanel">
-          <div class="pricing-card pricing-card--popular">
-            <div class="pricing-badge">Custom Pricing</div>
-            <div class="pricing-tier">AI Integration</div>
-            <div class="pricing-quote-block">
-              <span class="quote-cta">Get a Quote</span>
-            </div>
-            <p class="pricing-desc">AI solutions are built around your specific business needs. Let's discuss what's possible for you.</p>
-            <ul class="pricing-features">
-              <li>AI chatbots &amp; assistants</li>
-              <li>Trained on your data</li>
-              <li>Custom AI workflows</li>
-              <li>LLM-powered features</li>
-              <li>Intelligent automation</li>
-              <li>CRM &amp; tool integration</li>
-              <li>Analytics dashboards</li>
-            </ul>
-            <a href="#contact" class="btn btn-primary pricing-btn">Get a Quote</a>
-          </div>
-        </div>
-
-        <!-- Something Else? -->
-        <div class="pricing-panel pricing-panel--single" id="panel-other" role="tabpanel">
-          <div class="pricing-card pricing-card--popular">
-            <div class="pricing-badge">Let's Talk</div>
-            <div class="pricing-tier">Got Something in Mind?</div>
-            <div class="pricing-quote-block">
-              <span class="quote-cta">Reach Out</span>
-            </div>
-            <p class="pricing-desc">Not every project fits a neat category — and that's fine. If you've got an idea, a problem to solve, or just want to explore what's possible, drop me a message and we'll figure it out together.</p>
-            <ul class="pricing-features">
-              <li>Custom project scoping</li>
-              <li>No commitment required</li>
-              <li>Fast, friendly response</li>
-              <li>Transparent pricing</li>
-            </ul>
-            <a href="#contact" class="btn btn-primary pricing-btn">Get in Touch</a>
-          </div>
-        </div>
-
-      </div><!-- /pricing-panels -->
-    </div>
-  </section>
-
-  <!-- ─── WORK + REVIEWS ─── -->
-  <section id="projects">
-    <div class="container">
-      <div class="section-header reveal-up">
-        <p class="section-eyebrow">Selected work &amp; client reviews</p>
-        <h2 class="section-title">Projects I'm <em>proud of</em></h2>
-      </div>
-      <div class="work-reviews-grid">
-
-        <article class="work-review-card reveal-up" data-delay="0">
-          <div class="project-visual project-embed-visual">
-            <div class="project-browser">
-              <div class="mock-bar">
-                <span></span><span></span><span></span>
-                <div class="mock-url">matthiasdev.com/mcbook</div>
-                <a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener" class="mock-visit" aria-label="Open site">↗</a>
-              </div>
-              <div class="project-iframe-wrap">
-                <iframe src="https://matthiasdev.com/mcbook"
-                        title="MCBook"
-                        loading="lazy"
-                        frameborder="0"></iframe>
-                <a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener" class="iframe-overlay" aria-label="Visit MCBook"></a>
-              </div>
-            </div>
-          </div>
-          <div class="work-review-body">
-            <div class="work-project-info">
-              <span class="project-tag">Booking System</span>
-              <h3>MCBook <span class="beta-stamp">BETA</span></h3>
-              <p>MCBook is an all-in-one appointment booking system, built from scratch.
-It lets clients schedule directly, eliminates back-and-forth, and includes a sleek interface, intuitive dashboard, payment processing, and no-show fees.</p>
-              <div class="project-stack">
-                <span>HTML</span><span>CSS</span><span>JavaScript</span><span>TypeScript</span>
-              </div>
-              <a href="https://matthiasdev.com/mcbook/" target="_blank" rel="noopener" class="project-link">Visit site →</a>
-            </div>
-            <div class="work-review">
-              <div class="stars">★★★★★</div>
-              <p>"MCBook made scheduling effortless. Clients love how easy it is to book, and I love not having to manage it manually anymore."</p>
-              <div class="testimonial-author">
-                <div class="author-avatar">ZP</div>
-                <div>
-                  <strong>Zach Pollux</strong>
-                  <span>Masseuse, Brisbane</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="work-review-card reveal-up" data-delay="100">
-          <div class="project-visual project-embed-visual">
-            <div class="project-browser">
-              <div class="mock-bar">
-                <span></span><span></span><span></span>
-                <div class="mock-url">https://cblends.github.io</div>
-                <a href="https://cblends.github.io"
-                   target="_blank"
-                   rel="noopener"
-                   class="mock-visit"
-                   aria-label="Open site">↗</a>
-              </div>
-              <div class="project-iframe-wrap">
-                <iframe
-                  src="https://cblends.github.io"
-                  title="CBlends Website"
-                  loading="lazy"
-                  frameborder="0">
-                </iframe>
-                <a href="https://cblends.github.io"
-                   target="_blank"
-                   rel="noopener"
-                   class="iframe-overlay"
-                   aria-label="Visit CBlends">
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="work-review-body">
-            <div class="work-project-info">
-              <span class="project-tag">Small Business Website</span>
-              <h3>CBlends</h3>
-              <p>A clean, modern website for a Brisbane-based barber running his craft out of his garage. Built to establish an online presence, runs on the MCBook booking system.</p>
-              <div class="project-stack">
-                <span>HTML</span><span>CSS</span><span>JavaScript</span>
-              </div>
-              <a href="https://cblends.github.io" target="_blank" rel="noopener" class="project-link">Visit site →</a>
-            </div>
-            <div class="work-review">
-              <div class="stars">★★★★★</div>
-              <p>"The website made everything easier. Clients can book without messaging me and it keeps my calendar organised. Clean, simple, and works perfectly."</p>
-              <div class="testimonial-author">
-                <div class="author-avatar">CL</div>
-                <div>
-                  <strong>Caleb L.</strong>
-                  <span>Small Business Owner, Brisbane</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── ABOUT ─── -->
-  <section id="about">
-    <div class="container">
-      <div class="about-grid">
-        <div class="about-visual">
-          <div class="about-img-wrap reveal-left">
-            <div class="about-img-bg"></div>
-            <div class="about-img-card">
-              <div class="about-avatar">MC</div>
-              <div class="about-card-info">
-                <strong>Matthias Campbell</strong>
-                <span>Brisbane, Australia</span>
-              </div>
-            </div>
-            <div class="about-tag tag-1">10 Years Coding</div>
-            <div class="about-tag tag-2">Web Dev Since 2019</div>
-          </div>
-        </div>
-        <div class="about-text reveal-right">
-          <p class="section-eyebrow">About me</p>
-          <h2 class="section-title">
-            Crafting digital<br /><em>experiences</em> that matter
-          </h2>
-          <p class="about-body">
-            With over 10 years of coding experience and a focused background in
-            web development since 2019, I bring deep technical knowledge and a
-            refined eye for design to every project. From pixel-perfect interfaces
-            to robust back-end architecture, I care about every layer of the work.
-          </p>
-          <p class="about-body">
-            Whether you need a sleek marketing site, a full-stack web app, or
-            an AI-powered solution, I deliver with precision, clarity, and a
-            genuine investment in your success.
-          </p>
-          <div class="about-chips">
-            <span class="chip">Problem solver</span>
-            <span class="chip">Detail obsessed</span>
-            <span class="chip">Fast learner</span>
-            <span class="chip">Clean code advocate</span>
-          </div>
-          <a href="#contact" class="btn btn-primary">Work with me</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── CONTACT ─── -->
+  <!-- CONTACT -->
   <section id="contact">
+    <div class="grid-bg"></div>
     <div class="container">
       <div class="contact-grid">
         <div class="contact-left reveal-left">
-          <p class="section-eyebrow">Get in touch</p>
-          <h2 class="section-title">Let's build something<br /><em>great together</em></h2>
-          <p class="contact-body">Have a project in mind? I'd love to hear about it. Send me a message and I'll get back to you within 24 hours.</p>
-          <div class="contact-links">
-            <a href="mailto:matthiasdevelopment@gmail.com" class="contact-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              matthiasdevelopment@gmail.com
-            </a>
-            <a href="https://github.com/matthiascamp" target="_blank" rel="noopener" class="contact-item">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.796 24 17.298 24 12c0-6.63-5.373-12-12-12z"/></svg>
-              github.com/matthiascamp
-            </a>
+          <div class="consult-badge">
+            <span class="consult-badge-dot"></span>
+            Free — no commitment
           </div>
+          <h2 class="section-title">Book a free<br /><em>consultation</em></h2>
+          <p class="contact-body">Tell us about your business. We'll walk through the bundle, show you how MCBook works for your setup, and give you a clear picture before you spend anything.</p>
+          <a href="mailto:matthiasdevelopment@gmail.com" class="contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            matthiasdevelopment@gmail.com
+          </a>
         </div>
         <div class="contact-right reveal-right">
           <form class="contact-form" id="contactForm">
             <div class="form-row">
               <div class="form-group">
-                <label for="name">Your name</label>
+                <label for="name">Name</label>
                 <input type="text" id="name" name="name" placeholder="Jane Smith" required />
               </div>
               <div class="form-group">
-                <label for="email">Email address</label>
+                <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="jane@example.com" required />
               </div>
             </div>
             <div class="form-group">
-              <label for="subject">What do you need?</label>
+              <label for="subject">Business type</label>
               <select id="subject" name="subject">
-                <option value="">Select a service...</option>
-                <option value="website">Website Design &amp; Development</option>
-                <option value="ai">AI Integration</option>
-                <option value="seo">Performance &amp; SEO</option>
-                <option value="other">Other</option>
+                <option value="">What type of business?</option>
+                <option value="service">Service business (hairdresser, trainer, tradie…)</option>
+                <option value="restaurant">Restaurant, cafe or bar</option>
+                <option value="other">Something else</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="message">Tell me about your project</label>
-              <textarea id="message" name="message" rows="5" placeholder="Describe your project, budget, timeline..." required></textarea>
+              <label for="message">About your business</label>
+              <textarea id="message" name="message" rows="4" placeholder="What you do, where you're based, what you need…" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary btn-full">
-              <span>Send message</span>
+              <span>Book free consultation</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
             <p class="form-note" id="formNote"></p>
@@ -481,18 +252,18 @@ It lets clients schedule directly, eliminates back-and-forth, and includes a sle
     </div>
   </section>
 
-  <!-- ─── FOOTER ─── -->
+  <!-- FOOTER -->
   <footer>
     <div class="container">
       <div class="footer-inner">
         <a href="#hero" class="logo">MC<span class="dot">.</span></a>
-        <p class="footer-copy">© 2026 Matthias Campbell. Built with care in Brisbane.<br /><a href="mailto:matthiasdevelopment@gmail.com" class="footer-email">matthiasdevelopment@gmail.com</a></p>
+        <p class="footer-copy">© 2026 MC Development. Brisbane, Australia.<br /><a href="mailto:matthiasdevelopment@gmail.com" class="footer-email">matthiasdevelopment@gmail.com</a></p>
         <div class="footer-links">
-          <a href="#about">About</a>
-          <a href="#services">Services</a>
-          <a href="#projects">Work</a>
+          <a href="#mcbook">MCBook</a>
+          <a href="#projects">Case Study</a>
+          <a href="#other-work">Other Work</a>
           <a href="#contact">Contact</a>
-          <a href="https://github.com/matthiascamp" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://matthiasdev.com/mcbook" target="_blank" rel="noopener">MCBook Platform ↗</a>
         </div>
       </div>
     </div>
