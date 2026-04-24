@@ -724,6 +724,92 @@
       th:nth-child(5), td:nth-child(5),
       th:nth-child(6), td:nth-child(6) { display: none; }
     }
+
+    /* ── Audit log ── */
+    .audit-entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+    .audit-entry-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .audit-action {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .audit-action.INSERT { background: rgba(74,222,128,0.12); color: #4ade80; }
+    .audit-action.UPDATE { background: rgba(59,130,246,0.12); color: #60a5fa; }
+    .audit-action.DELETE { background: rgba(239,68,68,0.12);  color: #ef4444; }
+    .audit-time {
+      font-size: 0.75rem;
+      color: var(--text-3);
+    }
+    .audit-client-name {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      margin-left: auto;
+    }
+    .audit-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 0.78rem;
+    }
+    .audit-details dt {
+      color: var(--text-3);
+    }
+    .audit-details dd {
+      color: var(--text);
+      font-weight: 500;
+    }
+    .audit-change {
+      font-size: 0.76rem;
+      margin-top: 6px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .audit-change-row {
+      display: flex;
+      gap: 6px;
+      padding: 2px 0;
+      flex-wrap: wrap;
+    }
+    .audit-field { color: var(--text-2); font-weight: 600; min-width: 70px; }
+    .audit-old   { color: #ef4444; text-decoration: line-through; }
+    .audit-new   { color: #4ade80; }
+    .audit-pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 0;
+    }
+    .audit-pagination button {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .audit-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    @media (max-width: 600px) {
+      .audit-details { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -751,6 +837,10 @@
       <button class="nav-item" id="nav-create-client">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
         Create Client
+      </button>
+      <button class="nav-item" id="nav-audit-log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Audit Log
       </button>
     </nav>
     <div class="sidebar-footer">
@@ -859,6 +949,22 @@
         </div>
       </div>
 
+      <!-- Audit Log section -->
+      <div id="section-audit" style="display:none;">
+        <div class="section-header">
+          <span class="section-title">Booking Audit Log</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="audit-client-filter" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8rem;font-family:inherit;">
+              <option value="">All clients</option>
+            </select>
+            <button class="btn-sm" id="audit-refresh" style="border-radius:8px;">Refresh</button>
+          </div>
+        </div>
+        <div id="audit-log-body" style="margin-top:12px;">
+          <div style="color:var(--text-3);font-size:0.85rem;padding:24px;text-align:center;">Loading audit log…</div>
+        </div>
+      </div>
+
       <!-- Create Client section -->
       <div id="section-create" style="display:none;">
         <div class="section-header">
@@ -958,17 +1064,21 @@
       'nav-overview':      'Overview',
       'nav-clients':       'Clients',
       'nav-create-client': 'Create Client',
+      'nav-audit-log':     'Audit Log',
     }
     // Track which data state is currently active ('loading'|'data'|'error')
     let currentDataState = 'loading'
 
     function showSection(section) {
-      ;['state-loading','state-error','state-data','section-create'].forEach(id => {
+      ;['state-loading','state-error','state-data','section-create','section-audit'].forEach(id => {
         const el = document.getElementById(id)
         if (el) el.style.display = 'none'
       })
       if (section === 'create') {
         document.getElementById('section-create').style.display = ''
+      } else if (section === 'audit') {
+        document.getElementById('section-audit').style.display = ''
+        loadAuditLog()
       } else {
         // Restore whichever data state was last shown
         const stateId = { loading: 'state-loading', data: 'state-data', error: 'state-error' }[currentDataState] || 'state-loading'
@@ -994,6 +1104,10 @@
     document.getElementById('nav-create-client')?.addEventListener('click', () => {
       activateNav('nav-create-client')
       showSection('create')
+    })
+    document.getElementById('nav-audit-log')?.addEventListener('click', () => {
+      activateNav('nav-audit-log')
+      showSection('audit')
     })
 
     // ── Toast ─────────────────────────────────────────────────────────────────
@@ -1054,6 +1168,7 @@
       document.getElementById('stat-revenue').textContent = aud(totalMyRevenue)
 
       renderTable(allClients)
+      populateAuditClientFilter()
     }
 
     function renderTable(clients) {
@@ -1543,6 +1658,128 @@
         btn.textContent = 'Create Account'
       }
     })
+
+    // ── Audit Log ────────────────────────────────────────────────────────────
+    let auditPage = 0
+    const AUDIT_PAGE_SIZE = 50
+    let auditClientFilter = ''
+
+    async function loadAuditLog() {
+      const body = document.getElementById('audit-log-body')
+      body.innerHTML = '<div style="color:var(--text-3);font-size:0.85rem;padding:24px;text-align:center;">Loading audit log…</div>'
+
+      const from = auditPage * AUDIT_PAGE_SIZE
+      let q = supabase.from('booking_audit_log')
+        .select('*', { count: 'exact' })
+        .order('changed_at', { ascending: false })
+        .range(from, from + AUDIT_PAGE_SIZE - 1)
+
+      if (auditClientFilter) q = q.eq('client_id', auditClientFilter)
+
+      const { data: entries, count, error } = await q
+      if (error) {
+        body.innerHTML = `<div style="color:#ef4444;font-size:0.85rem;padding:24px;text-align:center;">Failed to load audit log: ${error.message}<br><br>Have you run the migration? The booking_audit_log table and trigger need to be created first — see migration.sql section 9.</div>`
+        return
+      }
+
+      if (!entries || entries.length === 0) {
+        body.innerHTML = '<div style="color:var(--text-3);font-size:0.85rem;padding:24px;text-align:center;">No audit log entries yet. Changes to bookings will appear here automatically.</div>'
+        return
+      }
+
+      // Build client name lookup from allClients
+      const clientMap = {}
+      for (const c of allClients) clientMap[c.id] = c.business_name || c.email
+
+      const FIELDS_TO_SHOW = ['status', 'date', 'time', 'customer_id', 'service_id', 'payment_status', 'party_size']
+
+      let html = ''
+      for (const entry of entries) {
+        const d = new Date(entry.changed_at)
+        const timeStr = d.toLocaleString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+        const clientName = clientMap[entry.client_id] || entry.client_id?.slice(0, 8) || '—'
+
+        let detailHtml = ''
+
+        if (entry.action === 'INSERT' && entry.new_data) {
+          const n = entry.new_data
+          detailHtml = `<div class="audit-details">
+            <dt>Status</dt><dd>${n.status || '—'}</dd>
+            <dt>Date</dt><dd>${n.date || '—'}</dd>
+            <dt>Time</dt><dd>${n.time || '—'}</dd>
+            <dt>Payment</dt><dd>${n.payment_status || '—'}</dd>
+          </div>`
+        } else if (entry.action === 'UPDATE' && entry.old_data && entry.new_data) {
+          const changes = []
+          for (const key of FIELDS_TO_SHOW) {
+            const oldVal = entry.old_data[key]
+            const newVal = entry.new_data[key]
+            if (oldVal !== newVal && (oldVal != null || newVal != null)) {
+              changes.push(`<div class="audit-change-row">
+                <span class="audit-field">${key}</span>
+                <span class="audit-old">${oldVal ?? '—'}</span>
+                <span style="color:var(--text-3);">&rarr;</span>
+                <span class="audit-new">${newVal ?? '—'}</span>
+              </div>`)
+            }
+          }
+          detailHtml = changes.length
+            ? `<div class="audit-change">${changes.join('')}</div>`
+            : '<div style="font-size:0.76rem;color:var(--text-3);margin-top:4px;">No tracked field changes (metadata update)</div>'
+        } else if (entry.action === 'DELETE' && entry.old_data) {
+          const o = entry.old_data
+          detailHtml = `<div class="audit-details">
+            <dt>Status was</dt><dd>${o.status || '—'}</dd>
+            <dt>Date</dt><dd>${o.date || '—'}</dd>
+            <dt>Time</dt><dd>${o.time || '—'}</dd>
+          </div>`
+        }
+
+        html += `<div class="audit-entry">
+          <div class="audit-entry-header">
+            <span class="audit-action ${entry.action}">${entry.action}</span>
+            <span class="audit-time">${timeStr}</span>
+            <span class="audit-client-name">${clientName}</span>
+          </div>
+          <div style="font-size:0.76rem;color:var(--text-3);margin-bottom:6px;">Booking ${entry.booking_id?.slice(0, 8)}…</div>
+          ${detailHtml}
+        </div>`
+      }
+
+      // Pagination
+      const total = count ?? 0
+      const totalPages = Math.ceil(total / AUDIT_PAGE_SIZE)
+      html += `<div class="audit-pagination">
+        <button id="audit-prev" ${auditPage === 0 ? 'disabled' : ''}>&larr; Newer</button>
+        <span style="font-size:0.8rem;color:var(--text-3);padding:6px;">Page ${auditPage + 1} of ${totalPages} (${total} entries)</span>
+        <button id="audit-next" ${auditPage >= totalPages - 1 ? 'disabled' : ''}>Older &rarr;</button>
+      </div>`
+
+      body.innerHTML = html
+
+      document.getElementById('audit-prev')?.addEventListener('click', () => { auditPage--; loadAuditLog() })
+      document.getElementById('audit-next')?.addEventListener('click', () => { auditPage++; loadAuditLog() })
+    }
+
+    // Populate client filter dropdown once data loads
+    function populateAuditClientFilter() {
+      const sel = document.getElementById('audit-client-filter')
+      if (!sel) return
+      sel.innerHTML = '<option value="">All clients</option>'
+      for (const c of allClients) {
+        const opt = document.createElement('option')
+        opt.value = c.id
+        opt.textContent = c.business_name || c.email
+        sel.appendChild(opt)
+      }
+    }
+
+    document.getElementById('audit-client-filter')?.addEventListener('change', (e) => {
+      auditClientFilter = e.target.value
+      auditPage = 0
+      loadAuditLog()
+    })
+    document.getElementById('audit-refresh')?.addEventListener('click', () => loadAuditLog())
 
     // ── Boot ──────────────────────────────────────────────────────────────────
     loadData()
