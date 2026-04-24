@@ -112,3 +112,9 @@ CREATE POLICY "Service role full access to audit log"
   ON booking_audit_log FOR ALL
   USING (true)
   WITH CHECK (true);
+
+-- ── 10. Stripe Customer ID on customers table ───────────────────────────────
+-- Needed so saved payment methods can be charged later (no-show fees, etc.).
+-- Without a Stripe Customer, off-session charges fail with:
+--   "The provided PaymentMethod cannot be attached"
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;

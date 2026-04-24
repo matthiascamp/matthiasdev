@@ -79,8 +79,42 @@ Deno.serve(async (req: Request) => {
       )
     }
 
+    // ── Find or create a Stripe Customer (required for off-session charges) ──
+    let stripeCustomerId: string | undefined
+
+    if (customerId) {
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('stripe_customer_id')
+        .eq('id', customerId)
+        .maybeSingle()
+      stripeCustomerId = existingCustomer?.stripe_customer_id ?? undefined
+    }
+
+    if (!stripeCustomerId) {
+      const customers = await stripe.customers.list({ email: customerEmail, limit: 1 })
+      if (customers.data.length > 0) {
+        stripeCustomerId = customers.data[0].id
+      } else {
+        const newCustomer = await stripe.customers.create({
+          email: customerEmail,
+          name:  customerName ?? undefined,
+          metadata: { mcbook_client_id: clientId },
+        })
+        stripeCustomerId = newCustomer.id
+      }
+
+      if (customerId) {
+        await supabase
+          .from('customers')
+          .update({ stripe_customer_id: stripeCustomerId })
+          .eq('id', customerId)
+      }
+    }
+
     // ── Create a SetupIntent to save the card for later charging ─────────────
     const setupIntent = await stripe.setupIntents.create({
+      customer: stripeCustomerId,
       payment_method_types: ['card'],
       on_behalf_of: client.stripe_account_id,
       usage: 'off_session',
@@ -94,7 +128,7 @@ Deno.serve(async (req: Request) => {
     })
 
     return new Response(
-      JSON.stringify({ clientSecret: setupIntent.client_secret }),
+      JSON.stringify({ clientSecret: setupIntent.client_secret, stripeCustomerId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
 
