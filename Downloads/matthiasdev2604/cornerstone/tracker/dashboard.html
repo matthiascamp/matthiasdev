@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exalt Digital — Traffic Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f4f5f7; color: #111;
+      font-size: 15px; line-height: 1.6;
+    }
+
+    header {
+      background: #111; color: #fff;
+      padding: 1.25rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.75rem;
+    }
+    .logo { font-size: 1.1rem; font-weight: 800; }
+    .logo span { color: #a78bfa; }
+    .live-pill {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+      color: #22c55e; font-size: 0.78rem; font-weight: 700;
+      padding: 0.3rem 0.85rem; border-radius: 999px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .page { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: #fff; border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid #e5e5e5;
+    }
+    .stat-val { font-size: 2.2rem; font-weight: 900; color: #7c6fff; line-height: 1; }
+    .stat-lbl { font-size: 0.8rem; color: #888; margin-top: 0.3rem; }
+
+    /* ── Card ── */
+    .card {
+      background: #fff; border-radius: 12px;
+      border: 1px solid #e5e5e5;
+      padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 0.8rem; font-weight: 700; color: #888;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .count-pill {
+      background: #f0eeff; color: #7c6fff;
+      font-size: 0.72rem; padding: 0.1rem 0.5rem; border-radius: 999px;
+    }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; padding: 0.5rem 0.75rem;
+      font-size: 0.72rem; font-weight: 700; color: #999;
+      text-transform: uppercase; letter-spacing: 1px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    tbody tr { border-bottom: 1px solid #f5f5f5; transition: background .1s; }
+    tbody tr:hover { background: #fafafa; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr.new-row { animation: flashrow 1.5s ease forwards; }
+    @keyframes flashrow {
+      0%   { background: #ede9fe; }
+      100% { background: transparent; }
+    }
+    td { padding: 0.65rem 0.75rem; font-size: 0.85rem; color: #555; }
+    td.page-col { color: #111; font-weight: 600; }
+    td.time-col { color: #aaa; font-size: 0.78rem; white-space: nowrap; }
+    .ref-chip {
+      background: #f0eeff; color: #7c6fff;
+      font-size: 0.72rem; padding: 0.15rem 0.5rem;
+      border-radius: 5px; display: inline-block;
+    }
+    .device-icon { margin-right: 0.3rem; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center; padding: 3rem; color: #aaa;
+    }
+    .empty strong { display: block; font-size: 1.1rem; color: #666; margin-bottom: 0.4rem; }
+
+    /* ── Refresh btn ── */
+    .refresh-btn {
+      background: #f0f0f0; border: 1px solid #ddd;
+      color: #555; font-size: 0.8rem; font-weight: 600;
+      padding: 0.4rem 0.9rem; border-radius: 8px;
+      cursor: pointer; transition: background .15s;
+    }
+    .refresh-btn:hover { background: #e5e5e5; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Exalt <span>Digital</span> &nbsp;— Traffic Dashboard</div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <button class="refresh-btn" onclick="location.reload()">↻ Refresh</button>
+    <div class="live-pill"><div class="dot"></div> Live</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val" id="s-total">—</div>
+      <div class="stat-lbl">Total visits recorded</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="s-today">—</div>
+      <div class="stat-lbl">Visits today</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="s-hour">—</div>
+      <div class="stat-lbl">Visits this hour</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="s-sessions">—</div>
+      <div class="stat-lbl">Unique visitors</div>
+    </div>
+  </div>
+
+  <!-- Recent visits table -->
+  <div class="card">
+    <div class="card-title">
+      Recent visits
+      <span class="count-pill" id="tbl-count">0</span>
+    </div>
+    <div id="empty" class="empty" style="display:none">
+      <strong>No visits yet</strong>
+      Add the tracking snippet to your site to start seeing visitors here.
+    </div>
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>Page visited</th>
+          <th>Device</th>
+          <th>Browser</th>
+          <th>Came from</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  var SB_URL = 'https://gczopudgxfciatvtxhll.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdjem9wdWRneGZjaWF0dnR4aGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NzgwMzgsImV4cCI6MjA5MTU1NDAzOH0.Qc4hAZ0AqFAgNcPcRkNk2SUvs4uR2hwk9m2JeZ7lIV0';
+
+  var db   = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+  var rows = [];
+
+  function ago(iso) {
+    var s = Math.floor((Date.now() - new Date(iso)) / 1000);
+    if (s < 10)    return 'Just now';
+    if (s < 60)    return s + ' seconds ago';
+    if (s < 3600)  return Math.floor(s/60) + ' minutes ago';
+    if (s < 86400) return Math.floor(s/3600) + ' hours ago';
+    return new Date(iso).toLocaleDateString('en-AU');
+  }
+
+  function camefrom(r) {
+    if (!r) return '—';
+    try {
+      var h = new URL(r).hostname.replace(/^www\./, '');
+      return h || '—';
+    } catch(e) { return '—'; }
+  }
+
+  function deviceIcon(d) {
+    if (d === 'mobile')  return '📱';
+    if (d === 'tablet')  return '📲';
+    return '💻';
+  }
+
+  function renderStats() {
+    var now   = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var hour  = new Date(now - 3600000);
+    document.getElementById('s-total').textContent    = rows.length.toLocaleString();
+    document.getElementById('s-today').textContent    = rows.filter(function(r){ return new Date(r.created_at) >= today; }).length.toLocaleString();
+    document.getElementById('s-hour').textContent     = rows.filter(function(r){ return new Date(r.created_at) >= hour; }).length.toLocaleString();
+    document.getElementById('s-sessions').textContent = new Set(rows.map(function(r){ return r.session_id; })).size.toLocaleString();
+  }
+
+  function renderTable(highlightFirst) {
+    var tbody = document.getElementById('tbody');
+    var empty = document.getElementById('empty');
+    var tbl   = document.getElementById('tbl');
+    document.getElementById('tbl-count').textContent = rows.length.toLocaleString();
+
+    if (!rows.length) {
+      tbl.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    tbl.style.display = '';
+    empty.style.display = 'none';
+
+    tbody.innerHTML = rows.slice(0, 500).map(function(r, i) {
+      var from = camefrom(r.referrer);
+      return '<tr class="' + (i === 0 && highlightFirst ? 'new-row' : '') + '">' +
+        '<td class="page-col">' + (r.path || '/') + '</td>' +
+        '<td><span class="device-icon">' + deviceIcon(r.device_type) + '</span>' + (r.device_type || '—') + '</td>' +
+        '<td>' + (r.browser || '—') + '</td>' +
+        '<td>' + (from !== '—' ? '<span class="ref-chip">' + from + '</span>' : '—') + '</td>' +
+        '<td class="time-col">' + ago(r.created_at) + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  async function load() {
+    try {
+      var res = await db.from('page_views').select('*').order('created_at', { ascending: false }).limit(5000);
+      if (res.error) { console.error('Supabase error:', res.error); return; }
+      rows = res.data || [];
+      renderStats();
+      renderTable(false);
+    } catch(e) { console.error('Load failed:', e); }
+  }
+
+  // Live updates
+  db.channel('pv')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'page_views' }, function(p) {
+      rows.unshift(p.new);
+      renderStats();
+      renderTable(true);
+    })
+    .subscribe();
+
+  setInterval(function(){ renderTable(false); }, 30000);
+
+  load();
+</script>
+</body>
+</html>
