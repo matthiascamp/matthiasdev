@@ -403,7 +403,7 @@ canvas#particles {
 }
 .hero-title {
   font-family: var(--font-sans);
-  font-size: clamp(2rem, 10vw, 7.5rem);
+  font-size: clamp(3rem, 10vw, 7.5rem);
   font-weight: 900;
   line-height: 1.0;
   letter-spacing: -0.04em;
@@ -415,7 +415,6 @@ canvas#particles {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  padding-right: 0.1em;
 }
 .hero-sub {
   font-size: clamp(1.1rem, 2.5vw, 1.35rem);
@@ -425,14 +424,11 @@ canvas#particles {
 }
 .hero-tagline {
   font-family: var(--font-sans);
-  font-size: clamp(1.5rem, 4vw, 2.8rem);
-  font-weight: 300;
-  font-style: italic;
-  color: rgba(240, 240, 248, 0.38);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  margin-top: -4px;
-  margin-bottom: 44px;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
 }
 
 .typewriter {
@@ -676,7 +672,8 @@ canvas#particles {
   gap: 20px;
 }
 .service-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1304,7 +1301,7 @@ footer {
 ───────────────────────── */
 .work-reviews-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
@@ -1313,6 +1310,7 @@ footer {
 ───────────────────────── */
 @media (max-width: 1024px) {
   .pricing-panel { grid-template-columns: repeat(3, 1fr); }
+  .work-reviews-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 900px) {
@@ -1358,7 +1356,7 @@ footer {
 
   .work-reviews-grid {
     grid-template-columns: 1fr;
-    max-width: 520px;
+    max-width: 560px;
     margin: 0 auto;
   }
 
@@ -1393,9 +1391,7 @@ footer {
   .stat { align-items: center; text-align: center; }
 
   .hero-badge { font-size: 0.72rem; padding: 6px 12px; }
-  .hero-tagline { font-size: clamp(1.1rem, 5vw, 1.5rem); margin-bottom: 32px; }
   .section-title { font-size: clamp(1.75rem, 7vw, 2.2rem); }
-  .other-work-title { font-size: clamp(2.4rem, 9vw, 3.5rem) !important; }
 
   .services-grid { grid-template-columns: 1fr; }
   .service-card { padding: 24px 20px; }
@@ -1503,8 +1499,8 @@ footer {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1440px;
-  height: 1080px;
+  width: 1200px;
+  height: 900px;
   transform-origin: top left;
   transform: scale(0.4);
   border: none;
@@ -1679,11 +1675,11 @@ section { position: relative; background: transparent !important; }
   box-shadow: 0 32px 80px rgba(0,0,0,0.4);
 }
 .case-study-preview .project-browser {
-  height: 620px;
+  height: 500px;
 }
 .case-study-preview .project-iframe-wrap {
   min-height: 0;
-  height: calc(620px - 32px);
+  height: calc(500px - 32px);
 }
 
 .case-study-grid {
@@ -1941,6 +1937,24 @@ section { position: relative; background: transparent !important; }
   z-index: 0;
 }
 
+/* Green glow blobs — from MCBook site */
+.mcbook-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.mcbook-glow-1 {
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+  top: -200px; left: -200px;
+}
+.mcbook-glow-2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(74,222,128,0.05) 0%, transparent 70%);
+  bottom: -100px; right: -100px;
+}
+
 /* Container sits above bg elements */
 #mcbook .container { position: relative; z-index: 1; }
 
@@ -1949,7 +1963,7 @@ section { position: relative; background: transparent !important; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2029,22 +2043,10 @@ section { position: relative; background: transparent !important; }
 /* MCBook heading word cycler */
 #mcbookCycler {
   display: inline-block;
-  background: linear-gradient(135deg, #4ade80, #86efac);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-style: italic;
-  opacity: 1;
-  padding-right: 0.2em;
+  transition: opacity 0.25s ease;
 }
-
-@keyframes mcbookOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-8px); }
-}
-@keyframes mcbookIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+#mcbookCycler.fading {
+  opacity: 0;
 }
 
 /* MCBook inline link */
@@ -2642,12 +2644,11 @@ section { position: relative; background: transparent !important; }
   flex-wrap: wrap;
 }
 
-@media (max-width: 540px) {
+@media (max-width: 480px) {
   .bundle-row { flex-direction: column; gap: 16px; max-width: 100%; }
   .bundle-sep { padding: 0; }
   .bundle-box { width: 100%; }
   .mcbook-bottom-cta .btn { width: 100%; justify-content: center; }
-  .bundle-features-list { width: 100%; max-width: 100%; }
 }
 
 /* ─────────────────────────
