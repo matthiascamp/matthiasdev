@@ -1,4 +1,4 @@
-# Cornerstone — Pro Plan ($399/mo) SEO Delivery Prompt
+# Cornerstone — Pro Plan ($499/mo) SEO Delivery Prompt
 
 > Replace `{{CLIENT_URL}}` with the client's website URL and run in Claude Code.
 > This plan includes everything in Growth plus the additions below.

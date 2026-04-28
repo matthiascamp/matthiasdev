@@ -1,4 +1,4 @@
-# Cornerstone — Starter Plan ($99/mo) SEO Delivery Prompt
+# Cornerstone — Starter Plan ($129/mo) SEO Delivery Prompt
 
 > Replace `{{CLIENT_URL}}` with the client's website URL and run in Claude Code.
 

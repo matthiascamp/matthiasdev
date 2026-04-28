@@ -24,11 +24,11 @@ window.CornerstoneConfig = {
   // Important: enable "Allow customers to adjust quantity" = OFF
   // After creating each link paste the full URL below.
   stripe: {
-    plan99:   'https://buy.stripe.com/cNi6oI9WweIJ1utd8x67S01',   // Starter   — A$99/month
-    plan199:  'https://buy.stripe.com/dRm4gA7Oo5897SR8Sh67S02',   // Growth    — A$199/month
-    plan399:  'https://buy.stripe.com/5kQ8wQ1q07ghgpn7Od67S03',   // Pro       — A$399/month
-    plan699:  'https://buy.stripe.com/9B66oI5GgdEFc979Wl67S06',   // Authority — A$699/month
-    plan1299: 'https://buy.stripe.com/fZu14o6Kk7ghehf6K967S05',   // Premium   — A$1,299/month
+    plan129:   'https://buy.stripe.com/cNi6oI9WweIJ1utd8x67S01',   // Starter   — A$129/month
+    plan249:  'https://buy.stripe.com/dRm4gA7Oo5897SR8Sh67S02',   // Growth    — A$249/month
+    plan499:  'https://buy.stripe.com/5kQ8wQ1q07ghgpn7Od67S03',   // Pro       — A$499/month
+    plan849:  'https://buy.stripe.com/9B66oI5GgdEFc979Wl67S06',   // Authority — A$849/month
+    plan1599: 'https://buy.stripe.com/fZu14o6Kk7ghehf6K967S05',   // Premium   — A$1,599/month
   },
 
 }

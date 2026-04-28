@@ -1,4 +1,4 @@
-# Cornerstone — Premium Plan ($1,299/mo) SEO Delivery Prompt
+# Cornerstone — Premium Plan ($1,599/mo) SEO Delivery Prompt
 
 > Replace `{{CLIENT_URL}}` with the client's website URL and run in Claude Code.
 > This plan includes everything in Authority plus the additions below.
