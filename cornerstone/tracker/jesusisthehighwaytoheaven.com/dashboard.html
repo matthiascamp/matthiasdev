@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exalt Digital — Traffic Dashboard</title>
+  <title>jesusisthehighwaytoheaven.com — Traffic Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,6 +21,7 @@
     }
     .logo { font-size: 1.1rem; font-weight: 800; }
     .logo span { color: #a78bfa; }
+    .site-name { font-size: 0.85rem; color: #aaa; font-weight: 400; }
     .live-pill {
       display: flex; align-items: center; gap: 0.5rem;
       background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
@@ -32,7 +33,6 @@
 
     .page { max-width: 1100px; margin: 0 auto; padding: 2rem; }
 
-    /* ── Stats ── */
     .stats {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -46,7 +46,6 @@
     .stat-val { font-size: 2.2rem; font-weight: 900; color: #7c6fff; line-height: 1; }
     .stat-lbl { font-size: 0.8rem; color: #888; margin-top: 0.3rem; }
 
-    /* ── Card ── */
     .card {
       background: #fff; border-radius: 12px;
       border: 1px solid #e5e5e5;
@@ -62,7 +61,6 @@
       font-size: 0.72rem; padding: 0.1rem 0.5rem; border-radius: 999px;
     }
 
-    /* ── Table ── */
     table { width: 100%; border-collapse: collapse; }
     thead th {
       text-align: left; padding: 0.5rem 0.75rem;
@@ -88,13 +86,11 @@
     }
     .device-icon { margin-right: 0.3rem; }
 
-    /* ── Empty state ── */
     .empty {
       text-align: center; padding: 3rem; color: #aaa;
     }
     .empty strong { display: block; font-size: 1.1rem; color: #666; margin-bottom: 0.4rem; }
 
-    /* ── Refresh btn ── */
     .refresh-btn {
       background: #f0f0f0; border: 1px solid #ddd;
       color: #555; font-size: 0.8rem; font-weight: 600;
@@ -108,38 +104,36 @@
 
 <header>
   <div>
-    <div class="logo">Exalt <span>Digital</span> &nbsp;— Traffic Dashboard</div>
-    <div style="font-size:0.78rem;color:#aaa;margin-top:0.2rem;">Showing live visitor data for <strong style="color:#a78bfa;">jesusisthehighwaytoheaven.com</strong></div>
+    <div class="logo">Corner<span>stone</span> &nbsp;— Traffic Dashboard</div>
+    <div class="site-name">jesusisthehighwaytoheaven.com</div>
   </div>
   <div style="display:flex;align-items:center;gap:0.75rem;">
-    <button class="refresh-btn" onclick="location.reload()">↻ Refresh</button>
+    <button class="refresh-btn" onclick="location.reload()">&#8635; Refresh</button>
     <div class="live-pill"><div class="dot"></div> Live</div>
   </div>
 </header>
 
 <div class="page">
 
-  <!-- Stats -->
   <div class="stats">
     <div class="stat">
-      <div class="stat-val" id="s-total">—</div>
+      <div class="stat-val" id="s-total">&mdash;</div>
       <div class="stat-lbl">Total visits recorded</div>
     </div>
     <div class="stat">
-      <div class="stat-val" id="s-today">—</div>
+      <div class="stat-val" id="s-today">&mdash;</div>
       <div class="stat-lbl">Visits today</div>
     </div>
     <div class="stat">
-      <div class="stat-val" id="s-hour">—</div>
+      <div class="stat-val" id="s-hour">&mdash;</div>
       <div class="stat-lbl">Visits this hour</div>
     </div>
     <div class="stat">
-      <div class="stat-val" id="s-sessions">—</div>
+      <div class="stat-val" id="s-sessions">&mdash;</div>
       <div class="stat-lbl">Unique visitors</div>
     </div>
   </div>
 
-  <!-- Recent visits table -->
   <div class="card">
     <div class="card-title">
       Recent visits
@@ -166,6 +160,7 @@
 </div>
 
 <script>
+  var SITE_ID = 'jesusisthehighwaytoheaven.com';
   var SB_URL = 'https://gczopudgxfciatvtxhll.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdjem9wdWRneGZjaWF0dnR4aGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NzgwMzgsImV4cCI6MjA5MTU1NDAzOH0.Qc4hAZ0AqFAgNcPcRkNk2SUvs4uR2hwk9m2JeZ7lIV0';
 
@@ -182,17 +177,17 @@
   }
 
   function camefrom(r) {
-    if (!r) return '—';
+    if (!r) return '\u2014';
     try {
       var h = new URL(r).hostname.replace(/^www\./, '');
-      return h || '—';
-    } catch(e) { return '—'; }
+      return h || '\u2014';
+    } catch(e) { return '\u2014'; }
   }
 
   function deviceIcon(d) {
-    if (d === 'mobile')  return '📱';
-    if (d === 'tablet')  return '📲';
-    return '💻';
+    if (d === 'mobile')  return '\ud83d\udcf1';
+    if (d === 'tablet')  return '\ud83d\udcf2';
+    return '\ud83d\udcbb';
   }
 
   function renderStats() {
@@ -219,13 +214,13 @@
     tbl.style.display = '';
     empty.style.display = 'none';
 
-    tbody.innerHTML = rows.slice(0, 100).map(function(r, i) {
+    tbody.innerHTML = rows.slice(0, 500).map(function(r, i) {
       var from = camefrom(r.referrer);
       return '<tr class="' + (i === 0 && highlightFirst ? 'new-row' : '') + '">' +
         '<td class="page-col">' + (r.path || '/') + '</td>' +
-        '<td><span class="device-icon">' + deviceIcon(r.device_type) + '</span>' + (r.device_type || '—') + '</td>' +
-        '<td>' + (r.browser || '—') + '</td>' +
-        '<td>' + (from !== '—' ? '<span class="ref-chip">' + from + '</span>' : '—') + '</td>' +
+        '<td><span class="device-icon">' + deviceIcon(r.device_type) + '</span>' + (r.device_type || '\u2014') + '</td>' +
+        '<td>' + (r.browser || '\u2014') + '</td>' +
+        '<td>' + (from !== '\u2014' ? '<span class="ref-chip">' + from + '</span>' : '\u2014') + '</td>' +
         '<td class="time-col">' + ago(r.created_at) + '</td>' +
         '</tr>';
     }).join('');
@@ -233,7 +228,7 @@
 
   async function load() {
     try {
-      var res = await db.from('page_views').select('*').order('created_at', { ascending: false }).limit(500);
+      var res = await db.from('page_views').select('*').eq('site_id', SITE_ID).order('created_at', { ascending: false }).limit(5000);
       if (res.error) { console.error('Supabase error:', res.error); return; }
       rows = res.data || [];
       renderStats();
@@ -241,9 +236,9 @@
     } catch(e) { console.error('Load failed:', e); }
   }
 
-  // Live updates
-  db.channel('pv')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'page_views' }, function(p) {
+  // Live updates — filtered to this site
+  db.channel('pv-' + SITE_ID)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'page_views', filter: 'site_id=eq.' + SITE_ID }, function(p) {
       rows.unshift(p.new);
       renderStats();
       renderTable(true);
