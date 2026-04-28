@@ -267,7 +267,7 @@
 
 <nav id="nav" class="scrolled">
   <div class="nav-inner">
-    <div class="logo"><a href="/">Cornerstone<span class="dot">.</span></a></div>
+    <div class="logo"><a href="/cornerstone/">Cornerstone<span class="dot">.</span></a></div>
     <div class="nav-links" style="gap:16px;">
       <span class="user-email-chip" id="user-email"></span>
       <a class="user-site-chip" id="user-site" href="#" target="_blank" rel="noopener" style="display:none;"></a>
@@ -339,22 +339,22 @@
     <div class="footer-inner">
       <div class="footer-copy">&copy; 2026 <strong style="color:var(--text);">Cornerstone</strong>. All rights reserved.</div>
       <div class="footer-links">
-        <a href="/">Home</a>
-        <a href="/faq.html">FAQ</a>
-        <a href="/contact.html">Contact</a>
-        <a href="/terms.html">Terms</a>
-        <a href="/privacy.html">Privacy</a>
+        <a href="/cornerstone/">Home</a>
+        <a href="/cornerstone/faq.html">FAQ</a>
+        <a href="/cornerstone/contact.html">Contact</a>
+        <a href="/cornerstone/terms.html">Terms</a>
+        <a href="/cornerstone/privacy.html">Privacy</a>
       </div>
     </div>
   </div>
 </footer>
 
 <script>
-  var cfg = window.ExaltConfig
+  var cfg = window.CornerstoneConfig
   var sb  = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey)
 
   sb.auth.getSession().then(function(r) {
-    if (!r.data.session) { window.location.href = '/login.html'; return }
+    if (!r.data.session) { window.location.href = '/cornerstone/login.html'; return }
     var user = r.data.session.user
     document.getElementById('user-email').textContent = user.email
 
@@ -398,7 +398,7 @@
   })
 
   document.getElementById('signout-btn').addEventListener('click', async function() {
-    await sb.auth.signOut(); window.location.href = '/'
+    await sb.auth.signOut(); window.location.href = '/cornerstone/'
   })
 
   function formatDate(iso) {
@@ -417,7 +417,7 @@
     return '<span class="badge badge-' + status + '">' + (labels[status] || status) + '</span>'
   }
 
-  var tierLabels = { starter: 'Seed', growth: 'Harvest', pro: 'Faithful', authority: 'Abundant' }
+  var tierLabels = { starter: 'Starter', growth: 'Growth', pro: 'Pro', authority: 'Authority' }
   function tierPill(tier) {
     if (!tier) return ''
     var cls = { starter: 'tier-starter', growth: 'tier-growth', pro: 'tier-pro', authority: 'tier-authority' }
@@ -427,9 +427,9 @@
 
   var planIncludes = {
     starter:   ['7-pt SEO audit', 'GSC setup', 'Schema markup', 'Monthly report'],
-    growth:    ['Everything in Seed', '13-page optimisation', 'Keyword clusters', 'Core Web Vitals'],
-    pro:       ['Everything in Harvest', 'Unlimited pages', 'Backlink audit', 'Competitor gap analysis'],
-    authority: ['Everything in Faithful', '13-pt ranking audit', 'Local SEO domination', 'Dedicated channel'],
+    growth:    ['Everything in Starter', '13-page optimisation', 'Keyword clusters', 'Core Web Vitals'],
+    pro:       ['Everything in Growth', 'Unlimited pages', 'Backlink audit', 'Competitor gap analysis'],
+    authority: ['Everything in Pro', '13-pt ranking audit', 'Local SEO domination', 'Dedicated channel'],
   }
   function includeChips(tier) {
     return (planIncludes[tier] || []).map(function(c) {
@@ -551,7 +551,7 @@
         + '<div class="empty-icon">📈</div>'
         + '<h3>No orders yet</h3>'
         + '<p>Start an SEO plan or launch a one-time Google Ads campaign.</p>'
-        + '<a href="/" class="btn btn-primary" style="text-decoration:none;">See plans →</a>'
+        + '<a href="/cornerstone/" class="btn btn-primary" style="text-decoration:none;">See plans →</a>'
         + '</div>'
       return
     }

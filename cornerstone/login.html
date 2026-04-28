@@ -108,11 +108,11 @@
 
 <nav id="nav" class="scrolled">
   <div class="nav-inner">
-    <div class="logo"><a href="/">Cornerstone<span class="dot">.</span></a></div>
+    <div class="logo"><a href="/cornerstone/">Cornerstone<span class="dot">.</span></a></div>
     <div class="nav-links">
-      <a href="/about.html">About</a>
-      <a href="/faq.html">FAQ</a>
-      <a href="/contact.html">Contact</a>
+      <a href="/cornerstone/about.html">About</a>
+      <a href="/cornerstone/faq.html">FAQ</a>
+      <a href="/cornerstone/contact.html">Contact</a>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -122,16 +122,16 @@
 
 <div class="mobile-menu" id="mobile-menu">
   <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/about.html">About</a></li>
-    <li><a href="/faq.html">FAQ</a></li>
-    <li><a href="/contact.html">Contact</a></li>
+    <li><a href="/cornerstone/">Home</a></li>
+    <li><a href="/cornerstone/about.html">About</a></li>
+    <li><a href="/cornerstone/faq.html">FAQ</a></li>
+    <li><a href="/cornerstone/contact.html">Contact</a></li>
   </ul>
 </div>
 
 <div class="login-wrap">
   <div class="login-card">
-    <a href="/" class="login-logo">Cornerstone<span class="dot">.</span></a>
+    <a href="/cornerstone/" class="login-logo">Cornerstone<span class="dot">.</span></a>
     <h1>Welcome back</h1>
     <p>Sign in to your account, or create a new one to get started.</p>
 
@@ -179,21 +179,21 @@
     <div class="footer-inner">
       <div class="footer-copy">&copy; 2026 Cornerstone. All rights reserved.</div>
       <div class="footer-links">
-        <a href="/faq.html">FAQ</a>
-        <a href="/contact.html">Contact</a>
-        <a href="/terms.html">Terms</a>
-        <a href="/privacy.html">Privacy</a>
+        <a href="/cornerstone/faq.html">FAQ</a>
+        <a href="/cornerstone/contact.html">Contact</a>
+        <a href="/cornerstone/terms.html">Terms</a>
+        <a href="/cornerstone/privacy.html">Privacy</a>
       </div>
     </div>
   </div>
 </footer>
 
 <script>
-  var cfg = window.ExaltConfig
+  var cfg = window.CornerstoneConfig
   var sb  = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey)
 
   sb.auth.getSession().then(function(r) {
-    if (r.data.session) window.location.href = '/dashboard.html'
+    if (r.data.session) window.location.href = '/cornerstone/dashboard.html'
   })
 
   document.querySelectorAll('.tab').forEach(function(tab) {
@@ -222,7 +222,7 @@
     this.textContent = 'Signing in\u2026'; this.disabled = true
     var { error } = await sb.auth.signInWithPassword({ email, password })
     if (error) { showMsg(error.message, 'error'); this.textContent = 'Sign in'; this.disabled = false }
-    else window.location.href = '/dashboard.html'
+    else window.location.href = '/cornerstone/dashboard.html'
   })
 
   document.getElementById('signup-btn').addEventListener('click', async function() {
@@ -237,7 +237,7 @@
     if (error) { showMsg(error.message, 'error'); this.textContent = 'Create account'; this.disabled = false; return }
     var { error: loginErr } = await sb.auth.signInWithPassword({ email, password })
     if (loginErr) { showMsg('Account created! You can now sign in.', 'success'); this.textContent = 'Create account'; this.disabled = false }
-    else window.location.href = '/dashboard.html'
+    else window.location.href = '/cornerstone/dashboard.html'
   })
 
   document.addEventListener('keydown', function(e) {
