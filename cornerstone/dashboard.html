@@ -250,6 +250,39 @@
     .empty p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
     .loading { text-align: center; padding: 48px; color: var(--text-faint); font-size: 0.9rem; }
 
+    /* Embed snippet card */
+    .embed-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 28px 32px; margin-bottom: 24px;
+    }
+    .embed-card h3 {
+      font-family: var(--font-sans); font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-faint); margin-bottom: 8px;
+    }
+    .embed-card p {
+      font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 16px;
+    }
+    .embed-code {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 18px;
+      font-family: 'Courier New', monospace; font-size: 0.8rem;
+      color: var(--accent); line-height: 1.7;
+      white-space: pre-wrap; word-break: break-all;
+      position: relative; margin-bottom: 12px;
+    }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.72rem; font-weight: 600;
+      padding: 4px 12px; border-radius: 6px; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.15); color: var(--text); }
+    .embed-note {
+      font-size: 0.78rem; color: var(--text-faint); line-height: 1.6;
+    }
+
     @media (max-width: 560px) {
       .profile-fields { grid-template-columns: 1fr; }
       .order-top { flex-direction: column; }
@@ -328,6 +361,14 @@
     <span class="profile-saved" id="profile-saved">✓ Saved</span>
   </div>
 
+  <!-- Tracking embed snippet -->
+  <div class="embed-card" id="embed-card" style="display:none;">
+    <h3>Track your visitors</h3>
+    <p>Paste this snippet before the closing <code style="color:var(--accent);">&lt;/body&gt;</code> tag on every page of your website to start tracking page views.</p>
+    <div class="embed-code" id="embed-code"><button class="copy-btn" id="copy-embed-btn">Copy</button></div>
+    <p class="embed-note">Lightweight (~2 KB), no cookies, no impact on page speed. View your traffic data in the dashboard above once visits start coming in.</p>
+  </div>
+
   <div class="section-head">Your orders</div>
   <div id="orders-list">
     <div class="loading">Loading your orders…</div>
@@ -372,6 +413,29 @@
     document.getElementById('pf-keywords').value = meta.keywords  || ''
     document.getElementById('pf-about').value    = meta.about     || ''
     document.getElementById('profile-card').style.display = ''
+
+    // Show embed snippet with user's site ID
+    var siteId = meta.site_url ? meta.site_url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '').split('/')[0] : ''
+    if (siteId) {
+      var snippet = '&lt;script&gt;\n'
+        + '  window.CS = {\n'
+        + "    url:    '" + cfg.supabase.url + "',\n"
+        + "    key:    '" + cfg.supabase.anonKey + "',\n"
+        + "    siteId: '" + siteId + "'\n"
+        + '  };\n'
+        + '&lt;/script&gt;\n'
+        + '&lt;script src="https://matthiasdev.com/cornerstone/tracker/embed.js" defer&gt;&lt;/script&gt;'
+      document.getElementById('embed-code').innerHTML = '<button class="copy-btn" id="copy-embed-btn">Copy</button>' + snippet
+      document.getElementById('embed-card').style.display = ''
+      document.getElementById('copy-embed-btn').addEventListener('click', function() {
+        var text = document.getElementById('embed-code').textContent.replace('Copy', '').trim()
+          .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        navigator.clipboard.writeText(text).then(function() {
+          document.getElementById('copy-embed-btn').textContent = 'Copied!'
+          setTimeout(function() { document.getElementById('copy-embed-btn').textContent = 'Copy' }, 2000)
+        })
+      })
+    }
 
     loadOrders(user.id)
   })

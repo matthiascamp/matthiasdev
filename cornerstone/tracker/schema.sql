@@ -1,5 +1,5 @@
 -- ============================================================
---  RankRocket Tracker — Supabase Schema
+--  Cornerstone Tracker — Supabase Schema
 --  Run this in: Supabase Dashboard → SQL Editor → New Query
 -- ============================================================
 

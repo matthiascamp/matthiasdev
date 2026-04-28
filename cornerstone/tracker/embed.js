@@ -1,21 +1,21 @@
 /**
- * RankRocket Tracker — embed.js
+ * Cornerstone Tracker — embed.js
  *
  * Paste the two config lines then include this script on any page:
  *
  *   <script>
- *     window.RR = {
+ *     window.CS = {
  *       url:    'https://gczopudgxfciatvtxhll.supabase.co',
  *       key:    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdjem9wdWRneGZjaWF0dnR4aGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NzgwMzgsImV4cCI6MjA5MTU1NDAzOH0.Qc4hAZ0AqFAgNcPcRkNk2SUvs4uR2hwk9m2JeZ7lIV0',
- *       siteId: 'exaltdigital.com.au'
+ *       siteId: 'cornerstone'
  *     };
  *   </script>
- *   <script src="/tracker/embed.js" defer></script>
+ *   <script src="https://matthiasdev.com/cornerstone/tracker/embed.js" defer></script>
  */
 (function () {
   'use strict';
 
-  var cfg = window.RR || {};
+  var cfg = window.CS || {};
   var SUPABASE_URL = (cfg.url || '').replace(/\/$/, '');
   var SUPABASE_KEY = cfg.key || '';
   var SITE_ID      = cfg.siteId || location.hostname;
@@ -26,7 +26,7 @@
 
   // ── Session ID ────────────────────────────────────────────────
   function getSessionId() {
-    var key = '_rr_sid';
+    var key = '_cs_sid';
     var sid;
     try {
       sid = sessionStorage.getItem(key);
