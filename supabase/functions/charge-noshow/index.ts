@@ -49,10 +49,10 @@ Deno.serve(async (req: Request) => {
     const { bookingId } = await req.json()
     if (!bookingId) return json({ error: 'bookingId required' }, 400)
 
-    // Get booking with service and customer info
+    // Get booking with service info
     const { data: booking, error: bookErr } = await supabase
       .from('bookings')
-      .select('id, client_id, customer_id, payment_method_id, status, services(noshow_fee, payment_mode)')
+      .select('id, client_id, payment_method_id, status, services(noshow_fee, payment_mode)')
       .eq('id', bookingId)
       .single()
 
@@ -104,28 +104,15 @@ Deno.serve(async (req: Request) => {
       httpClient: Stripe.createFetchHttpClient(),
     })
 
-    // Look up the Stripe Customer ID from the customers table
-    let stripeCustomerId: string | undefined
-    if (booking.customer_id) {
-      const { data: customer } = await supabase
-        .from('customers')
-        .select('stripe_customer_id')
-        .eq('id', booking.customer_id)
-        .maybeSingle()
-      stripeCustomerId = customer?.stripe_customer_id ?? undefined
-    }
-
-    if (!stripeCustomerId) {
-      return json({ error: 'No Stripe customer found — card cannot be charged off-session' }, 422)
-    }
-
+    // Charge only the no-show fee from the saved card.
+    // Idempotency key keyed on bookingId means if Stripe API retries or the
+    // client retries this request, Stripe returns the existing intent instead
+    // of creating a second charge.
     const paymentIntent = await stripe.paymentIntents.create({
       amount:           noShowFeeCents,
       currency:         'aud',
-      customer:         stripeCustomerId,
       payment_method:   booking.payment_method_id,
       confirm:          true,
-      off_session:      true,
       transfer_data:    { destination: client.stripe_account_id },
       metadata:         { booking_id: bookingId, client_id: booking.client_id, type: 'noshow_fee' },
       automatic_payment_methods: { enabled: true, allow_redirects: 'never' },

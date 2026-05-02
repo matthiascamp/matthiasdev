@@ -78,11 +78,6 @@
     if (siJson.error) throw new Error(siJson.error);
     const clientSecret = siJson.clientSecret;
 
-    if (siJson.stripeCustomerId && customerId) {
-      sb.from('customers').update({ stripe_customer_id: siJson.stripeCustomerId })
-        .eq('id', customerId).then(() => {});
-    }
-
     // Stripe cannot mount inside a shadow root — create light DOM slot containers
     // that are projected into the shadow DOM via named slots.
     // Card inputs are always white regardless of widget theme — standard form UX.
