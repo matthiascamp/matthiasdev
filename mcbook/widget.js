@@ -1030,7 +1030,7 @@
       this.root.innerHTML =
         this._headerHTML() +
         `<div class="bw-body">${this._stepHTML()}</div>` +
-        `<div class="bw-footer">Powered by <span class="bw-footer-brand">McBook</span></div>`;
+        `<div class="bw-footer"><a href="https://matthiasdev.com/mcbook/" target="_blank" rel="noopener">Powered by <span class="bw-footer-brand">McBook</span></a></div>`;
 
       requestAnimationFrame(() => {
         const delta = this._host.getBoundingClientRect().top - hostTop;
