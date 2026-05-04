@@ -525,6 +525,7 @@ nav.scrolled { border-bottom-color: var(--border); }
   color: var(--text-muted);
   line-height: 1.7;
   margin-bottom: 16px;
+  flex-grow: 1;
 }
 .project-card .project-link {
   font-size: 0.88rem;
@@ -995,6 +996,12 @@ footer {
 }
 .showcase-info {
   padding: clamp(24px, 4vw, 36px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.showcase-info .project-tag {
+  align-self: flex-start;
 }
 .showcase-info h3 {
   font-family: var(--font-sans);
