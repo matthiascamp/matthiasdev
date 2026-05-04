@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact MatthiasDev — Get a Website, POS System, Booking Tool or AI Automation</title>
+  <meta name="description" content="Get in touch with MatthiasDev. Tell me what your business needs — websites, booking systems, POS, SEO, AI automation, or custom software." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="noise"></div>
+  <div class="bg-glow bg-glow-a"></div>
+  <div class="bg-glow bg-glow-b"></div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">MC<span class="dot">.</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="solutions.html">Solutions</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html" class="nav-cta active">Get a Quote</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="index.html" class="mobile-link">Home</a></li>
+      <li><a href="solutions.html" class="mobile-link">Solutions</a></li>
+      <li><a href="projects.html" class="mobile-link">Projects</a></li>
+      <li><a href="contact.html" class="mobile-link">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="container">
+      <h1 class="reveal-up">Let's talk about your <span class="gradient-text">business.</span></h1>
+    </div>
+  </header>
+
+  <!-- CONTACT -->
+  <section style="padding-top: 20px;">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-left reveal-up">
+          <h2>What's slow, manual, or annoying?</h2>
+          <p class="contact-body">Tell me — I'll reply within 24 hours with practical suggestions.</p>
+          <div class="contact-links">
+            <a href="mailto:matthiasdevelopment@gmail.com" class="contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              matthiasdevelopment@gmail.com
+            </a>
+            <a href="https://github.com/matthiascamp" target="_blank" rel="noopener" class="contact-item">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.796 24 17.298 24 12c0-6.63-5.373-12-12-12z"/></svg>
+              github.com/matthiascamp
+            </a>
+            <a href="https://instagram.com/matthias.campbell" target="_blank" rel="noopener" class="contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+              @matthias.campbell
+            </a>
+          </div>
+        </div>
+        <div class="contact-right reveal-up">
+          <form class="contact-form" id="contactForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Jane Smith" required />
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="jane@example.com" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="business">Business</label>
+                <input type="text" id="business" name="business" placeholder="Your Business Name" />
+              </div>
+              <div class="form-group">
+                <label for="subject">Interested in</label>
+                <select id="subject" name="subject">
+                  <option value="">Select...</option>
+                  <option value="website">Website</option>
+                  <option value="booking">Booking System</option>
+                  <option value="ordering-pos">Ordering &amp; POS</option>
+                  <option value="catalogue">Product Catalogue</option>
+                  <option value="ai">AI Assistant</option>
+                  <option value="seo">SEO</option>
+                  <option value="custom">Custom System</option>
+                  <option value="support">Monthly Support</option>
+                  <option value="not-sure">Not sure yet</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="message">What do you need?</label>
+              <textarea id="message" name="message" rows="4" placeholder="What's frustrating? What would save you time?" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+              <span>Send message</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+            <p class="form-note" id="formNote"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <a href="index.html" class="logo">MC<span class="dot">.</span></a>
+        <p class="footer-copy">&copy; 2026 Matthias Campbell. Brisbane.<br /><a href="mailto:matthiasdevelopment@gmail.com" class="footer-email">matthiasdevelopment@gmail.com</a></p>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="solutions.html">Solutions</a>
+          <a href="projects.html">Projects</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
